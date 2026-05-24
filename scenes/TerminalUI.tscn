@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://cahki7n8okq7s"]
+
+[ext_resource type="Script" uid="uid://bcpdljmdh56od" path="res://scenes/terminal_ui.gd" id="1_sjuop"]
+
+[node name="TerminalUi" type="Control" unique_id=2110312880]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_sjuop")
+
+[node name="TerminalUI" type="Control" parent="." unique_id=130607005]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CanvasLayer" type="CanvasLayer" parent="TerminalUI" unique_id=2014748738]
+
+[node name="Panel" type="Panel" parent="TerminalUI/CanvasLayer" unique_id=1512988244]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CodeEdit" type="CodeEdit" parent="TerminalUI/CanvasLayer/Panel" unique_id=127545657]
+layout_mode = 0
+offset_left = 58.0
+offset_top = 404.0
+offset_right = 1089.0
+offset_bottom = 607.0
+caret_blink = true
