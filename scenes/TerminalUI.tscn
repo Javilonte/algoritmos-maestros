@@ -39,25 +39,24 @@ offset_bottom = 607.0
 focus_mode = 1
 caret_blink = true
 
-[node name="HTTPRequest" type="HTTPRequest" parent="CanvasLayer/Panel" unique_id=1742915037]
-
-[node name="Button" type="Button" parent="." unique_id=754718497]
+[node name="Button2" type="Button" parent="CanvasLayer/Panel" unique_id=1425420347]
 layout_mode = 0
-offset_left = 439.4532
-offset_top = 522.2617
-offset_right = 515.4532
-offset_bottom = 553.2617
+offset_left = 902.1624
+offset_top = 554.6899
+offset_right = 1039.1625
+offset_bottom = 585.6899
+text = "Compile and run"
+
+[node name="Button" type="Button" parent="CanvasLayer/Panel" unique_id=754718497]
+layout_mode = 0
+offset_left = 427.08658
+offset_top = 498.79102
+offset_right = 503.08658
+offset_bottom = 529.791
 rotation = -0.018397689
 text = "EXECUTE"
 
-[node name="Button2" type="Button" parent="." unique_id=1425420347]
-layout_mode = 0
-offset_left = 915.0
-offset_top = 574.0
-offset_right = 1052.0
-offset_bottom = 605.0
-text = "Compile and run"
+[node name="HTTPRequest" type="HTTPRequest" parent="CanvasLayer/Panel" unique_id=1742915037]
 
-[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
-[connection signal="pressed" from="Button" to="." method="_on_run_button_pressed"]
-[connection signal="pressed" from="Button2" to="." method="_on_button_2_pressed"]
+[connection signal="pressed" from="CanvasLayer/Panel/Button2" to="." method="_on_button_2_pressed"]
+[connection signal="pressed" from="CanvasLayer/Panel/Button" to="." method="_on_button_pressed"]

@@ -88,3 +88,24 @@ func check_logic(code: String):
 		toggle_terminal()
 	else:
 		print("ERROR DE SINTAXIS O LÓGICA (MOCK). Intenta de nuevo.")
+
+
+func _on_button_2_pressed() -> void:
+	var player_code = code_editor.text
+
+	consola_output.text = "[color=yellow]>>> Compilando y enviando código C++ al servidor MOCK...[/color]\n"
+	
+
+	var data_to_send = {
+		"lenguaje": "cpp17",
+		"codigo": player_code,
+		"reto_id": "main_exit_check" 
+	}
+	
+	var json_string = JSON.stringify(data_to_send)
+	
+	call_deferred("_send_code_to_backend", json_string)
+
+
+func _on_button_pressed() -> void:
+	pass 
