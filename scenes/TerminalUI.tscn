@@ -2,30 +2,62 @@
 
 [ext_resource type="Script" uid="uid://bcpdljmdh56od" path="res://scenes/terminal_ui.gd" id="1_sjuop"]
 
-[node name="TerminalUi" type="Control" unique_id=2110312880]
+[node name="TerminalUI" type="Control" unique_id=2110312880]
+process_mode = 3
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+focus_mode = 2
 script = ExtResource("1_sjuop")
 
-[node name="TerminalUI" type="Control" parent="." unique_id=130607005]
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2014748738]
 
-[node name="CanvasLayer" type="CanvasLayer" parent="TerminalUI" unique_id=2014748738]
+[node name="Panel" type="Panel" parent="CanvasLayer" unique_id=1512988244]
+offset_left = 8.017091
+offset_top = 27.228275
+offset_right = 48.01709
+offset_bottom = 67.22827
+rotation = -0.008753274
+focus_mode = 1
 
-[node name="Panel" type="Panel" parent="TerminalUI/CanvasLayer" unique_id=1512988244]
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="ConsolaOutput" type="CodeEdit" parent="CanvasLayer/Panel" unique_id=1388210391]
+layout_mode = 0
+offset_left = 58.000008
+offset_top = 404.00003
+offset_right = 66.00001
+offset_bottom = 412.00003
 
-[node name="CodeEdit" type="CodeEdit" parent="TerminalUI/CanvasLayer/Panel" unique_id=127545657]
+[node name="CodeEdit" type="CodeEdit" parent="CanvasLayer/Panel" unique_id=127545657]
 layout_mode = 0
 offset_left = 58.0
 offset_top = 404.0
 offset_right = 1089.0
 offset_bottom = 607.0
+focus_mode = 1
 caret_blink = true
+
+[node name="HTTPRequest" type="HTTPRequest" parent="CanvasLayer/Panel" unique_id=1742915037]
+
+[node name="Button" type="Button" parent="." unique_id=754718497]
+layout_mode = 0
+offset_left = 439.4532
+offset_top = 522.2617
+offset_right = 515.4532
+offset_bottom = 553.2617
+rotation = -0.018397689
+text = "EXECUTE"
+
+[node name="Button2" type="Button" parent="." unique_id=1425420347]
+layout_mode = 0
+offset_left = 915.0
+offset_top = 574.0
+offset_right = 1052.0
+offset_bottom = 605.0
+text = "Compile and run"
+
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="Button" to="." method="_on_run_button_pressed"]
+[connection signal="pressed" from="Button2" to="." method="_on_button_2_pressed"]

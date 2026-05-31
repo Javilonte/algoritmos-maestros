@@ -2,38 +2,89 @@ extends Control
 
 @onready var code_editor = $CanvasLayer/Panel/CodeEdit
 @onready var canvas = $CanvasLayer
+@onready var consola_output = $CanvasLayer/Panel/ConsolaOutput
+@onready var HTTP_request = $CanvasLayer/Panel/HTTPRequest 
+
+const BACKEND_URL = "https://httpbin.org/post"
 
 func _ready():
-	canvas.hide() # Empezamos con la terminal oculta
-	process_mode = Node.PROCESS_MODE_ALWAYS # Esto permite que la terminal funcione aunque el juego esté pausado
+	#canvas.hide()
+	process_mode = Node.PROCESS_MODE_ALWAYS 
+	
+	focus_mode = Control.FOCUS_ALL
+
+	HTTP_request.request_completed.connect(_on_request_completed)
 
 func _input(event):
-	# Usaremos la tecla "TAB" para abrir/cerrar (en Godot es ui_focus_next por defecto)
+	
 	if event.is_action_pressed("ui_focus_next"):
-		toggle_terminal()
+		
+		call_deferred("toggle_terminal")
 
 func toggle_terminal():
 	if canvas.visible:
-		# CERRAR TERMINAL
+		
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		get_tree().paused = false
 		canvas.hide()
-		get_tree().paused = false # Reanudamos el juego
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED # El mouse vuelve al juego
+		grab_focus()
 	else:
-		# ABRIR TERMINAL
+		
 		canvas.show()
-		code_editor.grab_focus() # Para poder escribir de inmediato
-		get_tree().paused = true # PAUSAMOS EL MUNDO (estilo LeetCode)
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE # Liberamos el mouse
+		code_editor.grab_focus()
+		get_tree().paused = true 
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
-# Función para "Ejecutar" el código (la llamaremos con un botón o tecla)
-func _on_run_button_pressed():
+
+func _on_compile_run_pressed():
 	var player_code = code_editor.text
-	check_logic(player_code)
+	#http request stillin mock
+	consola_output.text = "[color=yellow]>>> Compilando y enviando código C++ al servidor MOCK...[/color]\n"
+	
+	var data_to_send = {
+		"lenguaje": "cpp17",
+		"codigo": player_code,
+		"reto_id": "main_exit_check" 
+	}
+	
+	var json_string = JSON.stringify(data_to_send)
+	
+	call_deferred("_send_code_to_backend", json_string)
+
+
+func _send_code_to_backend(json_data: String):
+	var headers = ["Content-Type: application/json"]
+	
+
+	var error = HTTP_request.request(BACKEND_URL, headers, HTTPClient.METHOD_POST, json_data)
+	
+	if error != OK:
+		consola_output.text += "[color=red]ERROR DE RED: No se pudo conectar con el servidor MOCK.[/color]\n"
+
+
+func _on_request_completed(_result, response_code, _headers, body):
+
+	if response_code != 200:
+		consola_output.text += "[color=red]ERROR DEL SERVIDOR: El servidor MOCK devolvió el código [/color]\n"
+		consola_output.text += str(response_code)
+		return
+
+	var json = JSON.parse_string(body.get_string_from_utf8())
+	
+	if json == null:
+		consola_output.text += "[color=red]ERROR DE DATOS: La respuesta del servidor MOCK no es un JSON válido.[/color]\n"
+		return
+		
+	var received_code = json.get("data", {}).get("codigo", "") 
+	
+	consola_output.text += "[color=cyan]>>> Respuesta del servidor MOCK recibida.[/color]\n"
+	
+	check_logic(received_code)
 
 func check_logic(code: String):
-	# Por ahora, una validación "Mock" (falsa) para pruebas
-	if "return true" in code:
-		print("¡ALGORITMO CORRECTO! Daño infligido.")
-		toggle_terminal() # Cerramos y volvemos a la acción
+	
+	if "int main() { return 0; }" in code.to_lower(): 
+		print("¡ALGORITMO C++ MINIMO DETECTADO! Daño infligido al monstruo.")
+		toggle_terminal()
 	else:
-		print("ERROR DE SINTAXIS O LÓGICA. Intenta de nuevo.")
+		print("ERROR DE SINTAXIS O LÓGICA (MOCK). Intenta de nuevo.")
