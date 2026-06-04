@@ -93,7 +93,7 @@ func _on_request_completed(result: int, response_code: int, _headers: PackedStri
 		return
 
 	var text := body.get_string_from_utf8()
-	var json := JSON.parse_string(text)
+	var json: Variant = JSON.parse_string(text)
 	if json == null:
 		_log("[color=red]>> DATA ERROR: backend response is not valid JSON.[/color]")
 		EventBus.code_validated.emit(GameManager.current_challenge_id, false, "invalid_json")
