@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cahki7n8okq7s"]
 
-[ext_resource type="Script" uid="uid://bcpdljmdh56od" path="res://scripts/ui/terminal_ui.gd" id="1_sjuop"]
+[ext_resource type="Script" uid="uid://x2lpyagyl7cv" path="res://scripts/ui/terminal_ui.gd" id="1_sjuop"]
 
 [node name="TerminalUI" type="CanvasLayer"]
 process_mode = 3

@@ -73,5 +73,3 @@ interact={
 [rendering]
 
 rendering_device/driver.windows="d3d12"
-rendering_device/driver.linuxbsd="vulkan"
-rendering_device/driver.macos="metal"

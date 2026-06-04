@@ -19,7 +19,6 @@ const REGEX_MAIN_EXIT := RegEx.create_from_string(
 func _ready() -> void:
 	http_request.request_completed.connect(_on_request_completed)
 	hide_terminal()
-	EventBus.terminal_toggled.connect(_on_terminal_toggled)
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_terminal"):
@@ -41,7 +40,7 @@ func show_terminal() -> void:
 	get_tree().paused = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	GameManager.change_state(GameManager.GameState.TERMINAL)
-	EventBus.terminal_toggled.emit(true)
+	EventBus.emit_terminal_toggled(true)
 
 func hide_terminal() -> void:
 	_is_terminal_open = false
@@ -49,10 +48,7 @@ func hide_terminal() -> void:
 	get_tree().paused = false
 	if GameManager.is_state(GameManager.GameState.TERMINAL):
 		GameManager.change_state(GameManager.GameState.OVERWORLD)
-	EventBus.terminal_toggled.emit(false)
-
-func _on_terminal_toggled(_is_open: bool) -> void:
-	pass
+	EventBus.emit_terminal_toggled(false)
 
 func submit_code() -> void:
 	if _is_submitting:
