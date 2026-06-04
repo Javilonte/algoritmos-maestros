@@ -12,7 +12,7 @@ var _is_terminal_open: bool = false
 var _active_request_id: int = -1
 var _is_submitting: bool = false
 
-const REGEX_MAIN_EXIT := RegEx.create_from_string(
+static var REGEX_MAIN_EXIT: RegEx = RegEx.create_from_string(
 	"(?xi) ^[\\s\\S]*? int\\s+main\\s*\\([^)]*\\)\\s*\\{[\\s\\S]*?return\\s+0\\s*;?[\\s\\S]*?\\} [\\s\\S]*? $"
 )
 
