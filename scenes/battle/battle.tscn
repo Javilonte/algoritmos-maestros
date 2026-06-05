@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" path="res://scripts/battle/battle.gd" id="1_battle"]
 [ext_resource type="Script" path="res://scripts/battle/hp_bar.gd" id="2_hpbar"]
-[ext_resource type="PackedScene" uid="uid://b8hpbar0compa" path="res://scenes/battle/hp_bar.tscn" id="3_hpbar_scene"]
-[ext_resource type="PackedScene" uid="uid://battleterm0comp" path="res://scenes/battle/battle_terminal.tscn" id="4_battle_terminal"]
+[ext_resource type="PackedScene" path="res://scenes/battle/hp_bar.tscn" id="3_hpbar_scene"]
+[ext_resource type="PackedScene" path="res://scenes/battle/battle_terminal.tscn" id="4_battle_terminal"]
 
 [node name="Battle" type="CanvasLayer"]
 process_mode = 3
