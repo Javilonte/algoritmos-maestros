@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3 uid="uid://benemyspawn0comp"]
+
+[ext_resource type="Script" path="res://scripts/overworld/enemy.gd" id="1_enemy"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
+size = Vector2(64, 64)
+
+[node name="Enemy" type="Area2D"]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_enemy")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(1, 0.3, 0.3, 1)
+scale = Vector2(0.15, 0.15)
+
+[node name="Label" type="Label" parent="."]
+offset_left = -60.0
+offset_top = -60.0
+offset_right = 60.0
+offset_bottom = -40.0
+text = "Enemy"
+horizontal_alignment = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_enemy")

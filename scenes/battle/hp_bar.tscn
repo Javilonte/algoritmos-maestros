@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://b8hpbar0compa"]
+
+[ext_resource type="Script" path="res://scripts/battle/hp_bar.gd" id="1_hpbar"]
+
+[node name="HPBar" type="ProgressBar"]
+offset_right = 240.0
+offset_bottom = 16.0
+max_value = 100.0
+value = 100.0
+show_percentage = false
+script = ExtResource("1_hpbar")
