@@ -1,0 +1,138 @@
+[gd_scene load_steps=5 format=3 uid="uid://battle0comp0uid"]
+
+[ext_resource type="Script" path="res://scripts/battle/battle.gd" id="1_battle"]
+[ext_resource type="Script" path="res://scripts/battle/hp_bar.gd" id="2_hpbar"]
+[ext_resource type="PackedScene" uid="uid://b8hpbar0compa" path="res://scenes/battle/hp_bar.tscn" id="3_hpbar_scene"]
+[ext_resource type="PackedScene" uid="uid://battleterm0comp" path="res://scenes/battle/battle_terminal.tscn" id="4_battle_terminal"]
+
+[node name="Battle" type="CanvasLayer"]
+process_mode = 3
+layer = 9
+script = ExtResource("1_battle")
+
+[node name="BattleArena" type="Control" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="BattleArena"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.05, 0.1, 1)
+
+[node name="EnemySide" type="Control" parent="BattleArena"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -320.0
+offset_top = 32.0
+offset_right = -16.0
+offset_bottom = 240.0
+grow_horizontal = 0
+
+[node name="EnemySprite" type="Sprite2D" parent="BattleArena/EnemySide"]
+modulate = Color(1, 0.4, 0.4, 1)
+position = Vector2(150, 110)
+scale = Vector2(0.2, 0.2)
+
+[node name="EnemyInfoPanel" type="Panel" parent="BattleArena/EnemySide"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 0.0
+offset_right = 150.0
+offset_bottom = 64.0
+grow_horizontal = 2
+
+[node name="EnemyName" type="Label" parent="BattleArena/EnemySide/EnemyInfoPanel"]
+offset_left = 12.0
+offset_top = 6.0
+offset_right = 288.0
+offset_bottom = 24.0
+text = "Enemy"
+
+[node name="HPBar" parent="BattleArena/EnemySide/EnemyInfoPanel" instance=ExtResource("3_hpbar_scene")]
+offset_left = 12.0
+offset_top = 32.0
+offset_right = 288.0
+offset_bottom = 52.0
+side = "enemy"
+
+[node name="PlayerSide" type="Control" parent="BattleArena"]
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 280.0
+offset_right = 480.0
+offset_bottom = -120.0
+
+[node name="PlayerSprite" type="Sprite2D" parent="BattleArena/PlayerSide"]
+modulate = Color(0.4, 0.6, 1, 1)
+position = Vector2(120, 100)
+scale = Vector2(0.2, 0.2)
+
+[node name="PlayerInfoPanel" type="Panel" parent="BattleArena/PlayerSide"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 0.0
+offset_right = 150.0
+offset_bottom = 64.0
+grow_horizontal = 2
+
+[node name="PlayerName" type="Label" parent="BattleArena/PlayerSide/PlayerInfoPanel"]
+offset_left = 12.0
+offset_top = 6.0
+offset_right = 288.0
+offset_bottom = 24.0
+text = "Player"
+
+[node name="HPBar" parent="BattleArena/PlayerSide/PlayerInfoPanel" instance=ExtResource("3_hpbar_scene")]
+offset_left = 12.0
+offset_top = 32.0
+offset_right = 288.0
+offset_bottom = 52.0
+side = "player"
+
+[node name="MessageLabel" type="Label" parent="BattleArena"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -90.0
+offset_bottom = -60.0
+grow_horizontal = 2
+grow_vertical = 0
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "What will you do?"
+
+[node name="ActionMenu" type="HBoxContainer" parent="BattleArena"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -160.0
+offset_top = -50.0
+offset_right = 160.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+
+[node name="AttackButton" type="Button" parent="BattleArena/ActionMenu"]
+custom_minimum_size = Vector2(140, 36)
+text = "Attack"
+
+[node name="RunButton" type="Button" parent="BattleArena/ActionMenu"]
+custom_minimum_size = Vector2(140, 36)
+text = "Run"
+
+[node name="BattleTerminal" parent="." instance=ExtResource("4_battle_terminal")]
+visible = false
