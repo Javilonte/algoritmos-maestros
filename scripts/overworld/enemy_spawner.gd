@@ -21,7 +21,7 @@ func _ready() -> void:
 			continue
 		enemy.position = spawn_points[i]
 		var data: Dictionary = enemy_data_list[i] if i < enemy_data_list.size() else enemy_data_list[0]
-		enemy.display_name = data.get("display_name", "Unknown")
-		enemy.max_hp = data.get("max_hp", 100)
-		enemy.challenge_id = data.get("challenge_id", "main_exit_check")
+		enemy.display_name = String(data.get("display_name", "Unknown"))
+		enemy.max_hp = int(data.get("max_hp", 100))
+		enemy.challenge_id = String(data.get("challenge_id", "main_exit_check"))
 		add_child(enemy)

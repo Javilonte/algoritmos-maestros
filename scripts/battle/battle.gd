@@ -34,10 +34,11 @@ func _on_battle_requested(enemy_data: Dictionary) -> void:
 	GameManager.start_battle(enemy_data)
 	visible = true
 	get_tree().paused = true
-	enemy_name_label.text = enemy_data.display_name
+	var display_name: String = String(enemy_data.get("display_name", "Unknown"))
+	enemy_name_label.text = display_name
 	player_name_label.text = "Player"
 	_update_hp_bars()
-	_set_message("A wild %s appeared!" % enemy_data.display_name)
+	_set_message("A wild %s appeared!" % display_name)
 	action_menu.visible = true
 	battle_terminal.close()
 	EventBus.battle_started.emit(enemy_data)
@@ -86,8 +87,10 @@ func _enemy_turn() -> void:
 	_set_message("Your turn — choose an action.")
 
 func _end_battle(result: String) -> void:
-	if result == "win" and _enemy_data.has("node") and _enemy_data["node"] != null:
-		(_enemy_data["node"] as Enemy).defeat()
+	if result == "win" and _enemy_data.has("node"):
+		var enemy_node: Variant = _enemy_data["node"]
+		if enemy_node is Enemy:
+			(enemy_node as Enemy).defeat()
 	visible = false
 	battle_terminal.close()
 	action_menu.visible = true
