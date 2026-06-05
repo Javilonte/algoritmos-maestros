@@ -56,15 +56,23 @@ offset_left = 16.0
 offset_top = 632.0
 offset_right = 200.0
 offset_bottom = 664.0
-text = "Compile && Run"
+text = "Submit"
+
+[node name="ValidateButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 208.0
+offset_top = 632.0
+offset_right = 392.0
+offset_bottom = 664.0
+text = "Validate (local)"
 
 [node name="CloseHint" type="Label" parent="Panel"]
 layout_mode = 0
-offset_left = 880.0
+offset_left = 800.0
 offset_top = 640.0
 offset_right = 1064.0
 offset_bottom = 664.0
-text = "[` to close]"
+text = "[Tab / ` to close]"
 horizontal_alignment = 2
 
 [node name="HTTPRequest" type="HTTPRequest" parent="Panel"]
@@ -72,3 +80,4 @@ process_mode = 3
 timeout = 15.0
 
 [connection signal="pressed" from="Panel/CompileButton" to="." method="_on_compile_button_pressed"]
+[connection signal="pressed" from="Panel/ValidateButton" to="." method="_on_validate_button_pressed"]

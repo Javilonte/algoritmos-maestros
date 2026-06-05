@@ -22,10 +22,18 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_terminal"):
+		if _is_tab_event(event) and code_editor != null and code_editor.has_focus():
+			return
 		if GameManager.is_state(GameManager.GameState.TERMINAL) \
 			or GameManager.is_player_input_allowed():
 			toggle_terminal()
 		get_viewport().set_input_as_handled()
+
+func _is_tab_event(event: InputEvent) -> bool:
+	if not (event is InputEventKey):
+		return false
+	var key_event := event as InputEventKey
+	return key_event.keycode == KEY_TAB or key_event.physical_keycode == KEY_TAB
 
 func toggle_terminal() -> void:
 	if _is_terminal_open:
@@ -78,6 +86,28 @@ func submit_code() -> void:
 		EventBus.code_validated.emit(challenge_id, false, "network_error")
 	else:
 		_is_submitting = true
+
+func validate_locally_only() -> void:
+	if _is_submitting:
+		_log("[color=yellow]>> Submission already in flight, please wait...[/color]")
+		return
+
+	var code := code_editor.text
+	var challenge_id := GameManager.current_challenge_id
+	if challenge_id.is_empty():
+		challenge_id = default_challenge_id
+
+	_log("[color=yellow]>> Validating locally (challenge: %s)...[/color]" % challenge_id)
+	EventBus.code_submitted.emit(challenge_id, code)
+
+	var result := _evaluate_challenge(challenge_id, code, "")
+	if result.success:
+		_log("[color=green]>> SUCCESS: %s[/color]" % result.message)
+		EventBus.code_validated.emit(challenge_id, true, result.message)
+		hide_terminal()
+	else:
+		_log("[color=red]>> FAILED: %s[/color]" % result.message)
+		EventBus.code_validated.emit(challenge_id, false, result.message)
 
 func _on_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	_is_submitting = false
@@ -140,3 +170,6 @@ func _log(bbcode: String) -> void:
 
 func _on_compile_button_pressed() -> void:
 	submit_code()
+
+func _on_validate_button_pressed() -> void:
+	validate_locally_only()
