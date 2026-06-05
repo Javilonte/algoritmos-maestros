@@ -6,6 +6,11 @@ signal terminal_toggled(is_open: bool)
 signal code_submitted(challenge_id: String, code: String)
 signal code_validated(challenge_id: String, success: bool, message: String)
 signal scene_change_requested(path: String)
+signal battle_requested(enemy_data: Dictionary)
+signal battle_started(enemy_data: Dictionary)
+signal battle_ended(result: String)
+signal hp_changed(side: String, current: int, max_hp: int)
+signal turn_changed(is_player_turn: bool)
 
 func emit_terminal_toggled(is_open: bool) -> void:
 	terminal_toggled.emit(is_open)
