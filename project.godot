@@ -23,6 +23,7 @@ gdscript/warnings/unused_signal=0
 
 EventBus="*res://scripts/autoload/event_bus.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
+CodeValidator="*res://scripts/autoload/code_validator.gd"
 
 [input]
 

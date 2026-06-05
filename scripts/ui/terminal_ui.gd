@@ -9,12 +9,7 @@ extends CanvasLayer
 @export var default_challenge_id: String = "main_exit_check"
 
 var _is_terminal_open: bool = false
-var _active_request_id: int = -1
 var _is_submitting: bool = false
-
-static var REGEX_MAIN_EXIT: RegEx = RegEx.create_from_string(
-	"(?xi) ^[\\s\\S]*? int\\s+main\\s*\\([^)]*\\)\\s*\\{[\\s\\S]*?return\\s+0\\s*;?[\\s\\S]*?\\} [\\s\\S]*? $"
-)
 
 func _ready() -> void:
 	http_request.request_completed.connect(_on_request_completed)
@@ -77,10 +72,10 @@ func submit_code() -> void:
 		"challenge_id": challenge_id,
 	}
 	var body := JSON.stringify(payload)
-
 	var headers := PackedStringArray(["Content-Type: application/json"])
-	_active_request_id = http_request.request(backend_url, headers, HTTPClient.METHOD_POST, body)
-	if _active_request_id != OK:
+
+	var err := http_request.request(backend_url, headers, HTTPClient.METHOD_POST, body)
+	if err != OK:
 		_is_submitting = false
 		_log("[color=red]>> NETWORK ERROR: could not reach the backend.[/color]")
 		EventBus.code_validated.emit(challenge_id, false, "network_error")
@@ -92,15 +87,15 @@ func validate_locally_only() -> void:
 		_log("[color=yellow]>> Submission already in flight, please wait...[/color]")
 		return
 
-	var code := code_editor.text
-	var challenge_id := GameManager.current_challenge_id
+	var code: String = code_editor.text
+	var challenge_id: String = GameManager.current_challenge_id
 	if challenge_id.is_empty():
 		challenge_id = default_challenge_id
 
 	_log("[color=yellow]>> Validating locally (challenge: %s)...[/color]" % challenge_id)
 	EventBus.code_submitted.emit(challenge_id, code)
 
-	var result := _evaluate_challenge(challenge_id, code, "")
+	var result := CodeValidator.evaluate(challenge_id, code)
 	if result.success:
 		_log("[color=green]>> SUCCESS: %s[/color]" % result.message)
 		EventBus.code_validated.emit(challenge_id, true, result.message)
@@ -130,38 +125,17 @@ func _on_request_completed(result: int, response_code: int, _headers: PackedStri
 		return
 
 	_log("[color=cyan]>> Response received from backend.[/color]")
-	_validate_locally(text)
-
-func _validate_locally(raw_response: String) -> void:
 	var challenge_id: String = GameManager.current_challenge_id
 	if challenge_id.is_empty():
 		challenge_id = default_challenge_id
-
-	var result := _evaluate_challenge(challenge_id, code_editor.text, raw_response)
-	if result.success:
-		_log("[color=green]>> SUCCESS: %s[/color]" % result.message)
-		EventBus.code_validated.emit(challenge_id, true, result.message)
+	var validation := CodeValidator.evaluate(challenge_id, code_editor.text)
+	if validation.success:
+		_log("[color=green]>> SUCCESS: %s[/color]" % validation.message)
+		EventBus.code_validated.emit(challenge_id, true, validation.message)
 		hide_terminal()
 	else:
-		_log("[color=red]>> FAILED: %s[/color]" % result.message)
-		EventBus.code_validated.emit(challenge_id, false, result.message)
-
-func _evaluate_challenge(challenge_id: String, code: String, _raw_response: String) -> Dictionary:
-	match challenge_id:
-		"main_exit_check":
-			return _evaluate_main_exit_check(code)
-		_:
-			return {"success": false, "message": "Unknown challenge '%s'." % challenge_id}
-
-func _evaluate_main_exit_check(code: String) -> Dictionary:
-	if code.strip_edges().is_empty():
-		return {"success": false, "message": "Code is empty."}
-
-	var match_result := REGEX_MAIN_EXIT.search(code)
-	if match_result == null:
-		return {"success": false, "message": "Expected 'int main() { return 0; }'."}
-
-	return {"success": true, "message": "Minimum C++ algorithm detected — damage dealt to monster."}
+		_log("[color=red]>> FAILED: %s[/color]" % validation.message)
+		EventBus.code_validated.emit(challenge_id, false, validation.message)
 
 func _log(bbcode: String) -> void:
 	if console_output == null:
