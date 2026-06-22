@@ -1,0 +1,9 @@
+[submodule "gdextension/godot-cpp"]
+	path = gdextension/godot-cpp
+	url = https://github.com/godotengine/godot-cpp
+[submodule "gdextension/tree-sitter"]
+	path = gdextension/tree-sitter
+	url = https://github.com/tree-sitter/tree-sitter
+[submodule "gdextension/tree-sitter-cpp"]
+	path = gdextension/tree-sitter-cpp
+	url = https://github.com/tree-sitter/tree-sitter-cpp

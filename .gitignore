@@ -3,3 +3,7 @@
 /android/
 *.translation
 *.import.bak
+
+# GDExtension build artifacts
+gdextension/addons/*/bin/
+gdextension/godot-cpp/bin/

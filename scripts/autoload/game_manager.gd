@@ -1,6 +1,6 @@
 extends Node
 
-enum GameState { BOOT, OVERWORLD, TERMINAL, BATTLE, PAUSED }
+enum GameState { BOOT, MAIN_MENU, OVERWORLD, TERMINAL, BATTLE, PAUSED }
 
 const PLAYER_MAX_HP: int = 100
 
@@ -53,3 +53,22 @@ func reset_battle_state() -> void:
 	enemy_hp = 0
 	enemy_max_hp = 0
 	current_enemy_data = {}
+
+func reset_to_new_game() -> void:
+	player_hp = PLAYER_MAX_HP
+	player_max_hp = PLAYER_MAX_HP
+	enemy_hp = 0
+	enemy_max_hp = 0
+	current_enemy_data = {}
+	current_challenge_id = ""
+	current_state = GameState.BOOT
+
+func get_save_data() -> Dictionary:
+	return {
+		"player_hp": player_hp,
+		"player_max_hp": player_max_hp,
+	}
+
+func apply_save_data(data: Dictionary) -> void:
+	player_hp = int(data.get("player_hp", PLAYER_MAX_HP))
+	player_max_hp = int(data.get("player_max_hp", PLAYER_MAX_HP))

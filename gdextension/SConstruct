@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+import os
+import sys
+
+EnsureSConsVersion(4, 0)
+EnsurePythonVersion(3, 8)
+
+if "api_version" not in ARGUMENTS:
+    ARGUMENTS["api_version"] = "4.5"
+
+env = SConscript("godot-cpp/SConstruct")
+
+env.Append(CPPPATH=[
+    "src/",
+    "tree-sitter/lib/include",
+    "tree-sitter-cpp/src",
+])
+
+env.Append(CFLAGS=["-std=c11"])
+
+treesitter_sources = [
+    "tree-sitter/lib/src/lib.c",
+]
+
+grammar_sources = [
+    "tree-sitter-cpp/src/parser.c",
+    "tree-sitter-cpp/src/scanner.c",
+]
+
+our_sources = Glob("src/*.cpp")
+
+all_sources = treesitter_sources + grammar_sources + our_sources
+
+lib_name = "libalgorithm-validator{}{}".format(env["suffix"], env["SHLIBSUFFIX"])
+lib_path = "addons/algorithm-validator/bin/{}".format(lib_name)
+
+library = env.SharedLibrary(lib_path, source=all_sources)
+Default(library)

@@ -11,19 +11,20 @@ config_version=5
 [application]
 
 config/name="Algoritmos Maestros"
-run/main_scene="uid://lv6ga0hlol3v"
+run/main_scene="uid://mainmenu0scene0uid"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
-
-[debug]
-
-gdscript/warnings/unused_signal=0
 
 [autoload]
 
 EventBus="*res://scripts/autoload/event_bus.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
 CodeValidator="*res://scripts/autoload/code_validator.gd"
+SaveManager="*res://scripts/autoload/save_manager.gd"
+
+[debug]
+
+gdscript/warnings/unused_signal=0
 
 [input]
 
