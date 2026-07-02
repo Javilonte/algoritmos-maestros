@@ -4,7 +4,6 @@
 [ext_resource type="Texture2D" uid="uid://ct543rg552fk3" path="res://assets/suelo1.png" id="2_ground"]
 [ext_resource type="PackedScene" uid="uid://c8eh6cyj26twd" path="res://player/player.tscn" id="3_player"]
 [ext_resource type="PackedScene" uid="uid://cahki7n8okq7s" path="res://scenes/TerminalUI.tscn" id="4_terminal"]
-[ext_resource type="Script" path="res://scripts/overworld/enemy_spawner.gd" id="5_spawner"]
 [ext_resource type="PackedScene" path="res://scenes/overworld/enemy.tscn" id="6_enemy"]
 [ext_resource type="PackedScene" path="res://scenes/battle/battle.tscn" id="7_battle"]
 
@@ -20,8 +19,18 @@ position = Vector2(0, 0)
 
 [node name="TerminalUI" parent="." instance=ExtResource("4_terminal")]
 
-[node name="EnemySpawner" type="Node2D" parent="."]
-script = ExtResource("5_spawner")
-enemy_scene = ExtResource("6_enemy")
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="SegfaultSprite" parent="Enemies" instance=ExtResource("6_enemy")]
+position = Vector2(400, 0)
+display_name = "Segfault Sprite"
+max_hp = 100
+challenge_id = "main_exit_check"
+
+[node name="NullPointer" parent="Enemies" instance=ExtResource("6_enemy")]
+position = Vector2(-400, 0)
+display_name = "Null Pointer"
+max_hp = 150
+challenge_id = "main_exit_check"
 
 [node name="Battle" parent="." instance=ExtResource("7_battle")]

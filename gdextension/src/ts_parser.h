@@ -18,7 +18,6 @@ class TreeSitterParser : public RefCounted {
 	TSTree *_tree;
 
 	void _clear_tree();
-	Dictionary _validate_main_exit(const String &code);
 
 protected:
 	static void _bind_methods();

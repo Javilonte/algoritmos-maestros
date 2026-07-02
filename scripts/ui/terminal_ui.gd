@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+const ValidationResultFormatter = preload("res://scripts/util/validation_result_formatter.gd")
+
 @onready var code_editor: CodeEdit = $Panel/CodeEdit
 @onready var console_output: RichTextLabel = $Panel/ConsoleOutput
 @onready var http_request: HTTPRequest = $Panel/HTTPRequest
@@ -96,13 +98,7 @@ func validate_locally_only() -> void:
 	EventBus.code_submitted.emit(challenge_id, code)
 
 	var result := CodeValidator.evaluate(challenge_id, code)
-	if result.success:
-		_log("[color=green]>> SUCCESS: %s[/color]" % result.message)
-		EventBus.code_validated.emit(challenge_id, true, result.message)
-		hide_terminal()
-	else:
-		_log("[color=red]>> FAILED: %s[/color]" % result.message)
-		EventBus.code_validated.emit(challenge_id, false, result.message)
+	_apply_validation_result(challenge_id, result)
 
 func _on_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	_is_submitting = false
@@ -129,13 +125,13 @@ func _on_request_completed(result: int, response_code: int, _headers: PackedStri
 	if challenge_id.is_empty():
 		challenge_id = default_challenge_id
 	var validation := CodeValidator.evaluate(challenge_id, code_editor.text)
-	if validation.success:
-		_log("[color=green]>> SUCCESS: %s[/color]" % validation.message)
-		EventBus.code_validated.emit(challenge_id, true, validation.message)
+	_apply_validation_result(challenge_id, validation)
+
+func _apply_validation_result(challenge_id: String, result: Dictionary) -> void:
+	_log(ValidationResultFormatter.format_line(result, "SUCCESS: ", "FAILED: "))
+	EventBus.code_validated.emit(challenge_id, result.success, result.message)
+	if result.success:
 		hide_terminal()
-	else:
-		_log("[color=red]>> FAILED: %s[/color]" % validation.message)
-		EventBus.code_validated.emit(challenge_id, false, validation.message)
 
 func _log(bbcode: String) -> void:
 	if console_output == null:

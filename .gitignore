@@ -5,5 +5,12 @@
 *.import.bak
 
 # GDExtension build artifacts
-gdextension/addons/*/bin/
+gdextension/addons/
 gdextension/godot-cpp/bin/
+*.obj
+*.obj.import
+*.o
+*.os
+*.exp
+*.lib
+addons/*/bin/~*.dll

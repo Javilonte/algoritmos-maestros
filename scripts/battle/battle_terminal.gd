@@ -1,6 +1,8 @@
 extends CanvasLayer
 class_name BattleTerminal
 
+const ValidationResultFormatter = preload("res://scripts/util/validation_result_formatter.gd")
+
 signal submitted(success: bool)
 signal back_pressed
 
@@ -34,12 +36,8 @@ func _on_submit_pressed() -> void:
 		return
 	_is_locked = true
 	var result := CodeValidator.evaluate(_challenge_id, code_editor.text)
-	if result.success:
-		console_output.append_text("[color=green]>> %s[/color]\n" % result.message)
-		submitted.emit(true)
-	else:
-		console_output.append_text("[color=red]>> %s[/color]\n" % result.message)
-		submitted.emit(false)
+	console_output.append_text(ValidationResultFormatter.format_line(result) + "\n")
+	submitted.emit(result.success)
 
 func _on_back_pressed() -> void:
 	close()

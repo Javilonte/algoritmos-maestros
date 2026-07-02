@@ -1,6 +1,6 @@
 extends Control
 
-@onready var terminal_text: RichTextLabel = $TerminalText
+@onready var terminal_text: RichTextLabel = $TerminalPanel/TerminalText
 @onready var type_timer: Timer = $TypeTimer
 
 var _lines: Array[String] = [
@@ -42,6 +42,7 @@ func _on_type_timer_timeout() -> void:
 		for i in range(_current_line):
 			terminal_text.append_text(_lines[i] + "\n")
 		terminal_text.append_text(_current_text.substr(0, _current_char))
+		type_timer.start()
 	else:
 		_is_typing = false
 		terminal_text.append_text("\n")

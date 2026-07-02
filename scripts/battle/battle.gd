@@ -60,24 +60,19 @@ func _on_battle_terminal_back() -> void:
 func _on_battle_terminal_submitted(success: bool) -> void:
 	_is_animating = true
 	if success:
-		GameManager.apply_damage("enemy", PLAYER_DAMAGE)
-		if GameManager.enemy_hp <= 0:
-			_set_message("%s fainted!" % _enemy_data.display_name)
-			await get_tree().create_timer(1.0).timeout
-			_end_battle("win")
-			_is_animating = false
-			return
-		await _enemy_turn()
+		await _resolve_turn("enemy", PLAYER_DAMAGE, "%s fainted!" % _enemy_data.display_name, "win")
 	else:
-		GameManager.apply_damage("player", ENEMY_DAMAGE)
-		if GameManager.player_hp <= 0:
-			_set_message("You fainted!")
-			await get_tree().create_timer(1.0).timeout
-			_end_battle("lose")
-			_is_animating = false
-			return
-		await _enemy_turn()
+		await _resolve_turn("player", ENEMY_DAMAGE, "You fainted!", "lose")
 	_is_animating = false
+
+func _resolve_turn(side: String, damage: int, faint_message: String, end_result: String) -> void:
+	GameManager.apply_damage(side, damage)
+	if GameManager.get_hp(side) <= 0:
+		_set_message(faint_message)
+		await get_tree().create_timer(1.0).timeout
+		_end_battle(end_result)
+		return
+	await _enemy_turn()
 
 func _enemy_turn() -> void:
 	_set_message("%s counter-attacks!" % _enemy_data.display_name)

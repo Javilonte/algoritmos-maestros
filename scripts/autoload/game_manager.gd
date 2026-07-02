@@ -1,74 +1,79 @@
 extends Node
 
-enum GameState { BOOT, MAIN_MENU, OVERWORLD, TERMINAL, BATTLE, PAUSED }
+const GameStateMachine = preload("res://scripts/autoload/game_state_machine.gd")
+const CombatStats = preload("res://scripts/autoload/combat_stats.gd")
+
+enum GameState { BOOT, MAIN_MENU, OVERWORLD, TERMINAL, BATTLE }
 
 const PLAYER_MAX_HP: int = 100
 
-var current_state: GameState = GameState.BOOT
 var current_challenge_id: String = ""
-
-var player_max_hp: int = PLAYER_MAX_HP
-var player_hp: int = PLAYER_MAX_HP
-var enemy_max_hp: int = 0
-var enemy_hp: int = 0
 var current_enemy_data: Dictionary = {}
 
+var player_hp: int:
+	get:
+		return _player_stats.hp
+var player_max_hp: int:
+	get:
+		return _player_stats.max_hp
+var enemy_hp: int:
+	get:
+		return _enemy_stats.hp
+var enemy_max_hp: int:
+	get:
+		return _enemy_stats.max_hp
+
+var _fsm := GameStateMachine.new(GameState.BOOT)
+var _player_stats := CombatStats.new(PLAYER_MAX_HP)
+var _enemy_stats := CombatStats.new(0)
+
 func change_state(new_state: GameState) -> void:
-	if new_state == current_state:
-		return
-	current_state = new_state
+	_fsm.change_state(new_state)
 
 func is_state(state: GameState) -> bool:
-	return current_state == state
+	return _fsm.is_state(state)
 
 func is_player_input_allowed() -> bool:
-	return current_state == GameState.OVERWORLD
+	return _fsm.is_state(GameState.OVERWORLD)
 
-func set_challenge(challenge_id: String) -> void:
-	current_challenge_id = challenge_id
-
-func clear_challenge() -> void:
-	current_challenge_id = ""
+func get_hp(side: String) -> int:
+	return _enemy_stats.hp if side == "enemy" else _player_stats.hp
 
 func start_battle(enemy_data: Dictionary) -> void:
 	current_enemy_data = enemy_data
-	enemy_max_hp = int(enemy_data.get("max_hp", 100))
-	enemy_hp = enemy_max_hp
-	player_hp = player_max_hp
-	current_state = GameState.BATTLE
-	EventBus.hp_changed.emit("player", player_hp, player_max_hp)
-	EventBus.hp_changed.emit("enemy", enemy_hp, enemy_max_hp)
+	_enemy_stats.reset_to(int(enemy_data.get("max_hp", 100)))
+	_player_stats.hp = _player_stats.max_hp
+	_fsm.change_state(GameState.BATTLE)
+	EventBus.hp_changed.emit("player", _player_stats.hp, _player_stats.max_hp)
+	EventBus.hp_changed.emit("enemy", _enemy_stats.hp, _enemy_stats.max_hp)
 	EventBus.turn_changed.emit(true)
 
 func apply_damage(side: String, amount: int) -> void:
 	if side == "enemy":
-		enemy_hp = max(0, enemy_hp - amount)
-		EventBus.hp_changed.emit("enemy", enemy_hp, enemy_max_hp)
+		_enemy_stats.apply_damage(amount)
+		EventBus.hp_changed.emit("enemy", _enemy_stats.hp, _enemy_stats.max_hp)
 	elif side == "player":
-		player_hp = max(0, player_hp - amount)
-		EventBus.hp_changed.emit("player", player_hp, player_max_hp)
+		_player_stats.apply_damage(amount)
+		EventBus.hp_changed.emit("player", _player_stats.hp, _player_stats.max_hp)
 
 func reset_battle_state() -> void:
-	player_hp = player_max_hp
-	enemy_hp = 0
-	enemy_max_hp = 0
+	_player_stats.hp = _player_stats.max_hp
+	_enemy_stats.reset_to(0)
 	current_enemy_data = {}
 
 func reset_to_new_game() -> void:
-	player_hp = PLAYER_MAX_HP
-	player_max_hp = PLAYER_MAX_HP
-	enemy_hp = 0
-	enemy_max_hp = 0
+	_player_stats.set_max(PLAYER_MAX_HP)
+	_enemy_stats.reset_to(0)
 	current_enemy_data = {}
 	current_challenge_id = ""
-	current_state = GameState.BOOT
+	_fsm.change_state(GameState.BOOT)
 
 func get_save_data() -> Dictionary:
 	return {
-		"player_hp": player_hp,
-		"player_max_hp": player_max_hp,
+		"player_hp": _player_stats.hp,
+		"player_max_hp": _player_stats.max_hp,
 	}
 
 func apply_save_data(data: Dictionary) -> void:
-	player_hp = int(data.get("player_hp", PLAYER_MAX_HP))
-	player_max_hp = int(data.get("player_max_hp", PLAYER_MAX_HP))
+	_player_stats.hp = int(data.get("player_hp", PLAYER_MAX_HP))
+	_player_stats.max_hp = int(data.get("player_max_hp", PLAYER_MAX_HP))
