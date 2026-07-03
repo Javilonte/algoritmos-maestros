@@ -12,5 +12,14 @@ signal battle_ended(result: String)
 signal hp_changed(side: String, current: int, max_hp: int)
 signal turn_changed(is_player_turn: bool)
 
+signal compiling_started(challenge_id: String)
+signal compiling_progress(stage: String, ratio: float)
+signal compiling_finished(success: bool, message: String)
+signal code_executed(result)
+signal damage_calculated(roll)
+signal combo_changed(combo: int, multiplier: float)
+signal battle_timer_tick(remaining_ms: int)
+signal battle_timer_expired()
+
 func emit_terminal_toggled(is_open: bool) -> void:
 	terminal_toggled.emit(is_open)

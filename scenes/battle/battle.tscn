@@ -108,6 +108,7 @@ offset_top = -90.0
 offset_bottom = -60.0
 grow_horizontal = 2
 grow_vertical = 0
+bbcode_enabled = true
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "What will you do?"
@@ -133,6 +134,57 @@ text = "Attack"
 [node name="RunButton" type="Button" parent="BattleArena/ActionMenu"]
 custom_minimum_size = Vector2(140, 36)
 text = "Run"
+
+[node name="BattleTimer" type="Label" parent="BattleArena"]
+visible = false
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -180.0
+offset_top = 8.0
+offset_right = -16.0
+offset_bottom = 36.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 20
+text = "30"
+horizontal_alignment = 2
+
+[node name="BattleTimerBar" type="ColorRect" parent="BattleArena"]
+visible = false
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -180.0
+offset_top = 40.0
+offset_right = -16.0
+offset_bottom = 46.0
+grow_horizontal = 0
+mouse_filter = 2
+color = Color(0.4, 0.9, 0.4, 1)
+
+[node name="ComboLabel" type="Label" parent="BattleArena"]
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -120.0
+offset_top = 100.0
+offset_right = 120.0
+offset_bottom = 140.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.5, 1, 0.6, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.2, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 28
+text = "COMBO x1.0"
+horizontal_alignment = 1
+
+[node name="DamageLayer" type="Node2D" parent="BattleArena"]
+z_index = 50
 
 [node name="BattleTerminal" parent="." instance=ExtResource("4_battle_terminal")]
 visible = false

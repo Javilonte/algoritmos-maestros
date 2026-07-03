@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Algoritmos Maestros"
-run/main_scene="uid://mainmenu0scene0uid"
+run/main_scene="uid://splash0screen0uid"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -21,6 +21,8 @@ EventBus="*res://scripts/autoload/event_bus.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
 CodeValidator="*res://scripts/autoload/code_validator.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
+ChallengeRegistry="*res://scripts/autoload/challenge_registry.gd"
+CodeCompiler="*res://scripts/autoload/code_compiler.gd"
 
 [debug]
 

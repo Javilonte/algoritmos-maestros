@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="ChallengeResource" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://resources/challenge_resource.gd" id="1_cr"]
+[ext_resource type="Script" path="res://resources/test_case.gd" id="2_tc"]
+
+[sub_resource type="Resource" id="TestCase_1"]
+script = ExtResource("2_tc")
+name = "found_at_start"
+inputs = [[10, 20, 30], 10]
+expected = 0
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_2"]
+script = ExtResource("2_tc")
+name = "found_middle"
+inputs = [[5, 12, 8, 99, 1], 8]
+expected = 2
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_3"]
+script = ExtResource("2_tc")
+name = "not_found"
+inputs = [[1, 2, 3, 4], 99]
+expected = -1
+weight = 1.5
+
+[sub_resource type="Resource" id="TestCase_4"]
+script = ExtResource("2_tc")
+name = "negative_target"
+inputs = [[-5, 0, 5, -10], -10]
+expected = 3
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_5"]
+script = ExtResource("2_tc")
+name = "large_array"
+inputs = [[1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21], 17]
+expected = 8
+weight = 1.0
+
+[resource]
+script = ExtResource("1_cr")
+id = &"linear_search"
+display_name = "Linear Searcher"
+difficulty = 2
+prompt = "Implementa `int linearSearch(vector<int> arr, int target)` que retorne el índice de target en arr, o -1 si no está."
+starter_code = "int linearSearch(vector<int> arr, int target) {\n    // tu código aquí\n    return -1;\n}"
+function_signature = "int linearSearch(vector<int> arr, int target)"
+function_name_hint = "linearSearch"
+test_cases = Array[Resource]([SubResource("TestCase_1"), SubResource("TestCase_2"), SubResource("TestCase_3"), SubResource("TestCase_4"), SubResource("TestCase_5")])
+time_limit_ms = 30000
+base_damage = 20
+perfect_damage = 80
+tags = PackedStringArray("search", "array", "loop", "beginner")
+runner_path = "res://data/challenges/linear_search_runner.gd"
+ast_min_statements = 3
+ast_required_features = PackedStringArray("loop", "return")
+ast_return_substring = "int"
+validation_mode = "ast_oracle"

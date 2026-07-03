@@ -27,6 +27,7 @@ public:
 	~TreeSitterParser();
 
 	Dictionary validate(const String &code, const String &challenge_id);
+	Dictionary validate_structure(const String &code, const Dictionary &structure_spec);
 };
 
 }

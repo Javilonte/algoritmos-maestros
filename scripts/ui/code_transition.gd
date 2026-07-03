@@ -57,4 +57,4 @@ func _on_all_lines_done() -> void:
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.5)
 	await tween.finished
-	get_tree().change_scene_to_file("res://scenes/overworld.tscn")
+	get_tree().change_scene_to_file("res://scenes/iso/iso_overworld.tscn")

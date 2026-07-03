@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="ChallengeResource" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://resources/challenge_resource.gd" id="1_cr"]
+[ext_resource type="Script" path="res://resources/test_case.gd" id="2_tc"]
+
+[sub_resource type="Resource" id="TestCase_1"]
+script = ExtResource("2_tc")
+name = "factorial_0"
+inputs = [0]
+expected = 1
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_2"]
+script = ExtResource("2_tc")
+name = "factorial_1"
+inputs = [1]
+expected = 1
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_3"]
+script = ExtResource("2_tc")
+name = "factorial_5"
+inputs = [5]
+expected = 120
+weight = 1.5
+
+[sub_resource type="Resource" id="TestCase_4"]
+script = ExtResource("2_tc")
+name = "factorial_10"
+inputs = [10]
+expected = 3628800
+weight = 2.0
+
+[resource]
+script = ExtResource("1_cr")
+id = &"factorial"
+display_name = "Factorial Wraith"
+difficulty = 3
+prompt = "Implementa `int factorial(int n)` que retorne n! (n! = n × (n-1) × ... × 1, y 0! = 1)."
+starter_code = "int factorial(int n) {\n    // tu código aquí\n    return 0;\n}"
+function_signature = "int factorial(int n)"
+function_name_hint = "factorial"
+test_cases = Array[Resource]([SubResource("TestCase_1"), SubResource("TestCase_2"), SubResource("TestCase_3"), SubResource("TestCase_4")])
+time_limit_ms = 30000
+base_damage = 25
+perfect_damage = 90
+tags = PackedStringArray("recursion", "math", "intermediate")
+runner_path = "res://data/challenges/factorial_runner.gd"
+ast_min_statements = 2
+ast_required_features = PackedStringArray("return")
+ast_return_substring = "int"
+validation_mode = "ast_oracle"

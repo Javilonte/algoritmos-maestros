@@ -3,9 +3,12 @@ extends Node
 const GameStateMachine = preload("res://scripts/autoload/game_state_machine.gd")
 const CombatStats = preload("res://scripts/autoload/combat_stats.gd")
 
-enum GameState { BOOT, MAIN_MENU, OVERWORLD, TERMINAL, BATTLE }
+enum GameState { BOOT, MAIN_MENU, OVERWORLD, TERMINAL, BATTLE, COMPILING, EXECUTING }
 
 const PLAYER_MAX_HP: int = 100
+
+const COMBO_DECAY_MS: int = 10000
+const MAX_COMBO: int = 5
 
 var current_challenge_id: String = ""
 var current_enemy_data: Dictionary = {}
@@ -27,6 +30,9 @@ var _fsm := GameStateMachine.new(GameState.BOOT)
 var _player_stats := CombatStats.new(PLAYER_MAX_HP)
 var _enemy_stats := CombatStats.new(0)
 
+var _combo_count: int = 0
+var _combo_decay_timer: SceneTreeTimer = null
+
 func change_state(new_state: GameState) -> void:
 	_fsm.change_state(new_state)
 
@@ -47,6 +53,8 @@ func start_battle(enemy_data: Dictionary) -> void:
 	EventBus.hp_changed.emit("player", _player_stats.hp, _player_stats.max_hp)
 	EventBus.hp_changed.emit("enemy", _enemy_stats.hp, _enemy_stats.max_hp)
 	EventBus.turn_changed.emit(true)
+	_combo_count = 0
+	EventBus.combo_changed.emit(0, 1.0)
 
 func apply_damage(side: String, amount: int) -> void:
 	if side == "enemy":
@@ -60,6 +68,7 @@ func reset_battle_state() -> void:
 	_player_stats.hp = _player_stats.max_hp
 	_enemy_stats.reset_to(0)
 	current_enemy_data = {}
+	_combo_count = 0
 
 func reset_to_new_game() -> void:
 	_player_stats.set_max(PLAYER_MAX_HP)
@@ -67,6 +76,7 @@ func reset_to_new_game() -> void:
 	current_enemy_data = {}
 	current_challenge_id = ""
 	_fsm.change_state(GameState.BOOT)
+	_combo_count = 0
 
 func get_save_data() -> Dictionary:
 	return {
@@ -77,3 +87,28 @@ func get_save_data() -> Dictionary:
 func apply_save_data(data: Dictionary) -> void:
 	_player_stats.hp = int(data.get("player_hp", PLAYER_MAX_HP))
 	_player_stats.max_hp = int(data.get("player_max_hp", PLAYER_MAX_HP))
+
+func get_combo_count() -> int:
+	return _combo_count
+
+func get_combo_multiplier() -> float:
+	return 1.0 + min(_combo_count, MAX_COMBO) * 0.2
+
+func increment_combo() -> void:
+	_combo_count += 1
+	EventBus.combo_changed.emit(_combo_count, get_combo_multiplier())
+	_reset_combo_decay()
+
+func reset_combo() -> void:
+	if _combo_count > 0:
+		_combo_count = 0
+		EventBus.combo_changed.emit(0, 1.0)
+
+func _reset_combo_decay() -> void:
+	_combo_decay_timer = get_tree().create_timer(COMBO_DECAY_MS / 1000.0)
+	_combo_decay_timer.timeout.connect(_on_combo_decay)
+
+func _on_combo_decay() -> void:
+	if _combo_count > 0:
+		_combo_count = 0
+		EventBus.combo_changed.emit(0, 1.0)

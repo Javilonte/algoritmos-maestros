@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3 uid="uid://isoplayer0comp"]
+
+[ext_resource type="Script" path="res://scripts/iso/iso_player.gd" id="1_player"]
+[ext_resource type="Texture2D" uid="uid://jhpst6ybc0eg" path="res://assets/textures/practice iso tiles.png" id="2_iso_tex"]
+
+[sub_resource type="AtlasTexture" id="AtlasTex_player_teal"]
+atlas = ExtResource("2_iso_tex")
+region = Rect2(100, 56, 50, 56)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_iso"]
+radius = 14.0
+
+[node name="IsoPlayer" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_player")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
+texture = SubResource("AtlasTex_player_teal")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_iso")

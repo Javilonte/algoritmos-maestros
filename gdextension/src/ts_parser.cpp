@@ -33,6 +33,7 @@ void TreeSitterParser::_clear_tree() {
 
 void TreeSitterParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("validate", "code", "challenge_id"), &TreeSitterParser::validate);
+	ClassDB::bind_method(D_METHOD("validate_structure", "code", "structure_spec"), &TreeSitterParser::validate_structure);
 }
 
 Dictionary TreeSitterParser::validate(const String &code, const String &challenge_id) {
@@ -49,6 +50,30 @@ Dictionary TreeSitterParser::validate(const String &code, const String &challeng
 	}
 
 	return validators::run(challenge_id, _tree, code);
+}
+
+Dictionary TreeSitterParser::validate_structure(const String &code, const Dictionary &structure_spec) {
+	_clear_tree();
+
+	CharString cs = code.utf8();
+	_tree = ts_parser_parse_string(_parser, nullptr, cs.get_data(), (uint32_t)cs.length());
+
+	if (!_tree) {
+		Dictionary result;
+		result["tree_parsed"] = false;
+		result["syntax_errors"] = true;
+		result["function_found"] = false;
+		result["valid"] = false;
+		result["quality"] = 0.0;
+		result["errors"] = Array();
+		Array errors;
+		errors.append("Internal error: parser failed to produce a syntax tree.");
+		result["errors"] = errors;
+		return result;
+	}
+
+	Dictionary out = validators::validate_structure(_tree, code, structure_spec);
+	return out;
 }
 
 }
