@@ -32,7 +32,7 @@ our_sources = Glob("src/*.cpp")
 all_sources = treesitter_sources + grammar_sources + our_sources
 
 lib_name = "libalgorithm-validator{}{}".format(env["suffix"], env["SHLIBSUFFIX"])
-lib_path = "addons/algorithm-validator/bin/{}".format(lib_name)
+lib_path = "../addons/algorithm-validator/bin/{}".format(lib_name)
 
 library = env.SharedLibrary(lib_path, source=all_sources)
 Default(library)

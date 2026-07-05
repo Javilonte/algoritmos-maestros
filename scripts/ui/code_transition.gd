@@ -72,7 +72,7 @@ func _process(delta: float) -> void:
 		_fade_progress += delta * 2.0
 		modulate.a = max(0.0, 1.0 - _fade_progress)
 		if _fade_progress >= 1.0:
-			get_tree().change_scene_to_file("res://scenes/overworld.tscn")
+			get_tree().change_scene_to_file("res://scenes/iso/iso_overworld.tscn")
 
 func _update_display() -> void:
 	terminal_text.clear()
@@ -80,3 +80,9 @@ func _update_display() -> void:
 	for i in range(_current_line):
 		terminal_text.append_text(_lines[i] + "\n")
 	terminal_text.append_text(_current_text.substr(0, _current_char))
+
+func _on_all_lines_done() -> void:
+	var tween := create_tween()
+	tween.tween_property(self, "modulate:a", 0.0, 0.5)
+	await tween.finished
+	get_tree().change_scene_to_file("res://scenes/iso/iso_overworld.tscn")

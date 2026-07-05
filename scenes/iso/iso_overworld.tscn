@@ -1,0 +1,41 @@
+[gd_scene load_steps=6 format=3 uid="uid://isooverworld0comp"]
+
+[ext_resource type="Script" path="res://scripts/iso/iso_world.gd" id="1_world"]
+[ext_resource type="TileSet" path="res://scenes/iso/iso_tileset.tres" id="2_tileset"]
+[ext_resource type="Resource" path="res://data/worlds/iso_meta.tres" id="3_meta"]
+[ext_resource type="PackedScene" uid="uid://isoplayer0comp" path="res://scenes/iso/iso_player.tscn" id="4_player"]
+[ext_resource type="PackedScene" path="res://scenes/battle/battle.tscn" id="5_battle"]
+[ext_resource type="Script" path="res://scripts/iso/iso_camera.gd" id="6_camera"]
+
+[node name="IsoOverworld" type="Node2D"]
+script = ExtResource("1_world")
+iso_meta = ExtResource("3_meta")
+
+[node name="TileMapLayers" type="Node2D" parent="."]
+
+[node name="Base" type="TileMapLayer" parent="TileMapLayers"]
+tile_set = ExtResource("2_tileset")
+
+[node name="Ground" type="TileMapLayer" parent="TileMapLayers"]
+tile_set = ExtResource("2_tileset")
+y_sort_enabled = true
+
+[node name="Decoration" type="TileMapLayer" parent="TileMapLayers"]
+tile_set = ExtResource("2_tileset")
+y_sort_enabled = true
+
+[node name="IsoPlayer" parent="." instance=ExtResource("4_player")]
+position = Vector2(0, 140)
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(0, 140)
+
+[node name="Enemies" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="IsoCamera" type="Camera2D" parent="."]
+script = ExtResource("6_camera")
+target_path = NodePath("../IsoPlayer")
+zoom = Vector2(2, 2)
+
+[node name="Battle" parent="." instance=ExtResource("5_battle")]

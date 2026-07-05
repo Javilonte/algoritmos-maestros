@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="ChallengeResource" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://resources/challenge_resource.gd" id="1_cr"]
+[ext_resource type="Script" path="res://resources/test_case.gd" id="2_tc"]
+
+[sub_resource type="Resource" id="TestCase_1"]
+script = ExtResource("2_tc")
+name = "empty_array"
+inputs = [[]]
+expected = []
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_2"]
+script = ExtResource("2_tc")
+name = "single_element"
+inputs = [[42]]
+expected = [42]
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_3"]
+script = ExtResource("2_tc")
+name = "already_sorted"
+inputs = [[1, 2, 3, 4, 5]]
+expected = [1, 2, 3, 4, 5]
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_4"]
+script = ExtResource("2_tc")
+name = "reverse_sorted"
+inputs = [[5, 4, 3, 2, 1]]
+expected = [1, 2, 3, 4, 5]
+weight = 1.5
+
+[sub_resource type="Resource" id="TestCase_5"]
+script = ExtResource("2_tc")
+name = "with_duplicates"
+inputs = [[3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]]
+expected = [1, 1, 2, 3, 3, 4, 5, 5, 5, 6, 9]
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_6"]
+script = ExtResource("2_tc")
+name = "negative_numbers"
+inputs = [[-3, 5, -1, 0, 7, -10, 2]]
+expected = [-10, -3, -1, 0, 2, 5, 7]
+weight = 1.0
+
+[resource]
+script = ExtResource("1_cr")
+id = &"bubble_sort"
+display_name = "Bubble Sort Goblin"
+difficulty = 2
+prompt = "Implementa `bubbleSort(vector<int> arr)` que retorne el vector ordenado ascendentemente."
+starter_code = "vector<int> bubbleSort(vector<int> arr) {\n    // tu código aquí\n    return arr;\n}"
+function_signature = "vector<int> bubbleSort(vector<int> arr)"
+function_name_hint = "bubbleSort"
+test_cases = Array[Resource]([SubResource("TestCase_1"), SubResource("TestCase_2"), SubResource("TestCase_3"), SubResource("TestCase_4"), SubResource("TestCase_5"), SubResource("TestCase_6")])
+time_limit_ms = 30000
+base_damage = 20
+perfect_damage = 80
+tags = PackedStringArray("sorting", "array", "beginner")
+runner_path = "res://data/challenges/bubble_sort_runner.gd"

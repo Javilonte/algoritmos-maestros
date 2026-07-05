@@ -1,23 +1,40 @@
 extends Node
 
-enum GameState { BOOT, MAIN_MENU, OVERWORLD, TERMINAL, BATTLE, DIALOGUE }
+const GameStateMachine = preload("res://scripts/autoload/game_state_machine.gd")
+const CombatStats = preload("res://scripts/autoload/combat_stats.gd")
 
-const PLAYER_MAX_HP: int = GameConstants.PLAYER_MAX_HP
+enum GameState { BOOT, MAIN_MENU, OVERWORLD, TERMINAL, BATTLE, COMPILING, EXECUTING, DIALOGUE }
 
-var current_state: GameState = GameState.BOOT
+const PLAYER_MAX_HP: int = 100
+
+const COMBO_DECAY_MS: int = 10000
+const MAX_COMBO: int = 5
+
 var current_challenge_id: String = ""
-
-var player_max_hp: int = PLAYER_MAX_HP
-var player_hp: int = PLAYER_MAX_HP
-var enemy_max_hp: int = 0
-var enemy_hp: int = 0
 var current_enemy_data: Dictionary = {}
 
-## Cambia el estado del juego. No hace nada si el estado ya es el mismo.
+var player_hp: int:
+	get:
+		return _player_stats.hp
+var player_max_hp: int:
+	get:
+		return _player_stats.max_hp
+var enemy_hp: int:
+	get:
+		return _enemy_stats.hp
+var enemy_max_hp: int:
+	get:
+		return _enemy_stats.max_hp
+
+var _fsm := GameStateMachine.new(GameState.BOOT)
+var _player_stats := CombatStats.new(PLAYER_MAX_HP)
+var _enemy_stats := CombatStats.new(0)
+
+var _combo_count: int = 0
+var _combo_decay_timer: SceneTreeTimer = null
+
 func change_state(new_state: GameState) -> void:
-	if new_state == current_state:
-		return
-	current_state = new_state
+	_fsm.change_state(new_state)
 
 func _ready() -> void:
 	EventBus.skill_unlocked.connect(_on_skill_unlocked)
@@ -35,89 +52,91 @@ func _on_app_close_requested() -> void:
 	SaveManager.save_game(get_save_data())
 	get_tree().quit()
 
-## Retorna true si el estado actual coincide con el dado.
 func is_state(state: GameState) -> bool:
-	return current_state == state
+	return _fsm.is_state(state)
 
-## Retorna true solo cuando el jugador puede moverse libremente.
 func is_player_input_allowed() -> bool:
-	return current_state == GameState.OVERWORLD
+	return _fsm.is_state(GameState.OVERWORLD)
 
-func set_challenge(challenge_id: String) -> void:
-	current_challenge_id = challenge_id
+func get_hp(side: String) -> int:
+	return _enemy_stats.hp if side == "enemy" else _player_stats.hp
 
-func clear_challenge() -> void:
-	current_challenge_id = ""
-
-## Pausa el árbol de escena completo.
-func pause_game() -> void:
-	get_tree().paused = true
-
-## Reanuda el árbol de escena completo.
-func unpause_game() -> void:
-	get_tree().paused = false
-
-## Retorna true si el árbol está pausado.
-func is_paused() -> bool:
-	return get_tree().paused
-
-## Inicializa una batalla con los datos del enemigo.
 func start_battle(enemy_data: Dictionary) -> void:
 	current_enemy_data = enemy_data
-	enemy_max_hp = int(enemy_data.get("max_hp", 100))
-	enemy_hp = enemy_max_hp
-	player_hp = player_max_hp
-	current_state = GameState.BATTLE
-	EventBus.hp_changed.emit("player", player_hp, player_max_hp)
-	EventBus.hp_changed.emit("enemy", enemy_hp, enemy_max_hp)
+	_enemy_stats.reset_to(int(enemy_data.get("max_hp", 100)))
+	_player_stats.hp = _player_stats.max_hp
+	_fsm.change_state(GameState.BATTLE)
+	EventBus.hp_changed.emit("player", _player_stats.hp, _player_stats.max_hp)
+	EventBus.hp_changed.emit("enemy", _enemy_stats.hp, _enemy_stats.max_hp)
+	EventBus.turn_changed.emit(true)
+	_combo_count = 0
+	EventBus.combo_changed.emit(0, 1.0)
 
-## Aplica daño a un lado del combate ("player" o "enemy").
 func apply_damage(side: String, amount: int) -> void:
 	if side == "enemy":
-		enemy_hp = max(0, enemy_hp - amount)
-		EventBus.hp_changed.emit("enemy", enemy_hp, enemy_max_hp)
+		_enemy_stats.apply_damage(amount)
+		EventBus.hp_changed.emit("enemy", _enemy_stats.hp, _enemy_stats.max_hp)
 	elif side == "player":
-		player_hp = max(0, player_hp - amount)
-		EventBus.hp_changed.emit("player", player_hp, player_max_hp)
+		_player_stats.apply_damage(amount)
+		EventBus.hp_changed.emit("player", _player_stats.hp, _player_stats.max_hp)
 
-## Resetea el estado de batalla sin cambiar el GameState.
 func reset_battle_state() -> void:
-	player_hp = player_max_hp
-	enemy_hp = 0
-	enemy_max_hp = 0
+	_player_stats.hp = _player_stats.max_hp
+	_enemy_stats.reset_to(0)
 	current_enemy_data = {}
+	_combo_count = 0
 
-## Resetea todo el estado para un juego nuevo.
 func reset_to_new_game() -> void:
-	player_hp = PLAYER_MAX_HP
-	player_max_hp = PLAYER_MAX_HP
-	enemy_hp = 0
-	enemy_max_hp = 0
+	_player_stats.set_max(PLAYER_MAX_HP)
+	_enemy_stats.reset_to(0)
 	current_enemy_data = {}
 	current_challenge_id = ""
-	current_state = GameState.BOOT
+	_fsm.change_state(GameState.BOOT)
+	_combo_count = 0
 
-## Retorna un diccionario con los datos para guardar.
 func get_save_data() -> Dictionary:
 	var skill_tree_data: Dictionary = {}
 	var st := get_node_or_null("/root/SkillTree")
 	if st and st.has_method("save_state"):
 		skill_tree_data = st.save_state()
 	return {
-		"player_hp": player_hp,
-		"player_max_hp": player_max_hp,
+		"player_hp": _player_stats.hp,
+		"player_max_hp": _player_stats.max_hp,
 		"skill_tree": skill_tree_data,
 		"save_version": 1,
 	}
 
-## Aplica datos cargados de un save (backward-compatible con saves viejos).
 func apply_save_data(data: Dictionary) -> void:
-	player_hp = int(data.get("player_hp", PLAYER_MAX_HP))
-	player_max_hp = int(data.get("player_max_hp", PLAYER_MAX_HP))
-	# SkillTree: si el save no tiene 'skill_tree', no inicializamos (defaults del autoload).
+	_player_stats.hp = int(data.get("player_hp", PLAYER_MAX_HP))
+	_player_stats.max_hp = int(data.get("player_max_hp", PLAYER_MAX_HP))
 	if data.has("skill_tree"):
 		var st := get_node_or_null("/root/SkillTree")
 		if st and st.has_method("load_state"):
 			var raw: Variant = data["skill_tree"]
 			if raw is Dictionary:
 				st.load_state(raw)
+
+func get_combo_count() -> int:
+	return _combo_count
+
+func get_combo_multiplier() -> float:
+	return 1.0 + min(_combo_count, MAX_COMBO) * 0.2
+
+func increment_combo() -> void:
+	_combo_count += 1
+	EventBus.combo_changed.emit(_combo_count, get_combo_multiplier())
+	_reset_combo_decay()
+
+func reset_combo() -> void:
+	if _combo_count > 0:
+		_combo_count = 0
+		EventBus.combo_changed.emit(0, 1.0)
+
+func _reset_combo_decay() -> void:
+	_combo_decay_timer = get_tree().create_timer(COMBO_DECAY_MS / 1000.0)
+	_combo_decay_timer.timeout.connect(_on_combo_decay)
+
+func _on_combo_decay() -> void:
+	if _combo_count > 0:
+		_combo_count = 0
+		EventBus.combo_changed.emit(0, 1.0)
