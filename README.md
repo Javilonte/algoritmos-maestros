@@ -39,7 +39,7 @@ int main() {
 project.godot
 project.godot             # main project config + autoloads + input map
 player/                   # Player scene + sprite
-scenes/                   # overworld + TerminalUI scenes
+scenes/                   # overworld + battle + UI scenes
 scripts/
   autoload/               # EventBus, GameManager (autoloaded singletons)
   player/                 # player.gd

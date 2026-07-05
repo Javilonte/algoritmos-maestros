@@ -1,6 +1,12 @@
-[gd_scene load_steps=2 format=3 uid="uid://mainmenu0scene0uid"]
+[gd_scene load_steps=5 format=3 uid="uid://mainmenu0scene0uid"]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/splash.tscn" id="2_splash"]
+[ext_resource type="Script" path="res://scripts/ui/d2_stylebox.gd" id="3_sb"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_sep"]
+content_margin_top = 0.0
+content_margin_bottom = 0.0
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -11,16 +17,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.04, 0.04, 0.08, 1)
-
-[node name="GridLines" type="Control" parent="."]
+[node name="Background" type="Panel" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -29,254 +26,185 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="VLine1" type="ColorRect" parent="GridLines"]
+[node name="AmbientCode" type="Control" parent="."]
 layout_mode = 1
-offset_left = 120.0
-offset_top = 0.0
-offset_right = 121.0
-offset_bottom = 720.0
-color = Color(0.1, 0.15, 0.2, 0.3)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
-[node name="VLine2" type="ColorRect" parent="GridLines"]
+[node name="HeaderBar" type="Panel" parent="."]
 layout_mode = 1
-offset_left = 360.0
+anchors_preset = 10
+anchor_right = 1.0
 offset_top = 0.0
-offset_right = 361.0
-offset_bottom = 720.0
-color = Color(0.1, 0.15, 0.2, 0.2)
+offset_bottom = 100.0
+grow_horizontal = 2
+mouse_filter = 2
 
-[node name="VLine3" type="ColorRect" parent="GridLines"]
-layout_mode = 1
-offset_left = 600.0
-offset_top = 0.0
-offset_right = 601.0
-offset_bottom = 720.0
-color = Color(0.1, 0.15, 0.2, 0.2)
-
-[node name="VLine4" type="ColorRect" parent="GridLines"]
-layout_mode = 1
-offset_left = 840.0
-offset_top = 0.0
-offset_right = 841.0
-offset_bottom = 720.0
-color = Color(0.1, 0.15, 0.2, 0.3)
-
-[node name="VLine5" type="ColorRect" parent="GridLines"]
-layout_mode = 1
-offset_left = 1160.0
-offset_top = 0.0
-offset_right = 1161.0
-offset_bottom = 720.0
-color = Color(0.1, 0.15, 0.2, 0.3)
-
-[node name="CodeLines" type="Control" parent="."]
+[node name="TitlePadding" type="MarginContainer" parent="HeaderBar"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 10
 
-[node name="Line1" type="Label" parent="CodeLines"]
-layout_mode = 1
-offset_left = 40.0
-offset_top = 50.0
-offset_right = 340.0
-offset_bottom = 70.0
-theme_override_colors/font_color = Color(0.15, 0.25, 0.15, 0.08)
-theme_override_font_sizes/font_size = 14
-text = "int main() { return 0; }"
+[node name="TitleColumn" type="VBoxContainer" parent="HeaderBar/TitlePadding"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
 
-[node name="Line2" type="Label" parent="CodeLines"]
-layout_mode = 1
-offset_left = 700.0
-offset_top = 120.0
-offset_right = 1000.0
-offset_bottom = 140.0
-theme_override_colors/font_color = Color(0.15, 0.25, 0.15, 0.06)
-theme_override_font_sizes/font_size = 14
-text = "for (int i = 0; i < n; i++)"
-
-[node name="Line3" type="Label" parent="CodeLines"]
-layout_mode = 1
-offset_left = 150.0
-offset_top = 200.0
-offset_right = 450.0
-offset_bottom = 220.0
-theme_override_colors/font_color = Color(0.15, 0.25, 0.15, 0.07)
-theme_override_font_sizes/font_size = 14
-text = "while (ptr != nullptr)"
-
-[node name="Line4" type="Label" parent="CodeLines"]
-layout_mode = 1
-offset_left = 800.0
-offset_top = 300.0
-offset_right = 1100.0
-offset_bottom = 320.0
-theme_override_colors/font_color = Color(0.15, 0.25, 0.15, 0.05)
-theme_override_font_sizes/font_size = 14
-text = "std::vector<int> v;"
-
-[node name="Line5" type="Label" parent="CodeLines"]
-layout_mode = 1
-offset_left = 50.0
-offset_top = 380.0
-offset_right = 350.0
-offset_bottom = 400.0
-theme_override_colors/font_color = Color(0.15, 0.25, 0.15, 0.06)
-theme_override_font_sizes/font_size = 14
-text = "if (arr[i] < arr[j])"
-
-[node name="Line6" type="Label" parent="CodeLines"]
-layout_mode = 1
-offset_left = 900.0
-offset_top = 450.0
-offset_right = 1200.0
-offset_bottom = 470.0
-theme_override_colors/font_color = Color(0.15, 0.25, 0.15, 0.07)
-theme_override_font_sizes/font_size = 14
-text = "return result; // success"
-
-[node name="Line7" type="Label" parent="CodeLines"]
-layout_mode = 1
-offset_left = 200.0
-offset_top = 530.0
-offset_right = 500.0
-offset_bottom = 550.0
-theme_override_colors/font_color = Color(0.15, 0.25, 0.15, 0.05)
-theme_override_font_sizes/font_size = 14
-text = "void sort(int arr[], int n)"
-
-[node name="Line8" type="Label" parent="CodeLines"]
-layout_mode = 1
-offset_left = 650.0
-offset_top = 600.0
-offset_right = 950.0
-offset_bottom = 620.0
-theme_override_colors/font_color = Color(0.15, 0.25, 0.15, 0.06)
-theme_override_font_sizes/font_size = 14
-text = "delete[] buffer; // cleanup"
-
-[node name="ScanLine" type="ColorRect" parent="."]
-layout_mode = 1
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 1280.0
-offset_bottom = 2.0
-color = Color(0.1, 0.6, 0.3, 0.15)
-
-[node name="ScanLineAnimation" type="AnimationPlayer" parent="."]
-libraries = {}
-
-[node name="TitleLabel" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -400.0
-offset_top = 80.0
-offset_right = 400.0
-offset_bottom = 180.0
-grow_horizontal = 2
-theme_override_colors/font_color = Color(0.1, 0.9, 0.4, 1)
-theme_override_colors/font_shadow_color = Color(0.02, 0.3, 0.1, 0.8)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 52
+[node name="TitleLabel" type="Label" parent="HeaderBar/TitlePadding/TitleColumn"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.92, 0.78, 0.42, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.92)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 42
 text = "ALGORITMOS MAESTROS"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -400.0
-offset_top = 185.0
-offset_right = 400.0
-offset_bottom = 220.0
-grow_horizontal = 2
-theme_override_colors/font_color = Color(0.4, 0.6, 0.5, 0.8)
-theme_override_font_sizes/font_size = 18
+[node name="TitleUnderline" type="ColorRect" parent="HeaderBar/TitlePadding/TitleColumn"]
+layout_mode = 2
+custom_minimum_size = Vector2(220, 2)
+size_flags_horizontal = 4
+color = Color(0.85, 0.70, 0.40, 0.5)
+
+[node name="SubtitleRow" type="HBoxContainer" parent="HeaderBar/TitlePadding/TitleColumn"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="HeaderBar/TitlePadding/TitleColumn/SubtitleRow"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.78, 0.72, 0.62, 0.88)
+theme_override_font_sizes/font_size = 16
 text = "Domina C++, un algoritmo a la vez"
 horizontal_alignment = 1
 
-[node name="CursorBlink" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = 395.0
-offset_top = 95.0
-offset_right = 405.0
-offset_bottom = 175.0
-grow_horizontal = 2
-theme_override_colors/font_color = Color(0.1, 0.9, 0.4, 1)
-theme_override_font_sizes/font_size = 52
+[node name="CursorBlink" type="Label" parent="HeaderBar/TitlePadding/TitleColumn/SubtitleRow"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.92, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 16
 text = "_"
-horizontal_alignment = 1
 
-[node name="CursorTimer" type="Timer" parent="."]
+[node name="CursorTimer" type="Timer" parent="HeaderBar/TitlePadding/TitleColumn"]
 wait_time = 0.6
 autostart = true
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="Body" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 100.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="MenuPanel" type="Panel" parent="Body"]
+custom_minimum_size = Vector2(340, 320)
+layout_mode = 2
+
+[node name="PanelPadding" type="MarginContainer" parent="Body/MenuPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+[node name="VBox" type="VBoxContainer" parent="Body/MenuPanel/PanelPadding"]
 layout_mode = 2
-offset_left = -150.0
-offset_top = 300.0
-offset_right = 150.0
-offset_bottom = 540.0
-theme_override_constants/separation = 16
+theme_override_constants/separation = 10
+alignment = 1
 
-[node name="ContinueButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="QuickStartButton" type="Button" parent="Body/MenuPanel/PanelPadding/VBox"]
+custom_minimum_size = Vector2(308, 50)
 layout_mode = 2
-custom_minimum_size = Vector2(300, 48)
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 19
+text = "[ Inicio Rápido ]"
+
+[node name="Separator" type="HSeparator" parent="Body/MenuPanel/PanelPadding/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 8)
+theme_override_constants/separation = 8
+theme_override_styles/separator = SubResource("StyleBoxEmpty_sep")
+
+[node name="ContinueButton" type="Button" parent="Body/MenuPanel/PanelPadding/VBox"]
+custom_minimum_size = Vector2(308, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
 text = "Continuar"
 
-[node name="NewGameButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="NewGameButton" type="Button" parent="Body/MenuPanel/PanelPadding/VBox"]
+custom_minimum_size = Vector2(308, 40)
 layout_mode = 2
-custom_minimum_size = Vector2(300, 48)
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "Nuevo Juego"
 
-[node name="OptionsButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="SecondaryRow" type="HBoxContainer" parent="Body/MenuPanel/PanelPadding/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(300, 48)
-theme_override_font_sizes/font_size = 20
+size_flags_horizontal = 4
+theme_override_constants/separation = 12
+
+[node name="OptionsButton" type="Button" parent="Body/MenuPanel/PanelPadding/VBox/SecondaryRow"]
+custom_minimum_size = Vector2(148, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
 text = "Opciones"
 
-[node name="ExitButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="ExitButton" type="Button" parent="Body/MenuPanel/PanelPadding/VBox/SecondaryRow"]
+custom_minimum_size = Vector2(148, 40)
 layout_mode = 2
-custom_minimum_size = Vector2(300, 48)
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 15
 text = "Salir"
 
-[node name="VersionLabel" type="Label" parent="."]
+[node name="Footer" type="Panel" parent="."]
 layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -120.0
-offset_top = -24.0
-offset_right = -8.0
-offset_bottom = -4.0
-grow_horizontal = 0
+offset_top = -32.0
+grow_horizontal = 2
 grow_vertical = 0
-theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 0.5)
-theme_override_font_sizes/font_size = 12
-text = "v0.1.0"
-horizontal_alignment = 2
+mouse_filter = 2
 
-[connection signal="timeout" from="CursorTimer" to="." method="_on_cursor_timer_timeout"]
+[node name="FooterPadding" type="MarginContainer" parent="Footer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 8
+
+[node name="VersionLabel" type="Label" parent="Footer/FooterPadding"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.55, 0.50, 0.42, 0.65)
+theme_override_font_sizes/font_size = 11
+text = "Algoritmos Maestros  v0.1.0"
+horizontal_alignment = 1
+
+[node name="SplashOverlay" type="CanvasLayer" parent="."]
+layer = 100
+
+[node name="Splash" parent="SplashOverlay" instance=ExtResource("2_splash")]</content>

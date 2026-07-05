@@ -39,20 +39,26 @@ func save_settings(data: Dictionary) -> void:
 	file.close()
 
 func load_settings() -> Dictionary:
+	var defaults := _default_settings()
 	if not FileAccess.file_exists(SETTINGS_PATH):
-		return _default_settings()
+		return defaults
 	var file := FileAccess.open(SETTINGS_PATH, FileAccess.READ)
 	if file == null:
-		return _default_settings()
+		return defaults
 	var text := file.get_as_text()
 	file.close()
 	var json: Variant = JSON.parse_string(text)
 	if json is Dictionary:
-		return json as Dictionary
-	return _default_settings()
+		var merged: Dictionary = defaults.duplicate()
+		for k in (json as Dictionary):
+			merged[k] = (json as Dictionary)[k]
+		return merged
+	return defaults
 
 func _default_settings() -> Dictionary:
 	return {
 		"fullscreen": false,
 		"volume": 80,
+		"tutorial_seen": false,
+		"boot_seen": false,
 	}

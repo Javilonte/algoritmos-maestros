@@ -1,0 +1,46 @@
+[gd_scene load_steps=4 format=3 uid="uid://isodungeon0scene0"]
+
+[ext_resource type="Script" path="res://scripts/dungeon/iso_dungeon.gd" id="1_dungeon"]
+[ext_resource type="Script" path="res://scripts/dungeon/iso_player.gd" id="2_player"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_player"]
+radius = 14.0
+
+[node name="IsoDungeon" type="Node2D"]
+script = ExtResource("1_dungeon")
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Entities" type="Node2D" parent="."]
+
+[node name="Player" type="CharacterBody2D" parent="Entities"]
+collision_layer = 2
+collision_mask = 4
+script = ExtResource("2_player")
+
+[node name="Sprite2D" type="Sprite2D" parent="Entities/Player"]
+z_index = 20
+
+[node name="Shadow" type="Sprite2D" parent="Entities/Player"]
+modulate = Color(0, 0, 0, 0.4)
+z_index = 5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Entities/Player"]
+position = Vector2(0, 8)
+shape = SubResource("CircleShape2D_player")
+
+[node name="EnemySpawner" type="Node" parent="."]
+
+[node name="Lighting" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="DimOverlay" type="ColorRect" parent="Lighting"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.04, 0.03, 0.02, 0.35)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(1, 1)
+position_smoothing_enabled = true

@@ -1,70 +1,177 @@
-[gd_scene load_steps=2 format=3 uid="uid://battleterm0comp"]
+[gd_scene load_steps=3 format=3 uid="uid://battleterm0comp"]
 
-[ext_resource type="Script" path="res://scripts/battle/battle_terminal.gd" id="1_battle_term"]
+[ext_resource type="Script" path="res://scripts/ui/battle_terminal.gd" id="1_battle_term"]
+[ext_resource type="Script" path="res://scripts/ui/d2_stylebox.gd" id="2_sb"]
 
 [node name="BattleTerminal" type="CanvasLayer"]
 process_mode = 3
 layer = 11
 script = ExtResource("1_battle_term")
 
-[node name="Panel" type="Panel" parent="."]
+[node name="OuterFrame" type="Panel" parent="."]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -500.0
-offset_top = -240.0
-offset_right = 500.0
-offset_bottom = 240.0
+offset_left = -504.0
+offset_top = -284.0
+offset_right = 504.0
+offset_bottom = 264.0
 grow_horizontal = 2
 grow_vertical = 2
 focus_mode = 1
 
-[node name="TitleBar" type="Label" parent="Panel"]
-layout_mode = 0
-offset_left = 16.0
-offset_top = 8.0
-offset_right = 984.0
-offset_bottom = 32.0
-text = "Battle Code Editor — write to attack!"
+[node name="InnerPanel" type="Panel" parent="OuterFrame"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
-[node name="CodeEdit" type="CodeEdit" parent="Panel"]
+[node name="HeaderBar" type="Panel" parent="OuterFrame"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = 36.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="TitleBar" type="Label" parent="OuterFrame/HeaderBar"]
 layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 16.0
-offset_top = 40.0
-offset_right = 984.0
-offset_bottom = 360.0
+offset_top = 4.0
+offset_right = -100.0
+offset_bottom = -4.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.92, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 16
+text = "Battle Code Editor — write to attack!"
+vertical_alignment = 1
+
+[node name="TimerLabel" type="Label" parent="OuterFrame/HeaderBar"]
+layout_mode = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -96.0
+offset_top = 4.0
+offset_right = -8.0
+offset_bottom = -4.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.91, 0.86, 0.75, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 2
+vertical_alignment = 1
+text = "30.0s"
+
+[node name="LinterStatus" type="RichTextLabel" parent="OuterFrame/InnerPanel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -32.0
+offset_right = -16.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+bbcode_enabled = true
+fit_content = true
+text = "[color=#8c8068]// linter idle[/color]"
+
+[node name="SpinnerLabel" type="Label" parent="OuterFrame/InnerPanel"]
+visible = false
+layout_mode = 0
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -32.0
+offset_right = -16.0
+offset_bottom = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.92, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 2
+vertical_alignment = 1
+text = "Compiling…"
+
+[node name="CodeEdit" type="CodeEdit" parent="OuterFrame/InnerPanel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 44.0
+offset_right = -16.0
+offset_bottom = -120.0
+grow_horizontal = 2
+grow_vertical = 2
 focus_mode = 1
 caret_blink = true
 placeholder_text = "// Your attack code here..."
 
-[node name="ConsoleOutput" type="RichTextLabel" parent="Panel"]
+[node name="ConsoleOutput" type="RichTextLabel" parent="OuterFrame/InnerPanel"]
 layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 16.0
-offset_top = 372.0
-offset_right = 984.0
-offset_bottom = 432.0
+offset_top = -112.0
+offset_right = -16.0
+offset_bottom = -44.0
+grow_horizontal = 2
+grow_vertical = 0
 bbcode_enabled = true
 fit_content = true
 scroll_following = true
-text = "[color=gray]// Awaiting attack...[/color]"
+text = "[color=#8c8068]// Awaiting attack...[/color]"
 
-[node name="SubmitButton" type="Button" parent="Panel"]
+[node name="MacroBar" type="HBoxContainer" parent="OuterFrame/InnerPanel"]
 layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 16.0
-offset_top = 440.0
-offset_right = 160.0
-offset_bottom = 472.0
-text = "Submit Attack"
+offset_top = -76.0
+offset_right = -16.0
+offset_bottom = -44.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
 
-[node name="BackButton" type="Button" parent="Panel"]
+[node name="ButtonRow" type="HBoxContainer" parent="OuterFrame/InnerPanel"]
 layout_mode = 0
-offset_left = 824.0
-offset_top = 440.0
-offset_right = 984.0
-offset_bottom = 472.0
-text = "Back"
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -40.0
+offset_right = -16.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 2
+theme_override_constants/separation = 12
 
-[connection signal="pressed" from="Panel/SubmitButton" to="." method="_on_submit_pressed"]
-[connection signal="pressed" from="Panel/BackButton" to="." method="_on_back_pressed"]
+[node name="SubmitButton" type="Button" parent="OuterFrame/InnerPanel/ButtonRow"]
+custom_minimum_size = Vector2(220, 40)
+theme_override_colors/font_color = Color(0.92, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 17
+text = "⚔  Submit Attack"
+
+[node name="BackButton" type="Button" parent="OuterFrame/InnerPanel/ButtonRow"]
+custom_minimum_size = Vector2(110, 40)
+theme_override_colors/font_color = Color(0.78, 0.72, 0.62, 0.85)
+theme_override_font_sizes/font_size = 14
+text = "← Back"
+
+[connection signal="pressed" from="OuterFrame/InnerPanel/ButtonRow/SubmitButton" to="." method="_on_submit_pressed"]
+[connection signal="pressed" from="OuterFrame/InnerPanel/ButtonRow/BackButton" to="." method="_on_back_pressed"]

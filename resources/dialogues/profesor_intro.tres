@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=4 format=3 uid="uid://profintro0dlg0"]
+
+[ext_resource type="Script" path="res://scripts/resources/dialogue_data.gd" id="1_dd"]
+[ext_resource type="Script" path="res://scripts/resources/dialogue_line.gd" id="2_dl"]
+
+[sub_resource type="Resource" id="line1"]
+script = ExtResource("2_dl")
+speaker = "Profesor Algorithm"
+text = "¡Hola! Soy el Profesor Algorithm."
+event_type = ""
+event_data = {}
+
+[sub_resource type="Resource" id="line2"]
+script = ExtResource("2_dl")
+speaker = "Profesor Algorithm"
+text = "Un Slime Aritmético ha infectado el campus. Tendrás que derrotarlo escribiendo C++."
+event_type = ""
+event_data = {}
+
+[sub_resource type="Resource" id="line3"]
+script = ExtResource("2_dl")
+speaker = "Profesor Algorithm"
+text = "¡Compila tu ataque cuando lo tengas listo! Presiona E para despedirte."
+event_type = "battle"
+event_data = {
+"challenge_id": "slime_aritm",
+"display_name": "Slime Aritmético",
+"enemy_id": "slime_aritm",
+"max_hp": 60,
+"xp_reward": 50
+}
+
+[resource]
+script = ExtResource("1_dd")
+npc_id = "test_profesor"
+display_name = "Profesor Algorithm"
+lines = Array[Resource]([SubResource("line1"), SubResource("line2"), SubResource("line3")])

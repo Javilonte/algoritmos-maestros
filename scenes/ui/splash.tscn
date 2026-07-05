@@ -1,0 +1,69 @@
+[gd_scene load_steps=2 format=3 uid="uid://splash0scene0uid"]
+
+[ext_resource type="Script" path="res://scripts/ui/splash.gd" id="1_splash"]
+
+[node name="Splash" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_splash")
+
+[node name="FallbackBackground" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+color = Color(0.05, 0.05, 0.1, 1)
+
+[node name="TextureRect" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StatusLabel" type="Label" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 8.0
+offset_right = 200.0
+offset_bottom = 32.0
+grow_horizontal = 2
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.7, 0.95, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "loading splash..."
+
+[node name="SkipHint" type="Label" parent="."]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -260.0
+offset_top = -40.0
+offset_right = -16.0
+offset_bottom = -12.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "Press ESC or click to skip"
+horizontal_alignment = 2
+vertical_alignment = 1
+modulate = Color(0.7, 0.7, 0.7, 0.8)
+
+[node name="SafetyTimer" type="Timer" parent="."]
+wait_time = 30.0
+one_shot = true
+
+[node name="FrameTimer" type="Timer" parent="."]
+wait_time = 0.125
+one_shot = false
+autostart = false
