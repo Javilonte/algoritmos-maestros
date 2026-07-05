@@ -1,70 +1,9 @@
-[gd_scene format=3 uid="uid://biuhaebvqrcya"]
+[gd_scene load_steps=2 format=3 uid="uid://cahki7n8okq7s"]
 
-[ext_resource type="Script" path="res://scripts/ui/terminal_ui.gd" id="1_sjuop"]
+[ext_resource type="Script" path="res://scripts/ui/terminal_ui.gd" id="1_term_ui"]
 
-[node name="TerminalUI" type="CanvasLayer" unique_id=1934581050]
+[node name="TerminalUI" type="CanvasLayer"]
 process_mode = 3
-layer = 10
-script = ExtResource("1_sjuop")
-
-[node name="Panel" type="Panel" parent="." unique_id=843042346]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -540.0
-offset_top = -340.0
-offset_right = 540.0
-offset_bottom = 340.0
-grow_horizontal = 2
-grow_vertical = 2
-focus_mode = 1
-
-[node name="TitleBar" type="Label" parent="Panel" unique_id=1527807768]
-layout_mode = 0
-offset_left = 16.0
-offset_top = 8.0
-offset_right = 1064.0
-offset_bottom = 32.0
-text = "C++ Terminal — Validate Code"
-
-[node name="CodeEdit" type="CodeEdit" parent="Panel" unique_id=1671980983]
-layout_mode = 0
-offset_left = 16.0
-offset_top = 40.0
-offset_right = 1064.0
-offset_bottom = 520.0
-focus_mode = 1
-placeholder_text = "// Write your C++ code here..."
-caret_blink = true
-
-[node name="ConsoleOutput" type="RichTextLabel" parent="Panel" unique_id=2103032847]
-layout_mode = 0
-offset_left = 16.0
-offset_top = 532.0
-offset_right = 1064.0
-offset_bottom = 624.0
-bbcode_enabled = true
-text = "[color=gray]// Awaiting input...[/color]"
-fit_content = true
-scroll_following = true
-
-[node name="SubmitButton" type="Button" parent="Panel" unique_id=597429731]
-layout_mode = 0
-offset_left = 16.0
-offset_top = 632.0
-offset_right = 200.0
-offset_bottom = 664.0
-text = "Validate"
-
-[node name="CloseHint" type="Label" parent="Panel" unique_id=810867789]
-layout_mode = 0
-offset_left = 800.0
-offset_top = 640.0
-offset_right = 1064.0
-offset_bottom = 664.0
-text = "[Tab / ` to close]"
-horizontal_alignment = 2
-
-[connection signal="pressed" from="Panel/SubmitButton" to="." method="_on_compile_button_pressed"]
+layer = 20
+visible = false
+script = ExtResource("1_term_ui")
