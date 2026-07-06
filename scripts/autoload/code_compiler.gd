@@ -63,7 +63,7 @@ func compile_and_execute(challenge_id: String, code: String) -> void:
 	GameManager.change_state(GameManager.GameState.EXECUTING)
 	EventBus.compiling_progress.emit("running tests", 0.85)
 	var runner := TestRunner.new()
-	var result: TestResult = await runner.run(challenge, code)
+	var result: TestResult = runner.run(challenge, code)
 	result.compile_time_ms = Time.get_ticks_msec() - _compile_start_ms
 
 	EventBus.compiling_progress.emit("done", 1.0)

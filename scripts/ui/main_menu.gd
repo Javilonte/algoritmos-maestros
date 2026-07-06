@@ -4,6 +4,8 @@ extends Control
 ## Layout basado en Containers (Header + Body + Footer) con dimensiones fijas
 ## que NO se solapan entre si. La columna de codigo ambiente se genera proceduralmente.
 
+const WORLD_SCENE_PATH := "res://scenes/iso/iso_demo.tscn"
+
 @onready var quick_start_button: Button = $Body/MenuPanel/PanelPadding/VBox/QuickStartButton
 @onready var continue_button: Button = $Body/MenuPanel/PanelPadding/VBox/ContinueButton
 @onready var new_game_button: Button = $Body/MenuPanel/PanelPadding/VBox/NewGameButton
@@ -179,7 +181,7 @@ func _start_transition(use_transition: bool) -> void:
 	var t := create_tween()
 	t.tween_property(self, "modulate:a", 0.0, 0.35)
 	await t.finished
-	get_tree().change_scene_to_file("res://scenes/overworld.tscn")
+	get_tree().change_scene_to_file(WORLD_SCENE_PATH)
 
 func _on_cursor_timer_timeout() -> void:
 	if cursor_label != null:

@@ -1,0 +1,24 @@
+[gd_resource type="TileSet" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/iso/textures/iso_walls_atlas.png" id="1_walls_tex"]
+
+[sub_resource type="TileSetAtlasSource" id="walls_source"]
+texture = ExtResource("1_walls_tex")
+texture_region_size = Vector2i(50, 56)
+separation = Vector2i(0, 0)
+margins = Vector2i(0, 0)
+use_texture_padding = false
+columns = 7
+tile_mode = 0
+
+[resource]
+tile_size = Vector2i(50, 56)
+tile_shape = 0
+tile_offset_axis = 0
+collision_polygon_layers = 1
+physics_layers/0/collision_layer = 2
+terrain_sets/0/terrain_mode = 0
+terrain_sets/0/terrains/0/name = "brick"
+terrain_sets/0/terrains/1/name = "stone"
+navigation_layers/0/navigation_layer = 1
+sources = Array[Resource]([SubResource("walls_source")])

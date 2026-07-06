@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://terminal0base0uid"]
+[gd_scene format=3 uid="uid://cmpw166y8jbxb"]
 
 [ext_resource type="Script" path="res://scripts/ui/terminal.gd" id="1_term"]
 

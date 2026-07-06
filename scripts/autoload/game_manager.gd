@@ -1,7 +1,7 @@
 extends Node
 
-const GameStateMachine = preload("res://scripts/autoload/game_state_machine.gd")
-const CombatStats = preload("res://scripts/autoload/combat_stats.gd")
+const _GameStateMachineScript := preload("res://scripts/autoload/game_state_machine.gd")
+const _CombatStatsScript := preload("res://scripts/autoload/combat_stats.gd")
 
 enum GameState { BOOT, MAIN_MENU, OVERWORLD, TERMINAL, BATTLE, COMPILING, EXECUTING, DIALOGUE }
 
@@ -26,9 +26,9 @@ var enemy_max_hp: int:
 	get:
 		return _enemy_stats.max_hp
 
-var _fsm := GameStateMachine.new(GameState.BOOT)
-var _player_stats := CombatStats.new(PLAYER_MAX_HP)
-var _enemy_stats := CombatStats.new(0)
+var _fsm: RefCounted = _GameStateMachineScript.new(GameState.BOOT)
+var _player_stats: RefCounted = _CombatStatsScript.new(PLAYER_MAX_HP)
+var _enemy_stats: RefCounted = _CombatStatsScript.new(0)
 
 var _combo_count: int = 0
 var _combo_decay_timer: SceneTreeTimer = null

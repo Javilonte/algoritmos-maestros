@@ -8,15 +8,16 @@ atlas = ExtResource("2_iso_tex")
 region = Rect2(100, 56, 50, 56)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_iso"]
-radius = 14.0
+radius = 12.0
 
 [node name="IsoPlayer" type="CharacterBody2D"]
 collision_layer = 2
-collision_mask = 1
+collision_mask = 2
 script = ExtResource("1_player")
 
 [node name="Sprite" type="Sprite2D" parent="."]
-scale = Vector2(0.5, 0.5)
+position = Vector2(0, -16)
+scale = Vector2(2.0, 2.0)
 texture = SubResource("AtlasTex_player_teal")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

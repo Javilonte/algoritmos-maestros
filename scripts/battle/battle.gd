@@ -12,7 +12,7 @@ enum BattlePhase { IDLE, EDITING, COMPILING, EXECUTING, RESOLVING, ENEMY_TURN, F
 @onready var enemy_hp_bar: HPBar = $BattleArena/EnemySide/EnemyInfoPanel/HPBar
 @onready var player_name_label: Label = $BattleArena/PlayerSide/PlayerInfoPanel/PlayerName
 @onready var player_hp_bar: HPBar = $BattleArena/PlayerSide/PlayerInfoPanel/HPBar
-@onready var message_label: Label = $BattleArena/MessageLabel
+@onready var message_label: Label = $BattleArena/MessagePanel/MessageLabel
 @onready var battle_terminal: BattleTerminal = $BattleTerminal
 @onready var battle_timer_label: Label = $BattleArena/BattleTimer
 @onready var battle_timer_bar: ColorRect = $BattleArena/BattleTimerBar
@@ -196,7 +196,7 @@ func _on_battle_timer_expired() -> void:
 	if chain_id == _active_chain:
 		_is_animating = false
 
-func _enemy_turn(chain_id: int) -> void:
+func _enemy_turn(_chain_id: int) -> void:
 	_set_message("%s counter-attacks!" % String(_enemy_data.get("display_name", "Enemy")))
 	var damage: int = ENEMY_AUTO_DAMAGE
 	GameManager.apply_damage("player", damage)
@@ -261,12 +261,12 @@ func _screen_shake(hard: bool) -> void:
 	var tween: Tween = battle_arena.create_tween()
 	var steps: int = 6
 	for i in steps:
-		var offset := Vector2(
+		var shake_offset := Vector2(
 			randf_range(-intensity.x, intensity.x),
 			randf_range(-intensity.y, intensity.y)
 		)
 		var t: float = SHAKE_DURATION / float(steps)
-		tween.tween_property(battle_arena, "position", _arena_original_pos + offset, t)
+		tween.tween_property(battle_arena, "position", _arena_original_pos + shake_offset, t)
 	tween.tween_property(battle_arena, "position", _arena_original_pos, 0.05)
 	_active_shake_tween = tween
 

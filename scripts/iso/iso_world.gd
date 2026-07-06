@@ -39,8 +39,8 @@ func _populate_base() -> void:
 	var padding: int = int(iso_meta.base_padding)
 	var w: int = int(iso_meta.map_width) + padding * 2
 	var h: int = int(iso_meta.map_height) + padding * 2
-	var offset_x: int = -w / 2
-	var offset_y: int = -h / 2
+	var offset_x: int = int(-w / 2.0)
+	var offset_y: int = int(-h / 2.0)
 	var base_id: int = int(iso_meta.base_tile_id)
 	for wy in h:
 		for wx in w:
@@ -81,7 +81,7 @@ func _grow_biome_blob(center: Vector2i, tile_id: int, radius: int, rng: RandomNu
 	var tiles_to_place: Array[Vector2i] = [center]
 	var placed: Dictionary = {center: true}
 	ground_layer.set_cell(center, 0, Vector2i(tile_id, 0))
-	var target_count: int = max(2, radius * radius / 2)
+	var target_count: int = max(2, int(radius * radius / 2.0))
 	var attempts := 0
 	while tiles_to_place.size() < target_count and attempts < target_count * 4:
 		attempts += 1
@@ -142,7 +142,7 @@ func _populate_buildings() -> void:
 		var by: int = rng.randi_range(2, h - bh - 2)
 		if _overlaps_path(bx, by, bw, bh) or _overlaps_biomes(bx, by, bw, bh):
 			continue
-		_building_centers.append(Vector2i(bx + bw / 2, by + bh / 2))
+		_building_centers.append(Vector2i(int(bx + bw / 2.0), int(by + bh / 2.0)))
 		var base_color: int = building_tiles[rng.randi() % building_tiles.size()]
 		for dy in bh:
 			for dx in bw:
@@ -150,7 +150,7 @@ func _populate_buildings() -> void:
 				var tile_id: int = base_color
 				decoration_layer.set_cell(cell, 0, Vector2i(tile_id, 0))
 
-func _overlaps_path(bx: int, by: int, bw: int, bh: int) -> bool:
+func _overlaps_path(_bx: int, by: int, bw: int, bh: int) -> bool:
 	if not bool(iso_meta.path_enabled):
 		return false
 	var h: int = int(iso_meta.map_height)
