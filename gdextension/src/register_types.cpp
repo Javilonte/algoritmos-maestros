@@ -1,5 +1,6 @@
 #include "register_types.h"
 #include "ts_parser.h"
+#include "combat_algorithm_evaluator.h"
 
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/defs.hpp>
@@ -9,7 +10,8 @@ using namespace godot;
 
 void initialize_algorithm_validator_types(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		ClassDB::register_class<TreeSitterParser>();
+		GDREGISTER_CLASS(TreeSitterParser);
+		GDREGISTER_CLASS(CombatAlgorithmEvaluator);
 	}
 }
 
