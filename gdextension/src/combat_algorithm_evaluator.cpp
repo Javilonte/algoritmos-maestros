@@ -115,7 +115,6 @@ int CombatAlgorithmEvaluator::_max_loop_nesting(const std::string &p_source) con
 				(p_source[i] == 'w' && p_source[i + 1] == 'h' && p_source[i + 2] == 'i' && p_source[i + 3] == 'l' && p_source[i + 4] == 'e' && p_source[i + 5] == ' ' && p_source[i + 6] == '(')) {
 				in_loop = true;
 				in_paren = true;
-				brace = 0;
 			}
 		}
 		if (in_paren && c == ')') {
