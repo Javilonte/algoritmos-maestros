@@ -1,0 +1,11 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/menu_hero_card.gd" id="1_hero"]
+[ext_resource type="Script" path="res://scripts/ui/d2_palette.gd" id="2_pal"]
+[ext_resource type="SpriteFrames" path="res://resources/personaje_spriteframes.tres" id="3_frames"]
+
+[node name="MenuHeroCard" type="PanelContainer"]
+custom_minimum_size = Vector2(200, 320)
+script = ExtResource("1_hero")
+sprite_frames = ExtResource("3_frames")
+default_name = "Player"

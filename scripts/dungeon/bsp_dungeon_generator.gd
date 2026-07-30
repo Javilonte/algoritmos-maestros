@@ -163,10 +163,6 @@ static func generate(width: int, height: int, target_leaves: int, seed: int) -> 
 		"seed": seed,
 	}
 
-## Split recursivo: divide el nodo solo si aun no alcanzamos target_leaves. (legacy)
-static func _smart_split(node: BSPNode, target_leaves: int, rng: RandomNumberGenerator, leaves_out: Array) -> void:
-	pass
-
 ## Conecta recursivamente las salas hijas del BSP via corredores en L.
 static func _connect_rooms_bsp(node: BSPNode, grid: Array, rooms: Array) -> void:
 	if node.is_leaf or node.left == null or node.right == null:

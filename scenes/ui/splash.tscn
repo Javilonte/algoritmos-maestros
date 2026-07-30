@@ -3,67 +3,164 @@
 [ext_resource type="Script" path="res://scripts/ui/splash.gd" id="1_splash"]
 
 [node name="Splash" type="Control"]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
+mouse_filter = 1
 script = ExtResource("1_splash")
 
-[node name="FallbackBackground" type="ColorRect" parent="."]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 0
-color = Color(0.05, 0.05, 0.1, 1)
-
-[node name="TextureRect" type="TextureRect" parent="."]
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
-expand_mode = 1
-stretch_mode = 5
+mouse_filter = 2
+color = Color(0.02, 0.02, 0.04, 1)
+
+[node name="PixelGrid" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="Scanline" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 0.0
+offset_bottom = 2.0
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(0.1, 0.6, 0.3, 0.25)
+
+[node name="LogoText" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -60.0
+offset_right = 400.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SubText" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = 0.0
+offset_right = 400.0
+offset_bottom = 36.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="StatusLabel" type="Label" parent="."]
+layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -200.0
-offset_top = 8.0
-offset_right = 200.0
-offset_bottom = 32.0
+offset_left = -400.0
+offset_top = 380.0
+offset_right = 400.0
+offset_bottom = 410.0
 grow_horizontal = 2
+mouse_filter = 2
+text = "boot sequence 0x01"
 horizontal_alignment = 1
-theme_override_colors/font_color = Color(0.7, 0.95, 0.7, 1)
-theme_override_font_sizes/font_size = 14
-text = "loading splash..."
 
-[node name="SkipHint" type="Label" parent="."]
+[node name="CornerTL" type="Label" parent="."]
+layout_mode = 1
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 280.0
+offset_bottom = 28.0
+mouse_filter = 2
+text = "[ ALGORITMOS MAESTROS OS ]"
+
+[node name="CornerTR" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -280.0
+offset_top = 12.0
+offset_right = -16.0
+offset_bottom = 28.0
+grow_horizontal = 0
+mouse_filter = 2
+text = "mem: 0x7FFE  ok"
+horizontal_alignment = 2
+
+[node name="CornerBL" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -28.0
+offset_right = 320.0
+offset_bottom = -8.0
+grow_vertical = 0
+mouse_filter = 2
+text = "build 0.1.0 / codename: BUBBLE_SORT"
+
+[node name="CornerBR" type="Label" parent="."]
+layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -260.0
-offset_top = -40.0
-offset_right = -16.0
-offset_bottom = -12.0
+offset_top = -28.0
+offset_right = -12.0
+offset_bottom = -8.0
 grow_horizontal = 0
 grow_vertical = 0
-text = "Press ESC or click to skip"
+mouse_filter = 2
+text = "v0.1.0 · dev build"
 horizontal_alignment = 2
-vertical_alignment = 1
-modulate = Color(0.7, 0.7, 0.7, 0.8)
 
-[node name="SafetyTimer" type="Timer" parent="."]
-wait_time = 30.0
-one_shot = true
+[node name="SkipHint" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -160.0
+offset_top = -56.0
+offset_right = 160.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+text = "[ PRESS ANY KEY TO SKIP ]"
+horizontal_alignment = 1
 
-[node name="FrameTimer" type="Timer" parent="."]
-wait_time = 0.125
-one_shot = false
-autostart = false
+[node name="TypeTimer" type="Timer" parent="."]
+wait_time = 0.04

@@ -1,10 +1,10 @@
 class_name ChallengeData
 extends Resource
 
-## Contrato de un challenge para el sandbox.
+## Contrato de un challenge.
 ## Define stdin/expected_output/limites/hints/puntaje base.
-## Usado por SandboxClient para construir el request a Judge0
-## y por BattleTerminal para mostrar el prompt y los hints.
+## Consumido por BattleTerminal (UI) y por la pipeline de CodeCompiler
+## (TestRunner, ScoringEngine) que ya no depende del sandbox.
 
 @export var id: StringName = &""
 @export var display_name: String = ""

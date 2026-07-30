@@ -1,12 +1,66 @@
-[gd_scene load_steps=8 format=3 uid="uid://battle0comp0uid"]
+[gd_scene load_steps=15 format=3 uid="uid://battle0comp0uid"]
 
 [ext_resource type="Script" path="res://scripts/battle/battle.gd" id="1_battle"]
-[ext_resource type="Script" path="res://scripts/battle/hp_bar.gd" id="2_hpbar"]
-[ext_resource type="PackedScene" uid="uid://b8hpbar0compa" path="res://scenes/battle/hp_bar.tscn" id="3_hpbar_scene"]
-[ext_resource type="PackedScene" path="res://scenes/battle/battle_terminal.tscn" id="4_battle_terminal"]
-[ext_resource type="Script" path="res://scripts/vfx/vfx_controller.gd" id="5_vfx"]
-[ext_resource type="Script" path="res://scripts/ui/d2_stylebox.gd" id="6_sb"]
-[ext_resource type="Script" path="res://scripts/ui/d2_palette.gd" id="7_pal"]
+[ext_resource type="Script" path="res://scripts/battle/battle_portrait.gd" id="2_portrait"]
+[ext_resource type="Script" path="res://scripts/battle/hp_bar.gd" id="3_hpbar"]
+[ext_resource type="PackedScene" uid="uid://b8hpbar0compa" path="res://scenes/battle/hp_bar.tscn" id="4_hpbar_scene"]
+[ext_resource type="PackedScene" path="res://scenes/battle/battle_terminal.tscn" id="5_battle_terminal"]
+[ext_resource type="Script" path="res://scripts/vfx/vfx_controller.gd" id="6_vfx"]
+[ext_resource type="Script" path="res://scripts/ui/d2_stylebox.gd" id="7_sb"]
+[ext_resource type="Script" path="res://scripts/ui/d2_palette.gd" id="8_pal"]
+[ext_resource type="SpriteFrames" path="res://resources/crow_spriteframes.tres" id="9_crow_frames"]
+[ext_resource type="SpriteFrames" path="res://resources/personaje_spriteframes.tres" id="10_player_frames"]
+[ext_resource type="Script" path="res://scripts/ui/macro_bar_ui.gd" id="11_macro"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_overlay"]
+bg_color = Color(0.04, 0.06, 0.10, 0.82)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.65, 0.50, 0.28, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vs"]
+bg_color = Color(0.85, 0.70, 0.40, 0.18)
+border_color = Color(0.92, 0.78, 0.42, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+corner_radius_top_left = 50
+corner_radius_top_right = 50
+corner_radius_bottom_right = 50
+corner_radius_bottom_left = 50
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+
+[sub_resource type="LabelSettings" id="LabelSettings_vs"]
+font_size = 32
+font_color = Color(0.95, 0.82, 0.45, 1)
+outline_size = 4
+outline_color = Color(0.1, 0.05, 0.02, 0.9)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_msg"]
+bg_color = Color(0.06, 0.05, 0.04, 0.92)
+border_color = Color(0.65, 0.50, 0.28, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
 
 [node name="Battle" type="CanvasLayer"]
 process_mode = 3
@@ -27,133 +81,81 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_overlay")
 
-[node name="EnemySide" type="Control" parent="BattleArena"]
-anchors_preset = 1
-anchor_left = 1.0
+[node name="PortraitsRow" type="HBoxContainer" parent="BattleArena"]
+anchors_preset = 10
 anchor_right = 1.0
-offset_left = -360.0
+offset_left = 32.0
 offset_top = 32.0
 offset_right = -32.0
-offset_bottom = 280.0
-grow_horizontal = 0
-
-[node name="EnemySigil" type="Panel" parent="BattleArena/EnemySide"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -110.0
-offset_top = -20.0
-offset_right = 110.0
-offset_bottom = 200.0
+offset_bottom = 320.0
 grow_horizontal = 2
-mouse_filter = 2
+theme_override_constants/separation = 32
+alignment = 1
 
-[node name="EnemySprite" type="Sprite2D" parent="BattleArena/EnemySide"]
-modulate = Color(1, 0.4, 0.4, 1)
-position = Vector2(150, 110)
-scale = Vector2(0.22, 0.22)
-
-[node name="EnemyInfoPanel" type="Panel" parent="BattleArena/EnemySide"]
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -160.0
-offset_top = 0.0
-offset_right = 160.0
-offset_bottom = 64.0
-grow_horizontal = 2
-
-[node name="EnemyName" type="Label" parent="BattleArena/EnemySide/EnemyInfoPanel"]
-offset_left = 16.0
-offset_top = 6.0
-offset_right = 304.0
-offset_bottom = 24.0
-text = "Enemy"
-
-[node name="HPBar" parent="BattleArena/EnemySide/EnemyInfoPanel" instance=ExtResource("3_hpbar_scene")]
-offset_left = 16.0
-offset_top = 32.0
-offset_right = 304.0
-offset_bottom = 52.0
+[node name="EnemyPortrait" type="PanelContainer" parent="BattleArena/PortraitsRow"]
+custom_minimum_size = Vector2(240, 290)
+size_flags_horizontal = 4
+size_flags_vertical = 4
+script = ExtResource("2_portrait")
+sprite_frames = ExtResource("9_crow_frames")
+idle_anim = &"idle"
+hurt_anim = &"hurt"
+portrait_scale = 0.4
+display_name = "Cyberpunk Crow"
+level = 1
 side = "enemy"
 
-[node name="PlayerSide" type="Control" parent="BattleArena"]
-anchors_preset = 9
-anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = 300.0
-offset_right = 400.0
-offset_bottom = -140.0
+[node name="VSDivider" type="PanelContainer" parent="BattleArena/PortraitsRow"]
+custom_minimum_size = Vector2(80, 80)
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_vs")
 
-[node name="PlayerSigil" type="Panel" parent="BattleArena/PlayerSide"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -20.0
-offset_right = 100.0
-offset_bottom = 200.0
-grow_horizontal = 2
-mouse_filter = 2
+[node name="VSLabel" type="Label" parent="BattleArena/PortraitsRow/VSDivider"]
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 32
+text = "VS"
+label_settings = SubResource("LabelSettings_vs")
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="PlayerSprite" type="Sprite2D" parent="BattleArena/PlayerSide"]
-modulate = Color(0.4, 0.6, 1, 1)
-position = Vector2(150, 110)
-scale = Vector2(0.22, 0.22)
-
-[node name="PlayerInfoPanel" type="Panel" parent="BattleArena/PlayerSide"]
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -160.0
-offset_top = 0.0
-offset_right = 160.0
-offset_bottom = 64.0
-grow_horizontal = 2
-
-[node name="PlayerName" type="Label" parent="BattleArena/PlayerSide/PlayerInfoPanel"]
-offset_left = 16.0
-offset_top = 6.0
-offset_right = 304.0
-offset_bottom = 24.0
-text = "Player"
-
-[node name="HPBar" parent="BattleArena/PlayerSide/PlayerInfoPanel" instance=ExtResource("3_hpbar_scene")]
-offset_left = 16.0
-offset_top = 32.0
-offset_right = 304.0
-offset_bottom = 52.0
+[node name="PlayerPortrait" type="PanelContainer" parent="BattleArena/PortraitsRow"]
+custom_minimum_size = Vector2(240, 290)
+size_flags_horizontal = 4
+size_flags_vertical = 4
+script = ExtResource("2_portrait")
+sprite_frames = ExtResource("10_player_frames")
+idle_anim = &"idle"
+hurt_anim = &"hurt"
+portrait_scale = 0.45
+display_name = "Player"
+level = 1
 side = "player"
 
-[node name="MessagePanel" type="Panel" parent="BattleArena"]
+[node name="MessagePanel" type="PanelContainer" parent="BattleArena"]
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = -136.0
-offset_right = -32.0
-offset_bottom = -80.0
+offset_left = 200.0
+offset_top = -260.0
+offset_right = -200.0
+offset_bottom = -180.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_msg")
 
-[node name="MessageLabel" type="Label" parent="BattleArena/MessagePanel"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 16.0
-offset_right = -16.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 18
+[node name="MessageLabel" type="RichTextLabel" parent="BattleArena/MessagePanel"]
+custom_minimum_size = Vector2(0, 60)
+bbcode_enabled = true
+text = "What will you do?"
 horizontal_alignment = 1
 vertical_alignment = 1
-text = "What will you do?"
+fit_content = true
+scroll_active = false
 
 [node name="ActionMenu" type="HBoxContainer" parent="BattleArena"]
 anchors_preset = 7
@@ -162,23 +164,38 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -190.0
-offset_top = -68.0
+offset_top = -160.0
 offset_right = 190.0
-offset_bottom = -20.0
+offset_bottom = -110.0
 grow_horizontal = 2
 grow_vertical = 0
 alignment = 1
 theme_override_constants/separation = 16
 
 [node name="AttackButton" type="Button" parent="BattleArena/ActionMenu"]
-custom_minimum_size = Vector2(180, 44)
+custom_minimum_size = Vector2(180, 48)
 theme_override_font_sizes/font_size = 18
-text = "Attack"
+text = "⚔ Attack"
 
 [node name="RunButton" type="Button" parent="BattleArena/ActionMenu"]
-custom_minimum_size = Vector2(180, 44)
+custom_minimum_size = Vector2(180, 48)
 theme_override_font_sizes/font_size = 18
-text = "Run"
+text = "🏃 Run"
+
+[node name="MacroBar" type="HBoxContainer" parent="BattleArena"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = -100.0
+offset_right = -32.0
+offset_bottom = -76.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+theme_override_constants/separation = 8
+script = ExtResource("11_macro")
 
 [node name="BattleTimer" type="Label" parent="BattleArena"]
 visible = false
@@ -215,9 +232,9 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -120.0
-offset_top = 100.0
+offset_top = 360.0
 offset_right = 120.0
-offset_bottom = 140.0
+offset_bottom = 400.0
 grow_horizontal = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.5, 1, 0.6, 1)
@@ -231,11 +248,11 @@ horizontal_alignment = 1
 [node name="DamageLayer" type="Node2D" parent="BattleArena"]
 z_index = 50
 
-[node name="BattleTerminal" parent="." instance=ExtResource("4_battle_terminal")]
+[node name="BattleTerminal" parent="." instance=ExtResource("5_battle_terminal")]
 visible = false
 
 [node name="VFXController" type="Node" parent="."]
-script = ExtResource("5_vfx")
+script = ExtResource("6_vfx")
 shake_magnitude = 4.0
 shake_duration = 0.18
 shake_damage_threshold = 20

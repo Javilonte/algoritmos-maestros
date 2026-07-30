@@ -2,7 +2,8 @@ extends Node
 class_name VFXController
 
 ## Controlador central de efectos visuales y sonoros.
-## Conecta a las señales de CombatController y reproduce:
+## Se conecta a un controller que emita `damage_applied` /
+## `compilation_completed` y reproduce:
 ##   - Screen shake al impacto (daño > umbral).
 ##   - Partículas al compilar con éxito.
 ##   - Glitch overlay en errores de compilación.
@@ -38,11 +39,16 @@ func _ready() -> void:
 	_build_particles()
 	_build_glitch_overlay()
 
-func bind_to_controller(controller: CombatController) -> void:
+## ponytail: previously took a CombatController parameter; that class is
+## orphaned. The hook is still useful — VFXController can be bound to any
+## object that emits damage_applied / compilation_completed.
+func bind_to_controller(controller: Node) -> void:
 	if controller == null:
 		return
-	controller.damage_applied.connect(_on_damage_applied)
-	controller.compilation_completed.connect(_on_compilation_completed)
+	if controller.has_signal("damage_applied"):
+		controller.damage_applied.connect(_on_damage_applied)
+	if controller.has_signal("compilation_completed"):
+		controller.compilation_completed.connect(_on_compilation_completed)
 
 func bind_to_terminal(terminal: Node) -> void:
 	if terminal == null:

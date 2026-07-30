@@ -174,12 +174,17 @@ func _color_for_category(id: StringName) -> Color:
 func add_xp(amount: int) -> void:
 	current_xp += amount
 	var needed := _xp_for_next_level()
+	# ponytail: track whether the level changed so the signal only fires
+	# when the player actually leveled up (avoids spurious "LEVEL UP!" toasts).
+	var leveled_up: bool = false
 	while current_xp >= needed:
 		current_xp -= needed
 		current_level += 1
 		needed = _xp_for_next_level()
+		leveled_up = true
 	xp_changed.emit(current_xp, needed)
-	level_changed.emit(current_level)
+	if leveled_up:
+		level_changed.emit(current_level)
 
 func can_unlock(skill_id: StringName) -> bool:
 	if not skills.has(skill_id):

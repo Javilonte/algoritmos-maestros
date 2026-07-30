@@ -1,12 +1,20 @@
-[gd_scene load_steps=5 format=3 uid="uid://mainmenu0scene0uid"]
+[gd_scene load_steps=10 format=3 uid="uid://mainmenu0scene0uid"]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/ui/splash.tscn" id="2_splash"]
-[ext_resource type="Script" path="res://scripts/ui/d2_stylebox.gd" id="3_sb"]
+[ext_resource type="PackedScene" path="res://scenes/ui/menu_hero_card.tscn" id="3_hero"]
+[ext_resource type="PackedScene" path="res://scenes/ui/menu_stats_panel.tscn" id="4_stats"]
+[ext_resource type="PackedScene" path="res://scenes/ui/menu_action_button.tscn" id="5_action"]
+[ext_resource type="Script" path="res://scripts/ui/d2_palette.gd" id="6_pal"]
+[ext_resource type="Script" path="res://scripts/ui/d2_stylebox.gd" id="7_sb"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_sep"]
-content_margin_top = 0.0
-content_margin_bottom = 0.0
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_neon_strip"]
+bg_color = Color(0, 0, 0, 0.6)
+border_color = Color(0, 0.95, 0.85, 1)
+border_width_left = 0
+border_width_top = 0
+border_width_right = 0
+border_width_bottom = 2
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -26,6 +34,16 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
+[node name="NeonOverlay" type="ColorRect" parent="Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0.04, 0.07, 0.45)
+
 [node name="AmbientCode" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -41,6 +59,18 @@ offset_top = 0.0
 offset_bottom = 100.0
 grow_horizontal = 2
 mouse_filter = 2
+
+[node name="NeonStrip" type="Panel" parent="HeaderBar"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -2.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_neon_strip")
 
 [node name="TitlePadding" type="MarginContainer" parent="HeaderBar"]
 layout_mode = 1
@@ -62,18 +92,12 @@ alignment = 1
 [node name="TitleLabel" type="Label" parent="HeaderBar/TitlePadding/TitleColumn"]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.92, 0.78, 0.42, 1)
+theme_override_colors/font_color = Color(0, 0.95, 0.85, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.92)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 42
+theme_override_font_sizes/font_size = 38
 text = "ALGORITMOS MAESTROS"
 horizontal_alignment = 1
-
-[node name="TitleUnderline" type="ColorRect" parent="HeaderBar/TitlePadding/TitleColumn"]
-layout_mode = 2
-custom_minimum_size = Vector2(220, 2)
-size_flags_horizontal = 4
-color = Color(0.85, 0.70, 0.40, 0.5)
 
 [node name="SubtitleRow" type="HBoxContainer" parent="HeaderBar/TitlePadding/TitleColumn"]
 layout_mode = 2
@@ -84,23 +108,23 @@ alignment = 1
 [node name="SubtitleLabel" type="Label" parent="HeaderBar/TitlePadding/TitleColumn/SubtitleRow"]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.78, 0.72, 0.62, 0.88)
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.91, 0.86, 0.75, 1)
+theme_override_font_sizes/font_size = 14
 text = "Domina C++, un algoritmo a la vez"
 horizontal_alignment = 1
 
 [node name="CursorBlink" type="Label" parent="HeaderBar/TitlePadding/TitleColumn/SubtitleRow"]
 layout_mode = 2
 size_flags_horizontal = 0
-theme_override_colors/font_color = Color(0.92, 0.78, 0.42, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0, 0.95, 0.85, 1)
+theme_override_font_sizes/font_size = 14
 text = "_"
 
 [node name="CursorTimer" type="Timer" parent="HeaderBar/TitlePadding/TitleColumn"]
 wait_time = 0.6
 autostart = true
 
-[node name="Body" type="CenterContainer" parent="."]
+[node name="Body" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -109,69 +133,76 @@ offset_top = 100.0
 offset_bottom = -32.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 1
-
-[node name="MenuPanel" type="Panel" parent="Body"]
-custom_minimum_size = Vector2(340, 320)
-layout_mode = 2
-
-[node name="PanelPadding" type="MarginContainer" parent="Body/MenuPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 20
-
-[node name="VBox" type="VBoxContainer" parent="Body/MenuPanel/PanelPadding"]
-layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 24
 alignment = 1
 
-[node name="QuickStartButton" type="Button" parent="Body/MenuPanel/PanelPadding/VBox"]
-custom_minimum_size = Vector2(308, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 19
-text = "[ Inicio Rápido ]"
-
-[node name="Separator" type="HSeparator" parent="Body/MenuPanel/PanelPadding/VBox"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 8)
-theme_override_constants/separation = 8
-theme_override_styles/separator = SubResource("StyleBoxEmpty_sep")
-
-[node name="ContinueButton" type="Button" parent="Body/MenuPanel/PanelPadding/VBox"]
-custom_minimum_size = Vector2(308, 40)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "Continuar"
-
-[node name="NewGameButton" type="Button" parent="Body/MenuPanel/PanelPadding/VBox"]
-custom_minimum_size = Vector2(308, 40)
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "Nuevo Juego"
-
-[node name="SecondaryRow" type="HBoxContainer" parent="Body/MenuPanel/PanelPadding/VBox"]
+[node name="LeftColumn" type="VBoxContainer" parent="Body"]
 layout_mode = 2
 size_flags_horizontal = 4
+size_flags_vertical = 4
 theme_override_constants/separation = 12
 
-[node name="OptionsButton" type="Button" parent="Body/MenuPanel/PanelPadding/VBox/SecondaryRow"]
-custom_minimum_size = Vector2(148, 40)
+[node name="HeroCard" parent="Body/LeftColumn" instance=ExtResource("3_hero")]
+
+[node name="CenterColumn" type="VBoxContainer" parent="Body"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 14
+
+[node name="ActionGrid" type="GridContainer" parent="Body/CenterColumn"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 10
+columns = 1
+
+[node name="QuickStartButton" parent="Body/CenterColumn/ActionGrid" instance=ExtResource("5_action")]
+custom_minimum_size = Vector2(260, 56)
+variant = "primary"
+icon_prefix = "⚡"
+text = "Inicio Rápido"
+subtitle = "Salta directo a la acción"
+
+[node name="ContinueRow" type="HBoxContainer" parent="Body/CenterColumn/ActionGrid"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 10
+
+[node name="ContinueButton" parent="Body/CenterColumn/ActionGrid/ContinueRow" instance=ExtResource("5_action")]
+custom_minimum_size = Vector2(120, 50)
+variant = "neutral"
+icon_prefix = "▶"
+text = "Continuar"
+
+[node name="NewGameButton" parent="Body/CenterColumn/ActionGrid/ContinueRow" instance=ExtResource("5_action")]
+custom_minimum_size = Vector2(120, 50)
+variant = "neutral"
+icon_prefix = "✦"
+text = "Nueva Partida"
+
+[node name="SecondaryRow" type="HBoxContainer" parent="Body/CenterColumn/ActionGrid"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 10
+
+[node name="OptionsButton" parent="Body/CenterColumn/ActionGrid/SecondaryRow" instance=ExtResource("5_action")]
+custom_minimum_size = Vector2(120, 40)
+variant = "subtle"
 text = "Opciones"
 
-[node name="ExitButton" type="Button" parent="Body/MenuPanel/PanelPadding/VBox/SecondaryRow"]
-custom_minimum_size = Vector2(148, 40)
-layout_mode = 2
-theme_override_font_sizes/font_size = 15
+[node name="ExitButton" parent="Body/CenterColumn/ActionGrid/SecondaryRow" instance=ExtResource("5_action")]
+custom_minimum_size = Vector2(120, 40)
+variant = "danger"
 text = "Salir"
+
+[node name="RightColumn" type="VBoxContainer" parent="Body"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 12
+
+[node name="StatsPanel" parent="Body/RightColumn" instance=ExtResource("4_stats")]
 
 [node name="Footer" type="Panel" parent="."]
 layout_mode = 1
@@ -196,15 +227,30 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 8
 
-[node name="VersionLabel" type="Label" parent="Footer/FooterPadding"]
+[node name="FooterRow" type="HBoxContainer" parent="Footer/FooterPadding"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 2
+
+[node name="AccentLabel" type="Label" parent="Footer/FooterPadding/FooterRow"]
 layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.55, 0.50, 0.42, 0.65)
-theme_override_font_sizes/font_size = 11
-text = "Algoritmos Maestros  v0.1.0"
-horizontal_alignment = 1
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0.95, 0.85, 1)
+theme_override_font_sizes/font_size = 10
+text = "▸ v0.1.0 · dev build"
+
+[node name="VersionLabel" type="Label" parent="Footer/FooterPadding/FooterRow"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_colors/font_color = Color(0.55, 0.50, 0.42, 1)
+theme_override_font_sizes/font_size = 10
+text = "Algoritmos Maestros  ·  C++ trainer"
 
 [node name="SplashOverlay" type="CanvasLayer" parent="."]
 layer = 100
 
-[node name="Splash" parent="SplashOverlay" instance=ExtResource("2_splash")]</content>
+[node name="Splash" parent="SplashOverlay" instance=ExtResource("2_splash")]

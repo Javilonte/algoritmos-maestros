@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/menu_stats_panel.gd" id="1_stats"]
+[ext_resource type="Script" path="res://scripts/ui/d2_palette.gd" id="2_pal"]
+[ext_resource type="Script" path="res://scripts/battle/hp_bar.gd" id="3_hpbar"]
+
+[node name="MenuStatsPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(240, 320)
+script = ExtResource("1_stats")
+show_save_prompt = true

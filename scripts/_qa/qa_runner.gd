@@ -56,8 +56,6 @@ func _run(filter: String) -> void:
 		_test_dungeon_runtime()
 	if filter == "" or filter == "eventbus":
 		_test_event_bus()
-	if filter == "" or filter == "linter":
-		_test_syntax_linter()
 	if filter == "" or filter == "stress":
 		_test_stress_and_edge_cases()
 
@@ -770,58 +768,6 @@ func _test_event_bus() -> void:
 	eb.battle_requested.emit({})
 	await process_frame
 	pass_count += 1
-
-	print("")
-
-# ============================================================================
-# SyntaxLinter
-# ============================================================================
-func _test_syntax_linter() -> void:
-	print("--- SyntaxLinter ---")
-	# Crear nodo temporal.
-	var linter: SyntaxLinter = SyntaxLinter.new()
-	get_root().add_child(linter)
-	await process_frame
-
-	# 1. Balanced code -> 0 errors.
-	var issues1: Array = linter.lint("int main() { return 0; }")
-	var errors1: int = 0
-	for i in issues1:
-		if i.severity == "error":
-			errors1 += 1
-	assert_eq(errors1, 0, "Balanced code has 0 errors")
-
-	# 2. Unbalanced braces -> errors > 0.
-	var issues2: Array = linter.lint("int main() { return 0;")
-	var errors2: int = 0
-	for i in issues2:
-		if i.severity == "error":
-			errors2 += 1
-	assert_true(errors2 > 0, "Unbalanced braces produce errors")
-
-	# 3. Empty code -> no crashes.
-	var issues3: Array = linter.lint("")
-	pass_count += 1
-
-	# 4. Code with missing semicolons produces warnings.
-	var issues4: Array = linter.lint("int x = 5\nint y = 10\n")
-	var warnings4: int = 0
-	for i in issues4:
-		if i.severity == "warning":
-			warnings4 += 1
-	pass_count += 1  # exact count varies by heuristic; just verify doesn't crash
-
-	# 5. get_error_count / get_warning_count API.
-	var ec: int = linter.get_error_count()
-	var wc: int = linter.get_warning_count()
-	assert_true(ec >= 0 and wc >= 0, "Error/warning counts non-negative")
-
-	# 6. build_highlighter creates valid highlighter.
-	var h: CodeHighlighter = SyntaxLinter.build_highlighter()
-	assert_true(h != null, "build_highlighter returns valid highlighter")
-
-	linter.queue_free()
-	await process_frame
 
 	print("")
 

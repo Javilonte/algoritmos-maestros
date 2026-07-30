@@ -41,3 +41,13 @@ const SKILL_PHYSICAL := Color(0.85, 0.78, 0.62)
 const PANEL_BG := Color(0.06, 0.05, 0.04)
 const SCREEN_OVERLAY := Color(0.0, 0.0, 0.0, 0.55)
 const TUTORIAL_OVERLAY := Color(0.0, 0.0, 0.0, 0.78)
+
+# ponytail: cyberpunk neon accents used by the redesigned main menu.
+# Cyan is the primary, magenta the secondary. Kept here (not in a new
+# palette file) so the D2+neon look stays in one place.
+const NEON_CYAN := Color(0.0, 0.95, 0.85, 1.0)
+const NEON_CYAN_DIM := Color(0.0, 0.55, 0.50, 1.0)
+const NEON_MAGENTA := Color(0.95, 0.25, 0.95, 1.0)
+const NEON_MAGENTA_DIM := Color(0.55, 0.15, 0.55, 1.0)
+const NEON_SHADOW := Color(0.0, 0.18, 0.20, 0.85)
+const NEON_BG_OVERLAY := Color(0.0, 0.04, 0.07, 0.45)

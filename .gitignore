@@ -15,3 +15,13 @@ gdextension/.sconsign.dblite
 *.exp
 *.lib
 addons/*/bin/~*.dll
+
+# Borrowed 3D assets (pending license confirmation from contributor).
+# Do NOT commit until OK written by the original author.
+# Tracked: scenes/iso/deku_*.tscn, scripts/iso/deku_*.gd (our integration)
+assets/external/deku/Deku.fbx
+assets/external/deku/Deku.fbx.import
+
+# macOS Finder noise
+.DS_Store
+

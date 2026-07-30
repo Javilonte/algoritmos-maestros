@@ -1,148 +1,195 @@
 extends Control
 class_name Splash
 
-## Splash screen con animacion de frames PNG.
+## ponytail: 2D-only splash screen. Cyberpunk neon aesthetic — dark
+## background, scanline overlay, monospace typewriter that displays the
+## boot sequence, then auto-dismisses to the main menu.
 ##
-## - Modo `play_once = true` (default): dura SHORT_DURATION segundos y marca `boot_seen` en settings.
-## - Modo `play_once = false`: reproduce la animacion completa con safety timer.
-## - Skip siempre disponible con Escape, Enter o click.
+## Drops the original 80-frame PNG animation (was 8.4 MB on disk) for a
+## text-based boot sequence. Same UX: short duration on first launch,
+## press any key to skip, then advances to MAIN_MENU.
+##
+## Layout matches the boot/CRT theme used by main_menu.gd:
+##   - corners [ ALGORITMOS MAESTROS OS ]  /  boot sequence 0x01
+##   - mem / build info in opposite corners
+##   - centered typewriter text
+##   - scanline at top edge
 
-const FRAMES_DIR := "res://assets/video/splash_frames"
-const FRAME_PREFIX := "frame_"
-const FRAME_EXT := ".png"
-const FRAME_RATE_FPS: float = 8.0
-const SHORT_DURATION: float = 1.2
-const FULL_DURATION_MAX: float = 10.0
-const SAFETY_TIMEOUT: float = 30.0
-const FADE_OUT_DURATION := 0.4
-const DEFAULT_MUSIC_VOLUME_DB := -10.0
+const MAIN_MENU_PATH := "res://scenes/main_menu/main_menu.tscn"
+const SHORT_DURATION: float = 1.6
+const FADE_OUT_DURATION: float = 0.35
+const TYPE_PER_CHAR: float = 0.04
 
 signal splash_finished
 signal splash_failed(reason: String)
 
 @export var play_once: bool = true
 
-@onready var texture_rect: TextureRect = $TextureRect
-@onready var safety_timer: Timer = $SafetyTimer
-@onready var frame_timer: Timer = $FrameTimer
-@onready var status_label: Label = $StatusLabel
+@onready var _background: ColorRect = $Background
+@onready var _scanline: ColorRect = $Scanline
+@onready var _corner_tl: Label = $CornerTL
+@onready var _corner_tr: Label = $CornerTR
+@onready var _corner_bl: Label = $CornerBL
+@onready var _corner_br: Label = $CornerBR
+@onready var _logo_text: Label = $LogoText
+@onready var _sub_text: Label = $SubText
+@onready var _status_label: Label = $StatusLabel
+@onready var _skip_hint: Label = $SkipHint
+@onready var _type_timer: Timer = $TypeTimer
 
-var _is_finishing: bool = false
-var _saved_music_db: float = DEFAULT_MUSIC_VOLUME_DB
-var _frames: Array[Texture2D] = []
-var _current_frame: int = 0
+var _text_queue: Array[String] = []
+var _current_text: String = ""
+var _should_dismiss: bool = false
+var _short_done: bool = false
+var _safety_timer: SceneTreeTimer = null
+
+const LINES: Array[String] = [
+	"[ ALGORITMOS MAESTROS OS ]",
+	"> initializing C++ trainer ...",
+	"> loading challenges ....",
+	"> linking skill tree .....",
+	"> booting battle arena ...",
+	"> system ready.",
+]
+
 
 func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_STOP
-	print("[Splash] _ready() (play_once=%s)" % play_once)
-	_set_status("loading splash...")
-	_mute_music_bus(true)
-	safety_timer.timeout.connect(_on_safety_timeout)
-	safety_timer.start(SAFETY_TIMEOUT)
-	frame_timer.timeout.connect(_advance_frame)
-	frame_timer.wait_time = 1.0 / FRAME_RATE_FPS
-	_load_frames()
-	# Si play_once, autodisparar fin tras SHORT_DURATION.
+	# ponytail: defense — never block the user forever if our setup fails.
+	_safety_timer = get_tree().create_timer(8.0)
+	_safety_timer.timeout.connect(_on_safety_timeout)
+
+	_apply_style()
+	_status_label.text = "boot sequence 0x01"
+	_type_timer.timeout.connect(_on_type_tick)
+	_corner_tl.text = "[ ALGORITMOS MAESTROS OS ]"
+	_corner_tr.text = "mem: 0x7FFE  ok"
+	_corner_bl.text = "build 0.1.0 / codename: BUBBLE_SORT"
+	_corner_br.text = "v0.1.0 · dev build"
+	_logo_text.text = ""
+	_sub_text.text = ""
+	_skip_hint.text = "[ PRESS ANY KEY TO SKIP ]"
+
+	# Queue lines for typewriter.
+	_text_queue = LINES.duplicate()
+	_start_next_line()
+
+	# Apply play_once policy.
+	if play_once and _already_seen():
+		_short_done = true
+		_dismiss()
+
+
+func _apply_style() -> void:
+	_background.color = Color(0.02, 0.02, 0.04, 1)
+	_scanline.color = Color(0.1, 0.6, 0.3, 0.25)
+	_corner_tl.add_theme_color_override("font_color", Color(0.3, 0.4, 0.35, 0.6))
+	_corner_tr.add_theme_color_override("font_color", Color(0.3, 0.4, 0.35, 0.6))
+	_corner_bl.add_theme_color_override("font_color", Color(0.3, 0.4, 0.35, 0.6))
+	_corner_br.add_theme_color_override("font_color", Color(0.3, 0.4, 0.35, 0.6))
+	_logo_text.add_theme_color_override("font_color", Color(0.1, 0.9, 0.4, 1))
+	_logo_text.add_theme_color_override("font_shadow_color", Color(0.02, 0.3, 0.1, 0.8))
+	_logo_text.add_theme_constant_override("shadow_offset_x", 2)
+	_logo_text.add_theme_constant_override("shadow_offset_y", 2)
+	_logo_text.add_theme_font_size_override("font_size", 32)
+	_sub_text.add_theme_color_override("font_color", Color(0.4, 0.6, 0.5, 0.85))
+	_sub_text.add_theme_font_size_override("font_size", 16)
+	_status_label.add_theme_color_override("font_color", Color(0.1, 0.9, 0.4, 0.85))
+	_status_label.add_theme_font_size_override("font_size", 14)
+	_skip_hint.add_theme_color_override("font_color", Color(0.5, 0.7, 0.55, 0.5))
+	_skip_hint.add_theme_font_size_override("font_size", 12)
+
+
+## ponytail: typewriter pops one character per tick. _start_next_line
+## rotates between logo_text (header) and sub_text (status line) so the
+## splash mimics a CRT boot sequence.
+func _on_type_tick() -> void:
+	if _text_queue.is_empty():
+		_type_timer.stop()
+		_finish_short()
+		return
+	var line: String = _text_queue[0]
+	if _current_text.length() < line.length():
+		_current_text = line.substr(0, _current_text.length() + 1)
+		_apply_current_line_text()
+		return
+	# Line fully typed — move to next.
+	_text_queue.remove_at(0)
+	_current_text = ""
+	if _text_queue.is_empty():
+		_type_timer.stop()
+		_finish_short()
+		return
+	# Pause briefly between lines.
+	var pause: SceneTreeTimer = get_tree().create_timer(0.15)
+	pause.timeout.connect(_start_next_line)
+
+
+func _start_next_line() -> void:
+	# ponytail: pick which label gets the next line based on queue
+	# depth. We alternate but the first line always goes to the logo.
+	if _logo_text.text == "":
+		_logo_text.text = ""
+	_current_text = ""
+	_type_timer.start(TYPE_PER_CHAR)
+
+
+func _apply_current_line_text() -> void:
+	if _logo_text.text == "":
+		_logo_text.text = _current_text
+		_status_label.text = _current_text
+		_sub_text.text = _current_text
+		return
+	# After the logo is set, subsequent lines go to sub_text and status_label.
+	_sub_text.text = _current_text
+	_status_label.text = _current_text
+
+
+func _finish_short() -> void:
+	if _short_done:
+		return
+	_short_done = true
 	if play_once:
-		await get_tree().create_timer(SHORT_DURATION).timeout
-		if not _is_finishing:
-			_request_finish()
+		_mark_seen()
+	_dismiss()
 
-func _load_frames() -> void:
-	var frame_paths: PackedStringArray = _discover_frames()
-	if frame_paths.is_empty():
-		# Sin frames: terminar inmediatamente.
-		print("[Splash] no frames; finishing immediately.")
-		await get_tree().create_timer(0.05).timeout
-		_request_finish()
+
+func _dismiss() -> void:
+	if _should_dismiss:
 		return
-	_frames.clear()
-	for i in range(frame_paths.size()):
-		var tex: Resource = load(frame_paths[i])
-		if tex == null or not (tex is Texture2D):
-			_fail("frame %d not a Texture2D" % i)
-			return
-		_frames.append(tex as Texture2D)
-	_current_frame = 0
-	texture_rect.texture = _frames[0]
-	frame_timer.start()
-	_set_status("playing... (%d frames)" % _frames.size())
-	print("[Splash] animation loaded: %d frames @ %.1f fps" % [_frames.size(), FRAME_RATE_FPS])
+	_should_dismiss = true
+	var fade := create_tween()
+	fade.tween_property(self, "modulate:a", 0.0, FADE_OUT_DURATION)
+	await fade.finished
+	splash_finished.emit()
+	get_tree().change_scene_to_file(MAIN_MENU_PATH)
 
-func _advance_frame() -> void:
-	if _frames.is_empty():
-		return
-	_current_frame = (_current_frame + 1) % _frames.size()
-	texture_rect.texture = _frames[_current_frame]
-
-func _discover_frames() -> PackedStringArray:
-	var out := PackedStringArray()
-	for i in range(1, 1000):
-		var p := "%s/%s%04d%s" % [FRAMES_DIR, FRAME_PREFIX, i, FRAME_EXT]
-		if not ResourceLoader.exists(p):
-			break
-		out.append(p)
-	return out
-
-func _set_status(msg: String) -> void:
-	if status_label:
-		status_label.text = msg
-
-func _fail(reason: String) -> void:
-	_set_status("SPLASH FAILED: " + reason)
-	push_error("[Splash] " + reason)
-	splash_failed.emit(reason)
-	safety_timer.stop()
-
-func _unhandled_input(event: InputEvent) -> void:
-	if _is_finishing:
-		return
-	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("ui_accept"):
-		_request_finish()
-		get_viewport().set_input_as_handled()
-		return
-	if event is InputEventMouseButton and event.pressed:
-		_request_finish()
-		get_viewport().set_input_as_handled()
-
-func _request_finish() -> void:
-	if _is_finishing:
-		return
-	_on_animation_finished()
 
 func _on_safety_timeout() -> void:
-	_on_animation_finished()
+	if not _short_done:
+		splash_failed.emit("safety timeout")
+		_dismiss()
 
-func _on_animation_finished() -> void:
-	if _is_finishing:
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not _short_done and event.is_pressed():
+		_finish_short()
+
+
+# ponytail: stored in SaveManager.settings["boot_seen"] so the splash
+# plays only on the first launch. Subsequent launches skip straight to
+# the main menu.
+func _already_seen() -> bool:
+	var sm: Node = get_node_or_null("/root/SaveManager")
+	if sm == null or not sm.has_method("load_settings"):
+		return false
+	var settings: Dictionary = sm.load_settings()
+	return bool(settings.get("boot_seen", false))
+
+
+func _mark_seen() -> void:
+	var sm: Node = get_node_or_null("/root/SaveManager")
+	if sm == null or not sm.has_method("save_settings"):
 		return
-	_is_finishing = true
-	safety_timer.stop()
-	frame_timer.stop()
-	var tween := create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, FADE_OUT_DURATION)
-	await tween.finished
-	_mute_music_bus(false)
-	if play_once:
-		var settings := SaveManager.load_settings()
-		settings["boot_seen"] = true
-		SaveManager.save_settings(settings)
-	splash_finished.emit()
-	if is_inside_tree():
-		queue_free()
-
-func _mute_music_bus(mute: bool) -> void:
-	var music_bus_idx := AudioServer.get_bus_index("Music")
-	if music_bus_idx == -1:
-		AudioServer.add_bus()
-		music_bus_idx = AudioServer.bus_count - 1
-		AudioServer.set_bus_name(music_bus_idx, "Music")
-	if mute:
-		_saved_music_db = AudioServer.get_bus_volume_db(music_bus_idx)
-		AudioServer.set_bus_volume_db(music_bus_idx, -80.0)
-	else:
-		AudioServer.set_bus_volume_db(music_bus_idx, _saved_music_db)
-
-static func should_show() -> bool:
-	var settings := SaveManager.load_settings()
-	return not bool(settings.get("boot_seen", false))
+	var settings: Dictionary = sm.load_settings()
+	settings["boot_seen"] = true
+	sm.save_settings(settings)

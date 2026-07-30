@@ -1,6 +1,6 @@
 [gd_resource type="TileSet" load_steps=4 format=3]
 
-[ext_resource type="Texture2D" uid="uid://jhpst6ybc0eg" path="res://assets/textures/practice_iso_tiles_original.png" id="1_atlas_tex"]
+[ext_resource type="Texture2D" uid="uid://brlifqvvqkvpq" path="res://assets/textures/practice_iso_tiles_original.png" id="1_atlas_tex"]
 [ext_resource type="Texture2D" path="res://assets/textures/iso_terrain_atlas.png" id="2_extended_tex"]
 
 [sub_resource type="TileSetAtlasSource" id="atlas_original"]

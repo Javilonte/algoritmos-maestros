@@ -1,7 +1,9 @@
 extends Node
-class_name AudioManager
 
 ## Gestor de audio del juego. Centraliza la reproducción de SFX y música.
+## ponytail: registered as autoload (no `class_name` to avoid the collision
+## with the static accessors below — Godot reserves class_name as a type
+## identifier, and static methods on the same name confuse the parser).
 ## Usa un bus "SFX" independiente para no chocar con la música.
 
 const BUS_SFX: String = "SFX"
@@ -34,6 +36,27 @@ func get_key_clack() -> AudioStream:
 
 func get_hit(success: bool) -> AudioStream:
 	return _hit_success if success else _hit_fail
+
+## ponytail: static accessors so callers can use `AudioManager.get_key_clack()`
+## without grabbing the autoload reference. They delegate to the
+## instance fields populated in _ready.
+static func key_clack() -> AudioStream:
+	var mgr: Node = _get_instance()
+	if mgr == null:
+		return null
+	return mgr.get_key_clack()
+
+static func hit(success: bool) -> AudioStream:
+	var mgr: Node = _get_instance()
+	if mgr == null:
+		return null
+	return mgr.get_hit(success)
+
+static func _get_instance() -> Node:
+	var tree: SceneTree = Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return null
+	return tree.root.get_node_or_null("AudioManager")
 
 ## --- Procedural audio (no requiere archivos) ---
 

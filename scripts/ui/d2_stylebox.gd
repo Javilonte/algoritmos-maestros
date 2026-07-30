@@ -211,11 +211,198 @@ static func sigil_small() -> StyleBoxFlat:
 	sb.border_width_right = 2
 	sb.border_width_bottom = 2
 	sb.corner_radius_top_left = 2
-	sb.corner_radius_top_right = 2
+	sb.corner_top_right = 2
 	sb.corner_radius_bottom_right = 2
 	sb.corner_radius_bottom_left = 2
 	sb.content_margin_left = 0.0
 	sb.content_margin_top = 0.0
 	sb.content_margin_right = 0.0
 	sb.content_margin_bottom = 0.0
+	return sb
+
+
+# ============================================================================
+# Cyberpunk neon overrides (main menu redesign).
+# ponytail: these are visually distinct from the D2 styleboxes and are
+# applied only by main_menu components — they don't override the global
+# theme, so battle / skill tree / dialogue stay on D2.
+# ============================================================================
+
+## Panel interior con borde neon cyan. Para los ActionButtons y HeroCard.
+static func panel_neon() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = D2Palette.STONE_DARK
+	sb.border_color = D2Palette.NEON_CYAN
+	sb.border_width_left = 2
+	sb.border_width_top = 2
+	sb.border_width_right = 2
+	sb.border_width_bottom = 2
+	sb.corner_radius_top_left = 3
+	sb.corner_radius_top_right = 3
+	sb.corner_radius_bottom_right = 3
+	sb.corner_radius_bottom_left = 3
+	sb.shadow_color = D2Palette.NEON_SHADOW
+	sb.shadow_size = 6
+	sb.content_margin_left = 10
+	sb.content_margin_top = 8
+	sb.content_margin_right = 10
+	sb.content_margin_bottom = 8
+	return sb
+
+
+## Botón neon primary (QuickStart). Borde gold, fondo stone.
+static func button_neon_primary() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = D2Palette.STONE_MID
+	sb.border_color = D2Palette.GOLD_TEXT_BRIGHT
+	sb.border_width_left = 3
+	sb.border_width_top = 3
+	sb.border_width_right = 3
+	sb.border_width_bottom = 3
+	sb.corner_radius_top_left = 3
+	sb.corner_radius_top_right = 3
+	sb.corner_radius_bottom_right = 3
+	sb.corner_radius_bottom_left = 3
+	sb.shadow_color = D2Palette.NEON_SHADOW
+	sb.shadow_size = 8
+	sb.content_margin_left = 16
+	sb.content_margin_top = 10
+	sb.content_margin_right = 16
+	sb.content_margin_bottom = 10
+	return sb
+
+
+## Botón neon neutral (Continue, NewGame). Borde bronze.
+static func button_neon_neutral() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = D2Palette.STONE_MID
+	sb.border_color = D2Palette.BRONZE_LIGHT
+	sb.border_width_left = 2
+	sb.border_width_top = 2
+	sb.border_width_right = 2
+	sb.border_width_bottom = 2
+	sb.corner_radius_top_left = 2
+	sb.corner_radius_top_right = 2
+	sb.corner_radius_bottom_right = 2
+	sb.corner_radius_bottom_left = 2
+	sb.shadow_color = D2Palette.NEON_SHADOW
+	sb.shadow_size = 4
+	sb.content_margin_left = 12
+	sb.content_margin_top = 6
+	sb.content_margin_right = 12
+	sb.content_margin_bottom = 6
+	return sb
+
+
+## Botón neon subtle (Options). Borde bronze más fino.
+static func button_neon_subtle() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = D2Palette.STONE_MID
+	sb.border_color = D2Palette.STONE_HIGHLIGHT
+	sb.border_width_left = 1
+	sb.border_width_top = 1
+	sb.border_width_right = 1
+	sb.border_width_bottom = 1
+	sb.corner_radius_top_left = 2
+	sb.corner_radius_top_right = 2
+	sb.corner_radius_bottom_right = 2
+	sb.corner_radius_bottom_left = 2
+	sb.content_margin_left = 10
+	sb.content_margin_top = 5
+	sb.content_margin_right = 10
+	sb.content_margin_bottom = 5
+	return sb
+
+
+## Botón neon danger (Exit). Borde DANGER_TEXT.
+static func button_neon_danger() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = D2Palette.STONE_DARK
+	sb.border_color = D2Palette.DANGER_TEXT
+	sb.border_width_left = 2
+	sb.border_width_top = 2
+	sb.border_width_right = 2
+	sb.border_width_bottom = 2
+	sb.corner_radius_top_left = 2
+	sb.corner_radius_top_right = 2
+	sb.corner_radius_bottom_right = 2
+	sb.corner_radius_bottom_left = 2
+	sb.content_margin_left = 10
+	sb.content_margin_top = 5
+	sb.content_margin_right = 10
+	sb.content_margin_bottom = 5
+	return sb
+
+
+## Sigil neon para el HeroCard (panel con borde cyan brillante).
+static func sigil_neon() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = D2Palette.STONE_DARK
+	sb.border_color = D2Palette.NEON_CYAN
+	sb.border_width_left = 3
+	sb.border_width_top = 3
+	sb.border_width_right = 3
+	sb.border_width_bottom = 3
+	sb.corner_radius_top_left = 4
+	sb.corner_radius_top_right = 4
+	sb.corner_radius_bottom_right = 4
+	sb.corner_radius_bottom_left = 4
+	sb.shadow_color = D2Palette.NEON_SHADOW
+	sb.shadow_size = 10
+	sb.content_margin_left = 6
+	sb.content_margin_top = 6
+	sb.content_margin_right = 6
+	sb.content_margin_bottom = 6
+	return sb
+
+
+## Sigil neon pequeño para el level badge.
+static func sigil_neon_small() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = D2Palette.STONE_DARK
+	sb.border_color = D2Palette.NEON_CYAN_DIM
+	sb.border_width_left = 2
+	sb.border_width_top = 2
+	sb.border_width_right = 2
+	sb.border_width_bottom = 2
+	sb.corner_radius_top_left = 3
+	sb.corner_radius_top_right = 3
+	sb.corner_radius_bottom_right = 3
+	sb.corner_radius_bottom_left = 3
+	sb.content_margin_left = 0.0
+	sb.content_margin_top = 0.0
+	sb.content_margin_right = 0.0
+	sb.content_margin_bottom = 0.0
+	return sb
+
+
+## Dot para skills (unlocked). Cyan brillante.
+static func skill_dot_unlocked() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = D2Palette.NEON_CYAN
+	sb.border_color = D2Palette.NEON_CYAN
+	sb.border_width_left = 0
+	sb.border_width_top = 0
+	sb.border_width_right = 0
+	sb.border_width_bottom = 0
+	sb.corner_radius_top_left = 6
+	sb.corner_radius_top_right = 6
+	sb.corner_radius_bottom_right = 6
+	sb.corner_radius_bottom_left = 6
+	return sb
+
+
+## Dot para skills (locked). Stone oscuro.
+static func skill_dot_locked() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = D2Palette.STONE_HIGHLIGHT
+	sb.border_color = D2Palette.STONE_DARK
+	sb.border_width_left = 1
+	sb.border_width_top = 1
+	sb.border_width_right = 1
+	sb.border_width_bottom = 1
+	sb.corner_radius_top_left = 6
+	sb.corner_radius_top_right = 6
+	sb.corner_radius_bottom_right = 6
+	sb.corner_radius_bottom_left = 6
 	return sb
