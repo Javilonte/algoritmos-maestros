@@ -106,7 +106,12 @@ func _start_player_turn() -> void:
 	_phase = BattlePhase.EDITING
 	_turn_start_ms = Time.get_ticks_msec()
 	_is_animating = false
-	action_menu.visible = true
+	# ponytail: do not reveal the action menu while the BattleTerminal is
+	# still up. The terminal is a CanvasLayer at 11 with a full-screen dimmer
+	# over Battle at 9, so Attack/Run were rendering behind it and could not
+	# be clicked while the turn timer ran. The compile result stays visible
+	# in the console, and _on_battle_terminal_back reveals the menu.
+	action_menu.visible = not battle_terminal.visible
 	battle_timer_label.visible = true
 	battle_timer_bar.visible = true
 	battle_timer_bar.scale.x = 1.0
