@@ -12,7 +12,12 @@ extends Resource
 @export var enemy_id: String = ""
 
 ## Referencia al nodo Enemy en el mundo (no se serializa).
-var node: Enemy = null
+## ponytail: Node, not Enemy. Three unrelated enemy classes exist (Enemy,
+## IsoEnemy, CrowEnemy) and all three are consumed polymorphically via
+## has_method("defeat"); typing this as Enemy made EnemyData.create()
+## unusable from the ISO enemies and made from_dict() silently drop their
+## nodes. Widening accepts strictly more, so existing callers still fit.
+var node: Node = null
 
 ## Challenge tipado resuelto desde ChallengeRegistry.
 var challenge: ChallengeResource = null
@@ -21,7 +26,7 @@ static func create(
 	p_display_name: String,
 	p_max_hp: int,
 	p_challenge_id: String,
-	p_node: Enemy = null,
+	p_node: Node = null,
 	p_enemy_id: String = "",
 	p_xp_reward: int = -1
 ) -> EnemyData:
@@ -74,7 +79,7 @@ static func from_dict(data: Dictionary) -> EnemyData:
 	e.xp_reward = int(data.get("xp_reward", 50))
 	e.enemy_id = String(data.get("enemy_id", ""))
 	var node_ref: Variant = data.get("node")
-	if node_ref is Enemy:
-		e.node = node_ref as Enemy
+	if node_ref is Node:
+		e.node = node_ref as Node
 	e.challenge = ChallengeRegistry.get_by_id(e.challenge_id)
 	return e

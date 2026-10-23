@@ -104,26 +104,31 @@ class_name IsoMeta extends Resource
 		"challenge_id": "main_exit_check",
 		"display_name": "Iso Goblin",
 		"max_hp": 80,
+		"xp_reward": 50,
 	},
 	{
 		"challenge_id": "bubble_sort",
 		"display_name": "Sort Wraith",
 		"max_hp": 60,
+		"xp_reward": 50,
 	},
 	{
 		"challenge_id": "linear_search",
 		"display_name": "Linear Lurker",
 		"max_hp": 50,
+		"xp_reward": 50,
 	},
 	{
 		"challenge_id": "factorial",
 		"display_name": "Factorial Wraith",
 		"max_hp": 70,
+		"xp_reward": 50,
 	},
 	{
 		"challenge_id": "fibonacci",
 		"display_name": "Fibonacci Lich",
 		"max_hp": 90,
+		"xp_reward": 80,
 	},
 ]
 

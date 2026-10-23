@@ -282,9 +282,10 @@ func _end_battle(result: String) -> void:
 	GameManager.change_state(GameManager.GameState.OVERWORLD)
 	get_tree().paused = false
 	_is_animating = false
-	# ponytail: wire the XP loop. EnemyData.xp_reward is declared in
-	# iso_meta.gd:104-128 (50..400 by enemy) but the grant was missing —
-	# so skill unlocks never fired from combat. Single line closes the loop.
+	# ponytail: wire the XP loop. xp_reward is authored per enemy in
+	# iso_meta.enemy_data (and EnemyCatalog for the dungeon) but the ISO
+	# enemies used to hand-build their dict without it, so the grant was
+	# missing on that path and skill unlocks never fired from combat.
 	if result == "win":
 		var xp_reward: int = int(_enemy_data.get("xp_reward", 0))
 		if xp_reward > 0:

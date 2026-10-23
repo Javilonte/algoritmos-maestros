@@ -215,6 +215,7 @@ func _spawn_enemies() -> void:
 		enemy.display_name = String(data.get("display_name", "Goblin"))
 		enemy.max_hp = int(data.get("max_hp", 100))
 		enemy.challenge_id = String(data.get("challenge_id", "main_exit_check"))
+		enemy.xp_reward = int(data.get("xp_reward", 50))
 		enemies_container.add_child(enemy)
 
 func _position_player() -> void:

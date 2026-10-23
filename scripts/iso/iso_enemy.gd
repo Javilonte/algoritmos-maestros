@@ -8,6 +8,7 @@ var tile_position: Vector2i = Vector2i.ZERO
 @export var max_hp: int = 80
 @export var challenge_id: String = "main_exit_check"
 @export var respawn_time: float = 30.0
+@export var xp_reward: int = 50
 
 @onready var sprite: Node2D = $Sprite
 @onready var label: Label = $Label
@@ -31,13 +32,8 @@ func _on_body_entered(body: Node2D) -> void:
 		return
 	if not (body.is_in_group("player") or body.name == "IsoPlayer" or body.name == "Player"):
 		return
-	var enemy_data: Dictionary = {
-		"display_name": display_name,
-		"max_hp": max_hp,
-		"challenge_id": challenge_id,
-		"node": self,
-	}
-	EventBus.battle_requested.emit(enemy_data)
+	var data := EnemyData.create(display_name, max_hp, challenge_id, self, "", xp_reward)
+	EventBus.battle_requested.emit(data.to_dict())
 
 func defeat() -> void:
 	_is_defeated = true
