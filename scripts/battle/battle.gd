@@ -201,8 +201,8 @@ func _on_compile_success(roll: DamageRoll, chain_id: int) -> void:
 	if GameManager.get_hp("enemy") <= 0:
 		_end_battle("win")
 		return
-	# ponytail: enemy counter-attack after a successful player turn.
-	await _enemy_turn(chain_id)
+	# ponytail: no enemy counter-attack here — _on_code_executed already
+	# runs it for both branches (:157). Adding it here dealt double damage.
 
 
 ## ponytail: extracted from _on_code_executed — handles the

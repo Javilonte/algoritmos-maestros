@@ -15,7 +15,7 @@ extends Resource
 var node: Enemy = null
 
 ## Challenge tipado resuelto desde ChallengeRegistry.
-var challenge: ChallengeData = null
+var challenge: ChallengeResource = null
 
 static func create(
 	p_display_name: String,
@@ -33,7 +33,7 @@ static func create(
 	data.enemy_id = p_enemy_id
 	if p_xp_reward >= 0:
 		data.xp_reward = p_xp_reward
-	data.challenge = ChallengeRegistry.fetch(StringName(p_challenge_id))
+	data.challenge = ChallengeRegistry.get_by_id(p_challenge_id)
 	return data
 
 ## Convierte a Dictionary para uso legacy (se mantiene por compatibilidad).
@@ -53,14 +53,17 @@ func to_dict() -> Dictionary:
 		"hint_lines": [],
 		"challenge_prompt": "",
 	}
+	# ponytail: only prompt and the time limit have a real source on
+	# ChallengeResource. The old block also read stdin / expected_output /
+	# memory_limit_kb / base_score / hint_lines, which exist solely on the
+	# stale ChallengeData twin — it crashed here on every battle request.
+	# Those 5 keys keep their literal defaults because nothing in scripts/
+	# reads them (CodeCompiler and TestRunner consume the typed resource
+	# directly). Ceiling: if a consumer ever needs stdin/expected_output,
+	# map them from challenge.test_cases[0].inputs / .expected here.
 	if challenge != null:
-		out["stdin"] = challenge.stdin
-		out["expected_output"] = challenge.expected_output
-		out["time_limit_sec"] = challenge.time_limit_sec
-		out["memory_limit_kb"] = challenge.memory_limit_kb
-		out["base_score"] = challenge.base_score
-		out["hint_lines"] = Array(challenge.hint_lines)
 		out["challenge_prompt"] = challenge.prompt
+		out["time_limit_sec"] = float(challenge.time_limit_ms) / 1000.0
 	return out
 
 static func from_dict(data: Dictionary) -> EnemyData:
@@ -73,5 +76,5 @@ static func from_dict(data: Dictionary) -> EnemyData:
 	var node_ref: Variant = data.get("node")
 	if node_ref is Enemy:
 		e.node = node_ref as Enemy
-	e.challenge = ChallengeRegistry.fetch(StringName(e.challenge_id))
+	e.challenge = ChallengeRegistry.get_by_id(e.challenge_id)
 	return e

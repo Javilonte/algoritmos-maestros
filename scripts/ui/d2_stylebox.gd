@@ -211,7 +211,7 @@ static func sigil_small() -> StyleBoxFlat:
 	sb.border_width_right = 2
 	sb.border_width_bottom = 2
 	sb.corner_radius_top_left = 2
-	sb.corner_top_right = 2
+	sb.corner_radius_top_right = 2
 	sb.corner_radius_bottom_right = 2
 	sb.corner_radius_bottom_left = 2
 	sb.content_margin_left = 0.0

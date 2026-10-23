@@ -55,7 +55,6 @@ func _ready() -> void:
 	GameManager.change_state(GameManager.GameState.MAIN_MENU)
 	_apply_local_overrides()
 	_apply_settings()
-	_setup_splash()
 	_setup_ambient_code()
 	_setup_button_states()
 	# ponytail: connect the new components to SkillTree so they stay
@@ -90,19 +89,6 @@ func _setup_button_states() -> void:
 	quick_start_button.set_subtitle_label(
 		"Continuar la última" if has_save else "Empezar desde cero"
 	)
-
-
-func _setup_splash() -> void:
-	if not Splash.should_show():
-		return
-	var splash_scene: PackedScene = load("res://scenes/ui/splash.tscn")
-	if splash_scene == null:
-		return
-	var splash: Node = splash_scene.instantiate()
-	if splash == null:
-		return
-	add_child(splash)
-	splash.z_index = 200
 
 
 func _connect_cursor() -> void:

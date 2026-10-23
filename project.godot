@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Algoritmos Maestros"
-run/main_scene="uid://cahki7n8okq7s"
+run/main_scene="res://scenes/main_menu/main_menu.tscn"
 config/features=PackedStringArray("4.6")
 config/icon="res://icon.svg"
 
