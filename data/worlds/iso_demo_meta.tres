@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="IsoMeta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/worlds/iso_meta.gd" id="1_meta"]
+
+[resource]
+script = ExtResource("1_meta")
+map_width = 25
+map_height = 20
+seed = 1234
+ground_tile_ids = PackedInt32Array(2, 2, 2, 1, 2)
+path_tile_ids = PackedInt32Array(3, 3, 4)
+decoration_tile_ids = PackedInt32Array(10, 13)
+decoration_density = 1.5
+base_tile_id = 12
+base_padding = 20
+base_enabled = true
+path_enabled = true
+path_vertical_drift = 0.0
+path_start_y_ratio = 0.5
+biomes_enabled = false
+biomes = Array[Dictionary]([])
+buildings_enabled = false
+building_count = 0
+building_tile_ids = PackedInt32Array(8)
+building_size_range = Vector2i(2, 3)
+enemy_spawns = Array[Vector2i]([Vector2i(18, 8), Vector2i(6, 14)])
+enemy_data = Array[Dictionary]([{
+"challenge_id": "main_exit_check",
+"display_name": "Demo Goblin",
+"max_hp": 50
+}, {
+"challenge_id": "factorial",
+"display_name": "Demo Wraith",
+"max_hp": 60
+}])
+lakes = Array[Dictionary]([{
+"rect": Rect2i(20, 8, 4, 3),
+"border": "sand"
+}])
+forest_patches = Array[Dictionary]([{
+"center": Vector2i(6, 16),
+"radius": 3,
+"density": 0.6
+}])
+use_extended_terrain = true
+water_tile = Vector2i(0, 3)
+sand_tile = Vector2i(0, 2)
+grass_tile = Vector2i(0, 4)
+tree_prop_tile = Vector2i(0, 7)
+rock_prop_tile = Vector2i(1, 7)
+bush_prop_tile = Vector2i(2, 7)

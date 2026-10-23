@@ -1,0 +1,93 @@
+[gd_scene load_steps=3 format=3 uid="uid://cl31mc0go4ct2"]
+
+[ext_resource type="Script" path="res://scripts/ui/tutorial_overlay.gd" id="1_tut"]
+[ext_resource type="Script" path="res://scripts/ui/d2_stylebox.gd" id="2_sb"]
+
+[node name="TutorialOverlay" type="CanvasLayer"]
+script = ExtResource("1_tut")
+
+[node name="Background" type="Panel" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+self_modulate = Color(1, 1, 1, 0.78)
+mouse_filter = 2
+
+[node name="OuterFrame" type="Panel" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -360.0
+offset_top = -180.0
+offset_right = 360.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="InnerPanel" type="Panel" parent="OuterFrame"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="OuterFrame/InnerPanel"]
+layout_mode = 0
+anchor_right = 1.0
+offset_left = 24.0
+offset_top = 18.0
+offset_right = -24.0
+offset_bottom = 56.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.92, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 26
+text = "Title"
+
+[node name="BodyLabel" type="RichTextLabel" parent="OuterFrame/InnerPanel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 64.0
+offset_right = -24.0
+offset_bottom = -64.0
+grow_horizontal = 2
+grow_vertical = 2
+bbcode_enabled = true
+fit_content = true
+text = "Body"
+
+[node name="ButtonRow" type="HBoxContainer" parent="OuterFrame/InnerPanel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -50.0
+offset_right = -24.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 16
+alignment = 2
+
+[node name="SkipButton" type="Button" parent="OuterFrame/InnerPanel/ButtonRow"]
+custom_minimum_size = Vector2(140, 36)
+theme_override_colors/font_color = Color(0.78, 0.72, 0.62, 0.85)
+theme_override_font_sizes/font_size = 15
+text = "Saltar"
+
+[node name="NextButton" type="Button" parent="OuterFrame/InnerPanel/ButtonRow"]
+custom_minimum_size = Vector2(160, 36)
+theme_override_colors/font_color = Color(0.92, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 16
+text = "Siguiente ▶"
+
+[connection signal="pressed" from="OuterFrame/InnerPanel/ButtonRow/NextButton" to="." method="_on_next_pressed"]
+[connection signal="pressed" from="OuterFrame/InnerPanel/ButtonRow/SkipButton" to="." method="_on_skip_pressed"]

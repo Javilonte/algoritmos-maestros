@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="ChallengeResource" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://resources/challenge_resource.gd" id="1_cr"]
+[ext_resource type="Script" path="res://resources/test_case.gd" id="2_tc"]
+
+[sub_resource type="Resource" id="TestCase_1"]
+script = ExtResource("2_tc")
+name = "fib_0"
+inputs = [0]
+expected = 0
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_2"]
+script = ExtResource("2_tc")
+name = "fib_1"
+inputs = [1]
+expected = 1
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_3"]
+script = ExtResource("2_tc")
+name = "fib_5"
+inputs = [5]
+expected = 5
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_4"]
+script = ExtResource("2_tc")
+name = "fib_8"
+inputs = [8]
+expected = 21
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_5"]
+script = ExtResource("2_tc")
+name = "fib_15"
+inputs = [15]
+expected = 610
+weight = 1.5
+
+[resource]
+script = ExtResource("1_cr")
+id = &"fibonacci"
+display_name = "Fibonacci Lich"
+difficulty = 4
+prompt = "Implementa `int fibonacci(int n)` que retorne el n-ésimo número de Fibonacci (F(0)=0, F(1)=1)."
+starter_code = "int fibonacci(int n) {\n    // tu código aquí\n    return 0;\n}"
+function_signature = "int fibonacci(int n)"
+function_name_hint = "fibonacci"
+test_cases = Array[Resource]([SubResource("TestCase_1"), SubResource("TestCase_2"), SubResource("TestCase_3"), SubResource("TestCase_4"), SubResource("TestCase_5")])
+time_limit_ms = 30000
+base_damage = 30
+perfect_damage = 100
+tags = PackedStringArray("recursion", "math", "advanced")
+runner_path = "res://data/challenges/fibonacci_runner.gd"
+ast_min_statements = 3
+ast_required_features = PackedStringArray("conditional", "return")
+ast_return_substring = "int"
+validation_mode = "ast_oracle"

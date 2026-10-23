@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ChallengeResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/challenge_resource.gd" id="1_cr"]
+[ext_resource type="Script" path="res://resources/test_case.gd" id="2_tc"]
+
+[sub_resource type="Resource" id="TestCase_1"]
+script = ExtResource("2_tc")
+name = "compiles"
+inputs = []
+expected = null
+weight = 1.0
+
+[resource]
+script = ExtResource("1_cr")
+id = &"main_exit_check"
+display_name = "Compile Gate"
+difficulty = 1
+prompt = "Escribe código C++ válido que compile. El enemigo es débil — solo necesitas pasar la compilación."
+starter_code = "int main() {\n    return 0;\n}"
+function_signature = "int main()"
+function_name_hint = "main"
+test_cases = Array[Resource]([SubResource("TestCase_1")])
+time_limit_ms = 30000
+base_damage = 20
+perfect_damage = 60
+tags = PackedStringArray("tutorial", "compile-only")
+runner_path = "res://data/challenges/main_exit_check_runner.gd"

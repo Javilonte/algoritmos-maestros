@@ -1,0 +1,66 @@
+[gd_resource type="Resource" script_class="ChallengeResource" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://resources/challenge_resource.gd" id="1_cr"]
+[ext_resource type="Script" path="res://resources/test_case.gd" id="2_tc"]
+
+[sub_resource type="Resource" id="TestCase_1"]
+script = ExtResource("2_tc")
+name = "n=0"
+inputs = [0]
+expected = 1
+weight = 0.5
+
+[sub_resource type="Resource" id="TestCase_2"]
+script = ExtResource("2_tc")
+name = "n=1"
+inputs = [1]
+expected = 1
+weight = 0.5
+
+[sub_resource type="Resource" id="TestCase_3"]
+script = ExtResource("2_tc")
+name = "n=3"
+inputs = [3]
+expected = 3
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_4"]
+script = ExtResource("2_tc")
+name = "n=5"
+inputs = [5]
+expected = 8
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_5"]
+script = ExtResource("2_tc")
+name = "n=10"
+inputs = [10]
+expected = 89
+weight = 1.5
+
+[sub_resource type="Resource" id="TestCase_6"]
+script = ExtResource("2_tc")
+name = "n=20"
+inputs = [20]
+expected = 10946
+weight = 2.0
+
+[resource]
+script = ExtResource("1_cr")
+id = &"simple_dp"
+display_name = "Stair Climber"
+difficulty = 4
+prompt = "Implementa `int climbStairs(int n)` que retorne de cuántas formas puedes subir n escalones si solo puedes avanzar 1 o 2 escalones a la vez. Usa DP tabulativa (no recursión)."
+starter_code = "int climbStairs(int n) {\n    // tu código aquí\n    return 0;\n}"
+function_signature = "int climbStairs(int n)"
+function_name_hint = "climbStairs"
+test_cases = Array[Resource]([SubResource("TestCase_1"), SubResource("TestCase_2"), SubResource("TestCase_3"), SubResource("TestCase_4"), SubResource("TestCase_5"), SubResource("TestCase_6")])
+time_limit_ms = 30000
+base_damage = 35
+perfect_damage = 130
+tags = PackedStringArray("dp", "intermediate", "fibonacci")
+runner_path = "res://data/challenges/simple_dp_runner.gd"
+ast_min_statements = 5
+ast_required_features = PackedStringArray("loop", "return", "if")
+ast_return_substring = "int"
+validation_mode = "ast_oracle"

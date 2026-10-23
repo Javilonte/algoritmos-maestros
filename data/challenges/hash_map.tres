@@ -1,0 +1,66 @@
+[gd_resource type="Resource" script_class="ChallengeResource" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://resources/challenge_resource.gd" id="1_cr"]
+[ext_resource type="Script" path="res://resources/test_case.gd" id="2_tc"]
+
+[sub_resource type="Resource" id="TestCase_1"]
+script = ExtResource("2_tc")
+name = "all_unique"
+inputs = [[1, 2, 3, 4, 5]]
+expected = 5
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_2"]
+script = ExtResource("2_tc")
+name = "all_same"
+inputs = [[7, 7, 7, 7, 7]]
+expected = 1
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_3"]
+script = ExtResource("2_tc")
+name = "some_duplicates"
+inputs = [[1, 2, 2, 3, 3, 3, 4]]
+expected = 4
+weight = 1.5
+
+[sub_resource type="Resource" id="TestCase_4"]
+script = ExtResource("2_tc")
+name = "with_negatives"
+inputs = [[-1, -2, -1, 0, 1, 0, -2, 5]]
+expected = 5
+weight = 1.5
+
+[sub_resource type="Resource" id="TestCase_5"]
+script = ExtResource("2_tc")
+name = "single_element"
+inputs = [[42]]
+expected = 1
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_6"]
+script = ExtResource("2_tc")
+name = "large_with_few_unique"
+inputs = [[1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2]]
+expected = 2
+weight = 1.5
+
+[resource]
+script = ExtResource("1_cr")
+id = &"hash_map"
+display_name = "Hash Counter"
+difficulty = 3
+prompt = "Implementa `int countUnique(vector<int> arr)` que retorne cuántos valores distintos hay en arr. Usa unordered_map o equivalente para O(n)."
+starter_code = "int countUnique(vector<int> arr) {\n    // tu código aquí\n    return 0;\n}"
+function_signature = "int countUnique(vector<int> arr)"
+function_name_hint = "countUnique"
+test_cases = Array[Resource]([SubResource("TestCase_1"), SubResource("TestCase_2"), SubResource("TestCase_3"), SubResource("TestCase_4"), SubResource("TestCase_5"), SubResource("TestCase_6")])
+time_limit_ms = 30000
+base_damage = 30
+perfect_damage = 110
+tags = PackedStringArray("hash", "loop", "intermediate")
+runner_path = "res://data/challenges/hash_map_runner.gd"
+ast_min_statements = 3
+ast_required_features = PackedStringArray("loop", "return")
+ast_return_substring = "int"
+validation_mode = "ast_oracle"

@@ -1,0 +1,29 @@
+[gd_scene load_steps=6 format=3 uid="uid://sq4ge24kt4q0"]
+
+[ext_resource type="Script" path="res://scripts/iso/iso_demo_world.gd" id="1_demo_world"]
+[ext_resource type="PackedScene" uid="uid://isoplayer0comp" path="res://scenes/iso/iso_player.tscn" id="2_player"]
+[ext_resource type="Script" path="res://scripts/iso/iso_camera.gd" id="3_camera"]
+[ext_resource type="PackedScene" path="res://scenes/battle/battle.tscn" id="4_battle"]
+[ext_resource type="PackedScene" path="res://scenes/ui/level_up_toast.tscn" id="5_toast"]
+
+[node name="IsoDemo" type="Node2D"]
+position = Vector2(576, 540)
+script = ExtResource("1_demo_world")
+
+[node name="IsoCamera" type="Camera2D" parent="."]
+position = Vector2(0, -216)
+script = ExtResource("3_camera")
+target_path = NodePath("../IsoPlayer")
+zoom = Vector2(1, 1)
+
+[node name="IsoPlayer" parent="." instance=ExtResource("2_player")]
+position = Vector2(0, 0)
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(0, 0)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Battle" parent="." instance=ExtResource("4_battle")]
+
+[node name="LevelUpToast" parent="." instance=ExtResource("5_toast")]

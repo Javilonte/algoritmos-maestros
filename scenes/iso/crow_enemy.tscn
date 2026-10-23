@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://bgppmpbcyetox"]
+
+[ext_resource type="Script" path="res://scripts/iso/crow_enemy.gd" id="1_crow"]
+[ext_resource type="SpriteFrames" path="res://resources/crow_spriteframes.tres" id="2_crow_frames"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_crow"]
+radius = 80.0
+
+[node name="CrowEnemy" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 0
+script = ExtResource("1_crow")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(0, -120)
+sprite_frames = ExtResource("2_crow_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Label" type="Label" parent="."]
+offset_left = -60.0
+offset_top = -180.0
+offset_right = 60.0
+offset_bottom = -160.0
+horizontal_alignment = 1
+text = "Crow"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_crow")
+
+[node name="HitArea" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 2
+monitorable = false
+
+[node name="HitShape" type="CollisionShape2D" parent="HitArea"]
+shape = SubResource("CircleShape2D_crow")

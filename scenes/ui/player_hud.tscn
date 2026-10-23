@@ -1,0 +1,77 @@
+[gd_scene load_steps=4 format=3 uid="uid://dnisv0nwoeg5b"]
+
+[ext_resource type="Script" path="res://scripts/ui/player_hud.gd" id="1_hud"]
+[ext_resource type="Script" path="res://scripts/ui/d2_palette.gd" id="2_pal"]
+[ext_resource type="Script" path="res://scripts/ui/d2_stylebox.gd" id="3_sb"]
+
+[node name="PlayerHUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="Margin" type="MarginContainer" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 100.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="HBox" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LevelSigil" type="Panel" parent="Margin/HBox"]
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="LevelLabel" type="Label" parent="Margin/HBox/LevelSigil"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 20
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HPBlock" type="VBoxContainer" parent="Margin/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(260, 42)
+size_flags_vertical = 4
+theme_override_constants/separation = 2
+
+[node name="HPLabel" type="Label" parent="Margin/HBox/HPBlock"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "100 / 100"
+
+[node name="HPBar" type="ProgressBar" parent="Margin/HBox/HPBlock"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 14)
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="XPBlock" type="VBoxContainer" parent="Margin/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(200, 42)
+size_flags_vertical = 4
+theme_override_constants/separation = 2
+
+[node name="XPLabel" type="Label" parent="Margin/HBox/XPBlock"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "0 / 100"
+
+[node name="XPBar" type="ProgressBar" parent="Margin/HBox/XPBlock"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
+max_value = 100.0
+value = 0.0
+show_percentage = false

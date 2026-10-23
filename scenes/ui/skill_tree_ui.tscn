@@ -1,0 +1,98 @@
+[gd_scene load_steps=3 format=3 uid="uid://drvqagrcsmaa5"]
+
+[ext_resource type="Script" path="res://scripts/ui/skill_tree_ui.gd" id="1_stui"]
+[ext_resource type="Script" path="res://scripts/ui/d2_stylebox.gd" id="2_sb"]
+
+[node name="SkillTreeUI" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_stui")
+
+[node name="Background" type="Panel" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+self_modulate = Color(1, 1, 1, 0.7)
+
+[node name="OuterFrame" type="Panel" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -720.0
+offset_top = -360.0
+offset_right = 720.0
+offset_bottom = 360.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="InnerPanel" type="Panel" parent="OuterFrame"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="HeaderBar" type="Panel" parent="OuterFrame/InnerPanel"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 48.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="OuterFrame/InnerPanel/HeaderBar"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_right = -100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.92, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 22
+text = "Skill Tree — C++ Mastery"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="OuterFrame/InnerPanel/HeaderBar"]
+custom_minimum_size = Vector2(88, 36)
+layout_mode = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -96.0
+offset_top = 4.0
+offset_right = -8.0
+offset_bottom = -4.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 14
+text = "Close"
+
+[node name="Scroll" type="ScrollContainer" parent="OuterFrame/InnerPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 56.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Canvas" type="Control" parent="OuterFrame/InnerPanel/Scroll"]
+custom_minimum_size = Vector2(1520, 600)
+layout_mode = 2
