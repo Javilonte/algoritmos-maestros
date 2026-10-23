@@ -66,12 +66,15 @@ func _on_battle_requested(enemy_data: Dictionary) -> void:
 	_turn_start_ms = 0
 	battle_arena.position = _arena_original_pos
 	_enemy_data = enemy_data
-	GameManager.start_battle(enemy_data)
+	# ponytail: resolve the challenge BEFORE start_battle(). The old order
+	# reset both HP pools and pushed the FSM into BATTLE, then returned on an
+	# unknown id — leaving the game in a battle state that never began.
 	var challenge_id := String(enemy_data.get("challenge_id", ""))
 	_challenge = ChallengeRegistry.get_by_id(challenge_id)
 	if _challenge == null:
 		push_error("Battle: unknown challenge '%s'" % challenge_id)
 		return
+	GameManager.start_battle(enemy_data)
 	battle_terminal.close()
 	visible = true
 	action_menu.visible = true

@@ -3,13 +3,23 @@ class_name EnemyCatalog
 
 ## Catálogo de enemigos con vulnerabilidades elementales.
 ## Cada enemigo tiene un dict {display_name, max_hp, element_weaknesses, xp_reward}.
+##
+## ponytail: challenge_id used to be a fictional slug per enemy
+## (slime_aritm, buggo_ciego, ogro_bucle, ...) and NONE of them matched a
+## shipped data/challenges/*.tres, so every dungeon battle resolved
+## _challenge == null and could not start. They now point at the eight
+## real challenges, chosen by affinity: blind -> linear_search, infinite
+## loop -> factorial, off-by-one -> binary_search, memory -> hash_map,
+## final boss -> main_exit_check. Ten enemies, eight challenges, so a
+## few legitimately share one. Ceiling: reorder these freely, it is
+## pure content data and no code depends on the pairing.
 
 const CATALOG: Dictionary = {
 	"slime_aritm": {
 		"display_name": "Slime Aritmético",
 		"max_hp": 60,
 		"respawn_time": 25.0,
-		"challenge_id": "slime_aritm",
+		"challenge_id": "simple_dp",
 		"element_weaknesses": {"arithmetic": 2.0, "control_flow": 1.0},
 		"xp_reward": 50,
 		"flavor": "Resistente a la confusión; vulnerable a operaciones básicas.",
@@ -20,7 +30,7 @@ const CATALOG: Dictionary = {
 		"display_name": "Buggo Ciego",
 		"max_hp": 80,
 		"respawn_time": 30.0,
-		"challenge_id": "buggo_ciego",
+		"challenge_id": "linear_search",
 		"element_weaknesses": {"control_flow": 2.5, "arithmetic": 1.0},
 		"xp_reward": 80,
 		"flavor": "Si tu rama 'else' no se ejecuta, esquiva el golpe.",
@@ -31,7 +41,7 @@ const CATALOG: Dictionary = {
 		"display_name": "Ogro del Bucle Infinito",
 		"max_hp": 100,
 		"respawn_time": 35.0,
-		"challenge_id": "ogro_bucle",
+		"challenge_id": "factorial",
 		"element_weaknesses": {"control_flow": 2.0, "stl": 1.5},
 		"xp_reward": 120,
 		"flavor": "Si tu for no termina, él sigue vivo.",
@@ -42,7 +52,7 @@ const CATALOG: Dictionary = {
 		"display_name": "Fantasma Off-by-One",
 		"max_hp": 90,
 		"respawn_time": 30.0,
-		"challenge_id": "fantasma_offbyone",
+		"challenge_id": "binary_search",
 		"element_weaknesses": {"pointer": 2.0, "control_flow": 1.2},
 		"xp_reward": 110,
 		"flavor": "Un índice fuera de lugar lo atraviesa.",
@@ -53,7 +63,7 @@ const CATALOG: Dictionary = {
 		"display_name": "Jefe: Memory Leak",
 		"max_hp": 250,
 		"respawn_time": 60.0,
-		"challenge_id": "memory_leak",
+		"challenge_id": "hash_map",
 		"element_weaknesses": {"pointer": 3.0},
 		"xp_reward": 400,
 		"flavor": "No lo hieres si no liberas la memoria.",
@@ -64,7 +74,7 @@ const CATALOG: Dictionary = {
 		"display_name": "Hidra Recursiva",
 		"max_hp": 180,
 		"respawn_time": 50.0,
-		"challenge_id": "hidra_recursiva",
+		"challenge_id": "fibonacci",
 		"element_weaknesses": {"control_flow": 2.5},
 		"xp_reward": 280,
 		"flavor": "Cada llamada recursiva le corta una cabeza.",
@@ -75,7 +85,7 @@ const CATALOG: Dictionary = {
 		"display_name": "Golem Genérico",
 		"max_hp": 150,
 		"respawn_time": 45.0,
-		"challenge_id": "golem_generico",
+		"challenge_id": "bubble_sort",
 		"element_weaknesses": {"template": 2.5},
 		"xp_reward": 250,
 		"flavor": "Resistente a tipos concretos; usa templates.",
@@ -86,7 +96,7 @@ const CATALOG: Dictionary = {
 		"display_name": "Dragón del Caos",
 		"max_hp": 220,
 		"respawn_time": 55.0,
-		"challenge_id": "dragon_caos",
+		"challenge_id": "linear_search",
 		"element_weaknesses": {"stl": 2.5, "control_flow": 1.5},
 		"xp_reward": 350,
 		"flavor": "Desordena vectores; std::sort lo calma.",
@@ -97,7 +107,7 @@ const CATALOG: Dictionary = {
 		"display_name": "Wyrm Paralelo",
 		"max_hp": 260,
 		"respawn_time": 60.0,
-		"challenge_id": "wyrm_paralelo",
+		"challenge_id": "bubble_sort",
 		"element_weaknesses": {"concurrency": 3.0},
 		"xp_reward": 450,
 		"flavor": "Solo muere si todos los hilos completan.",
@@ -108,7 +118,7 @@ const CATALOG: Dictionary = {
 		"display_name": "Jefe Final: Compilador Divino",
 		"max_hp": 500,
 		"respawn_time": 120.0,
-		"challenge_id": "compilador_divino",
+		"challenge_id": "main_exit_check",
 		"element_weaknesses": {"pointer": 2.0, "stl": 2.0, "template": 2.0, "concurrency": 2.0},
 		"xp_reward": 1500,
 		"flavor": "Solo #include <bits/stdc++.h> lo abate.",
