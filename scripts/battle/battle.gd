@@ -289,11 +289,6 @@ func _end_battle(result: String) -> void:
 	# so skill unlocks never fired from combat. Single line closes the loop.
 	if result == "win":
 		var xp_reward: int = int(_enemy_data.get("xp_reward", 0))
-	# ponytail: wire the XP loop. EnemyData.xp_reward is declared in
-	# iso_meta.gd:104-128 (50..400 by enemy) but the grant was missing —
-	# so skill unlocks never fired from combat. Single line closes the loop.
-	if result == "win":
-		var xp_reward: int = int(_enemy_data.get("xp_reward", 0))
 		if xp_reward > 0:
 			SkillTree.add_xp(xp_reward)
 	EventBus.battle_ended.emit(result)

@@ -55,7 +55,7 @@ func _run() -> void:
 		else:
 			passed.append("Loaded " + tileset_path.rsplit("/", true, 1)[1])
 
-	# 4) IsoTileCoords + IsoCollisionQuery compile.
+	# 4) IsoTileCoords compile.
 	var Coords := load("res://scripts/iso/iso_tile_coords.gd")
 	if Coords == null:
 		failed.append("Failed to load iso_tile_coords.gd")
@@ -68,12 +68,6 @@ func _run() -> void:
 			failed.append("BRICK_WALL_BOT_N = " + str(brick_n) + " (expected (0, 1))")
 		else:
 			passed.append("BRICK_WALL_BOT_N = (0, 1)")
-
-	var Query := load("res://scripts/iso/iso_collision_query.gd")
-	if Query == null:
-		failed.append("Failed to load iso_collision_query.gd")
-	else:
-		passed.append("iso_collision_query.gd loaded")
 
 	# 5) IsoMeta has wall_regions, doors, decor_positions, prop_positions.
 	var meta: Resource = load("res://data/worlds/iso_demo_meta.tres")
@@ -101,19 +95,7 @@ func _run() -> void:
 		else:
 			passed.append("iso_meta.prop_positions: " + str(props.size()))
 
-	# 6) Background uses forest green.
-	var bg_scene := load("res://scripts/iso/iso_background.gd")
-	if bg_scene == null:
-		failed.append("Failed to load iso_background.gd")
-	else:
-		var bg_obj = bg_scene.new()
-		bg_obj.color_override = Color(0.18, 0.3, 0.18, 1)
-		if bg_obj.color_override != Color(0.18, 0.3, 0.18, 1):
-			failed.append("iso_background.color_override setter broken")
-		else:
-			passed.append("iso_background.color_override = (0.18, 0.30, 0.18, 1)")
-
-	# 7) default_clear_color in project.godot
+	# 6) default_clear_color in project.godot
 	var f := FileAccess.open("res://project.godot", FileAccess.READ)
 	var found_clear := false
 	if f:

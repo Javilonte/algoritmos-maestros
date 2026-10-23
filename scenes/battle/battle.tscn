@@ -1,11 +1,8 @@
-[gd_scene load_steps=15 format=3 uid="uid://battle0comp0uid"]
+[gd_scene load_steps=12 format=3 uid="uid://battle0comp0uid"]
 
 [ext_resource type="Script" path="res://scripts/battle/battle.gd" id="1_battle"]
 [ext_resource type="Script" path="res://scripts/battle/battle_portrait.gd" id="2_portrait"]
-[ext_resource type="Script" path="res://scripts/battle/hp_bar.gd" id="3_hpbar"]
-[ext_resource type="PackedScene" uid="uid://b8hpbar0compa" path="res://scenes/battle/hp_bar.tscn" id="4_hpbar_scene"]
 [ext_resource type="PackedScene" path="res://scenes/battle/battle_terminal.tscn" id="5_battle_terminal"]
-[ext_resource type="Script" path="res://scripts/vfx/vfx_controller.gd" id="6_vfx"]
 [ext_resource type="Script" path="res://scripts/ui/d2_stylebox.gd" id="7_sb"]
 [ext_resource type="Script" path="res://scripts/ui/d2_palette.gd" id="8_pal"]
 [ext_resource type="SpriteFrames" path="res://resources/crow_spriteframes.tres" id="9_crow_frames"]
@@ -250,10 +247,3 @@ z_index = 50
 
 [node name="BattleTerminal" parent="." instance=ExtResource("5_battle_terminal")]
 visible = false
-
-[node name="VFXController" type="Node" parent="."]
-script = ExtResource("6_vfx")
-shake_magnitude = 4.0
-shake_duration = 0.18
-shake_damage_threshold = 20
-sfx_bus = "SFX"
