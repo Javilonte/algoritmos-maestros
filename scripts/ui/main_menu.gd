@@ -72,6 +72,7 @@ func _ready() -> void:
 	options_button.pressed.connect(_on_options_pressed)
 	exit_button.pressed.connect(_on_exit_pressed)
 	_connect_cursor()
+	_grab_focus_when_ready()
 
 
 func _setup_button_states() -> void:
@@ -143,13 +144,34 @@ func _apply_settings() -> void:
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 	# ponytail: apply persisted volume to Music + SFX buses on boot.
+	# Uses AudioManager's constants rather than literal bus names: options_menu
+	# already had this loop against the constants, so the literals were a
+	# silent-drift hazard if a bus were ever renamed.
 	var vol_pct: float = float(settings.get("volume", 80))
 	var clamped: float = clampf(vol_pct / 100.0, 0.0, 1.0)
 	var db: float = linear_to_db(clamped if clamped > 0.01 else 0.01)
-	for bus_name in ["Music", "SFX"]:
+	for bus_name in [AudioManager.BUS_MUSIC, AudioManager.BUS_SFX]:
 		var idx: int = AudioServer.get_bus_index(bus_name)
 		if idx >= 0:
 			AudioServer.set_bus_volume_db(idx, db)
+
+
+## ponytail: a menu nobody can reach with the keyboard is not finished.
+## Nothing ever grabbed focus, so Enter/Space did nothing until the player
+## clicked a button with the mouse — the buttons were already FOCUS_ALL.
+## Waits for the splash when there is one, so a keypress during the splash
+## still skips it instead of silently starting the game.
+func _grab_primary_focus() -> void:
+	if quick_start_button != null and not quick_start_button.disabled:
+		quick_start_button.grab_focus()
+
+
+func _grab_focus_when_ready() -> void:
+	var splash := get_node_or_null("SplashOverlay/Splash")
+	if splash != null and splash.has_signal("splash_finished"):
+		splash.connect("splash_finished", _grab_primary_focus)
+	else:
+		_grab_primary_focus.call_deferred()
 
 ## --- Handlers ---
 
