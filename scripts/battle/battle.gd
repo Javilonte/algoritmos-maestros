@@ -263,10 +263,8 @@ func _end_battle(result: String) -> void:
 		return
 	_phase = BattlePhase.FINISHED
 	_kill_active_shake()
-	if result == "win" and _enemy_data.has("node"):
-		var enemy_node: Variant = _enemy_data["node"]
-		if enemy_node is Enemy:
-			(enemy_node as Enemy).defeat()
+	if result == "win":
+		_defeat_enemy()
 	# ponytail: on lose, show the GameOver screen instead of silently
 	# dumping the player back to overworld. The screen handles its own
 	# retry/run flow and calls queue_free on dismissal.
@@ -292,6 +290,35 @@ func _end_battle(result: String) -> void:
 		if xp_reward > 0:
 			SkillTree.add_xp(xp_reward)
 	EventBus.battle_ended.emit(result)
+
+
+## ponytail: one place decides how an enemy leaves the field. Three enemy
+## classes exist (Enemy, IsoEnemy, CrowEnemy), each owning its own
+## defeat(); the old `is Enemy` test silently skipped the two ISO ones,
+## so winning an ISO fight left the enemy standing and re-triggerable.
+## Ceiling: uses duck-typed call() rather than a shared interface.
+func _defeat_enemy() -> void:
+	if not _enemy_data.has("node"):
+		return
+	var enemy_node: Variant = _enemy_data["node"]
+	# is_inside_tree() matters: is_instance_valid passes for an out-of-tree
+	# object, and every defeat() calls get_tree().create_timer().
+	if is_instance_valid(enemy_node) and enemy_node.is_inside_tree() and enemy_node.has_method("defeat"):
+		enemy_node.call("defeat")
+
+
+## Seconds the defeated enemy stays gone. Read from the node itself so the
+## GameOver screen cannot promise a number the respawn timer won't honour.
+func _enemy_respawn_seconds() -> int:
+	if _enemy_data.has("node"):
+		var enemy_node: Variant = _enemy_data["node"]
+		if is_instance_valid(enemy_node):
+			var raw: Variant = enemy_node.get("respawn_time")
+			if raw is float or raw is int:
+				# ceili, not int(): rounding down would promise less time
+				# than the timer actually waits.
+				return ceili(float(raw))
+	return 30
 
 
 ## ponytail: spawn a transient BattleBanner as a child of the BattleArena.
@@ -330,12 +357,16 @@ func _show_game_over() -> void:
 	var go: Node = go_scene.instantiate()
 	if go == null:
 		return
-	# Setup metadata before adding to tree (so handlers are ready).
+	# ponytail: add_child FIRST, then setup. GDScript @onready vars resolve
+	# in _ready(), which add_child triggers — calling setup() before the node
+	# is in the tree left every @onready nil, so the first statement aborted
+	# and the whole method silently no-op'd with a success exit code. That
+	# is why the enemy name never showed before this fix.
+	battle_arena.add_child(go)
 	if go.has_method("setup"):
 		var enemy_name: String = String(_enemy_data.get("display_name", "Enemy"))
 		var challenge_id: StringName = StringName(String(_enemy_data.get("challenge_id", "")))
-		go.setup(challenge_id, enemy_name)
-	battle_arena.add_child(go)
+		go.setup(challenge_id, enemy_name, _enemy_respawn_seconds())
 	if go.has_signal("retry_pressed"):
 		go.retry_pressed.connect(_on_game_over_retry)
 	if go.has_signal("run_pressed"):
@@ -344,8 +375,12 @@ func _show_game_over() -> void:
 
 
 func _on_game_over_retry() -> void:
-	# ponytail: re-open the BattleTerminal with the same challenge.
-	# The player keeps their HP (no penalty), the enemy resets to max.
+	# ponytail: this single call IS the retry mechanic. start_battle() is
+	# the existing helper that resets both sides — enemy to max_hp, player
+	# to max_hp — and zeroes the combo, so retrying costs your streak.
+	# Without it the retry kept HP at 0, the first enemy turn re-lost
+	# instantly, and the fight was unwinnable no matter what you typed.
+	GameManager.start_battle(_enemy_data)
 	visible = true
 	_is_animating = false
 	_phase = BattlePhase.EDITING
@@ -364,6 +399,11 @@ func _on_game_over_retry() -> void:
 
 
 func _on_game_over_run() -> void:
+	# ponytail: fleeing is no longer free. Defeating the enemy node makes
+	# it vanish for its own respawn_time, so running away costs waiting
+	# instead of costing nothing. Same helper the win path uses, so ISO
+	# and crow enemies behave like the overworld one.
+	_defeat_enemy()
 	visible = false
 	battle_terminal.close()
 	action_menu.visible = true
