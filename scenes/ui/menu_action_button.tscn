@@ -1,7 +1,6 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/menu_action_button.gd" id="1_btn"]
-[ext_resource type="Script" path="res://scripts/ui/d2_palette.gd" id="2_pal"]
 [ext_resource type="Script" path="res://scripts/ui/cyberpunk_button.gd" id="3_cb"]
 
 [node name="MenuActionButton" type="Button"]

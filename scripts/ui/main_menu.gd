@@ -105,12 +105,18 @@ func _setup_ambient_code() -> void:
 	for line_text in AMBIENT_LINES:
 		var label := Label.new()
 		label.text = line_text
-		label.add_theme_color_override("font_color", Color(0.0, 0.55, 0.50, randf_range(0.05, 0.14)))
+		# ponytail: el codigo ambiente era invisible sobre el fondo
+		# oliva de Diablo II. Sobre el fondo casi negro se lee solo si
+		# sube un poco el alpha — sin robarle el ojo al menu.
+		label.add_theme_color_override("font_color", Color(0.0, 0.55, 0.50, randf_range(0.06, 0.15)))
 		label.add_theme_font_size_override("font_size", 13)
 		var x: float = randf_range(40, max(vp.x - 300, 100))
 		var y: float = randf_range(0, vp.y - 40)
 		label.position = Vector2(x, y)
-		label.z_index = -1
+		# ponytail: z_index = -1 mandaba el codigo POR DEBAJO del panel
+		# de fondo, que es un hermano anterior: nunca se vio. El orden
+		# del arbol ya lo pone detras del menu.
+		label.z_index = 0
 		ambient_code.add_child(label)
 
 	_code_scroll_tween = create_tween().set_loops()
@@ -131,10 +137,22 @@ func _respawn_label(label: Label, start_y: float, vp: Vector2) -> void:
 
 
 func _apply_local_overrides() -> void:
+	# ponytail: el menu usaba D2StyleBox.panel_inner() (marrón oliva) para
+	# el fondo, la cabecera y el pie. Con la pantalla de combate ya
+	# neón, el juego abria en otro sistema de diseño del que jugaba.
+	# Ahora las tres bandas salen de CyberStyleBox.
+	var background: Panel = get_node_or_null("Background")
+	if background:
+		background.add_theme_stylebox_override("panel", CyberStyleBox.backdrop())
 	if header_bar:
-		header_bar.add_theme_stylebox_override("panel", D2StyleBox.panel_inner())
+		header_bar.add_theme_stylebox_override("panel", CyberStyleBox.bar())
 	if footer_bar:
-		footer_bar.add_theme_stylebox_override("panel", D2StyleBox.panel_inner())
+		footer_bar.add_theme_stylebox_override("panel", CyberStyleBox.footer_bar())
+	if neon_strip:
+		neon_strip.add_theme_stylebox_override("panel", CyberStyleBox.neon_strip())
+	var title: Label = get_node_or_null("HeaderBar/TitlePadding/TitleColumn/TitleLabel")
+	if title:
+		title.add_theme_color_override("font_color", CyberStyleBox.CYAN)
 
 
 func _apply_settings() -> void:

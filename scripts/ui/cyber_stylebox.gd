@@ -21,6 +21,7 @@ const MAGENTA := Color(0.95, 0.25, 0.95)
 const AMBER := Color(0.98, 0.72, 0.20)
 const GREEN := Color(0.30, 0.95, 0.50)
 const RED := Color(0.95, 0.28, 0.24)
+const STEEL := Color(0.55, 0.66, 0.74)
 const TEXT := Color(0.87, 0.94, 0.97)
 const TEXT_DIM := Color(0.42, 0.52, 0.60)
 const DEEP := Color(0.02, 0.03, 0.06, 0.92)
@@ -152,6 +153,43 @@ static func chip(accent: Color = CYAN) -> StyleBoxFlat:
 	return sb
 
 
+## Barra horizontal: fondo oscuro y sin borde. El borde lo pone la
+## tira neón que va pegada abajo.
+static func bar(fill: Color = Color(0.010, 0.020, 0.040, 1.0)) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = fill
+	sb.set_corner_radius_all(0)
+	sb.content_margin_left = 0.0
+	sb.content_margin_top = 0.0
+	sb.content_margin_right = 0.0
+	sb.content_margin_bottom = 0.0
+	return sb
+
+
+## Barra de pie: un pelo mas clara que el fondo, para que la banda se
+## lea sin necesidad de un borde.
+static func footer_bar() -> StyleBoxFlat:
+	return bar(Color(0.018, 0.032, 0.055, 1.0))
+
+
+## Tira neón: solo el borde inferior, que es la linea que separa la
+## cabecera del cuerpo.
+static func neon_strip(accent: Color = CYAN) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0, 0, 0, 0)
+	sb.border_color = accent
+	sb.border_width_left = 0
+	sb.border_width_top = 0
+	sb.border_width_right = 0
+	sb.border_width_bottom = 2
+	sb.set_corner_radius_all(0)
+	sb.content_margin_left = 0.0
+	sb.content_margin_top = 0.0
+	sb.content_margin_right = 0.0
+	sb.content_margin_bottom = 0.0
+	return sb
+
+
 ## Canal de barra: mas claro que el fondo casi negro de D2StyleBox, para que
 ## una barra vacia se lea como una barra y no como un hole.
 static func track() -> StyleBoxFlat:
@@ -197,3 +235,30 @@ static func hp_color(ratio: float) -> Color:
 	if ratio > 0.25:
 		return AMBER
 	return RED
+
+
+## Punto de habilidad. El bloqueado tiene que verse: un punto oscuro
+## sobre un fondo oscuro es un hueco, y el panel parecia vacio teniendo
+## catorce ranuras.
+static func dot(unlocked: bool) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	if unlocked:
+		sb.bg_color = CYAN
+		sb.border_color = CYAN.lightened(0.2)
+	else:
+		sb.bg_color = Color(0.09, 0.12, 0.16, 1.0)
+		sb.border_color = Color(0.26, 0.33, 0.40, 1.0)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(2)
+	return sb
+
+
+## Separador horizontal entre secciones de un panel.
+static func separator() -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.18, 0.24, 0.30, 1.0)
+	sb.content_margin_left = 0.0
+	sb.content_margin_top = 0.0
+	sb.content_margin_right = 0.0
+	sb.content_margin_bottom = 0.0
+	return sb

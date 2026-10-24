@@ -33,7 +33,7 @@ class_name BattlePortrait
 
 ## Margen lateral del area de arte. Abajo no hay margen: el borde inferior
 ## del panel es la linea de piso sobre la que se apoya el personaje.
-const ART_PADDING := 12.0
+const ART_PADDING := SpriteInFrame.PADDING
 
 var _sprite: AnimatedSprite2D
 var _name_label: Label
@@ -135,32 +135,13 @@ func _build() -> void:
 	vbox.add_child(_hp_bar)
 
 
-## Tamano de la celda del frame actual.
-func _frame_size() -> Vector2:
-	if sprite_frames == null or not sprite_frames.has_animation(idle_anim):
-		return Vector2.ZERO
-	var tex: Texture2D = sprite_frames.get_frame_texture(idle_anim, 0)
-	if tex == null:
-		return Vector2.ZERO
-	return tex.region.size if tex is AtlasTexture else tex.get_size()
-
-
 ## ponytail: el sprite es un Node2D, no lo toca ningun contenedor. Se
 ## posiciona a mano contra el area de arte: centrado en X, apoyado sobre
 ## la linea de piso en Y, y escalado contra el tamano REAL de esa area.
+## La aritmetica vive en SpriteInFrame, que la comparte con la ficha del
+## menu principal.
 func _layout_sprite() -> void:
-	if _sprite == null or _art == null:
-		return
-	var cell: Vector2 = _frame_size()
-	if cell.x <= 0.0 or cell.y <= 0.0:
-		return
-	var inner: Vector2 = Vector2(_art.size.x - ART_PADDING * 2.0, _art.size.y - ART_PADDING)
-	if inner.x <= 0.0 or inner.y <= 0.0:
-		return
-	var scale_factor: float = minf(inner.x / cell.x, inner.y / cell.y) * portrait_fill
-	_sprite.scale = Vector2.ONE * scale_factor
-	var drawn: Vector2 = cell * scale_factor
-	_sprite.position = Vector2(_art.size.x * 0.5, _art.size.y - drawn.y * 0.5)
+	SpriteInFrame.fit(_sprite, _art, portrait_fill)
 
 
 ## Update the displayed name and level.
