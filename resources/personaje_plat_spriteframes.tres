@@ -1,0 +1,118 @@
+[gd_resource type="SpriteFrames" load_steps=4 format=3]
+[ext_resource type="Texture2D" path="res://assets/textures/plat/personaje_idle_p.png" id="1_idle"]
+[ext_resource type="Texture2D" path="res://assets/textures/plat/personaje_walk_p.png" id="2_walk"]
+[ext_resource type="Texture2D" path="res://assets/textures/plat/personaje_interact_p.png" id="3_interact"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_idle"),
+"region": Rect2(0, 0, 39, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_idle"),
+"region": Rect2(39, 0, 39, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_idle"),
+"region": Rect2(78, 0, 38, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_idle"),
+"region": Rect2(116, 0, 39, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_idle"),
+"region": Rect2(155, 0, 36, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_idle"),
+"region": Rect2(191, 0, 41, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_idle"),
+"region": Rect2(232, 0, 41, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_idle"),
+"region": Rect2(273, 0, 37, 48)
+}],
+"loop": true,
+"name": &"idle",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_walk"),
+"region": Rect2(0, 0, 33, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_walk"),
+"region": Rect2(33, 0, 41, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_walk"),
+"region": Rect2(74, 0, 41, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_walk"),
+"region": Rect2(115, 0, 42, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_walk"),
+"region": Rect2(157, 0, 43, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_walk"),
+"region": Rect2(201, 0, 43, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_walk"),
+"region": Rect2(244, 0, 43, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_walk"),
+"region": Rect2(287, 0, 39, 48)
+}],
+"loop": true,
+"name": &"walk",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_interact"),
+"region": Rect2(0, 0, 32, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_interact"),
+"region": Rect2(32, 0, 37, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_interact"),
+"region": Rect2(68, 0, 35, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_interact"),
+"region": Rect2(104, 0, 36, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_interact"),
+"region": Rect2(139, 0, 42, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_interact"),
+"region": Rect2(181, 0, 42, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_interact"),
+"region": Rect2(223, 0, 42, 48)
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_interact"),
+"region": Rect2(265, 0, 33, 48)
+}],
+"loop": false,
+"name": &"interact",
+"speed": 10.0
+}]
