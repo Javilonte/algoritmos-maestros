@@ -161,7 +161,15 @@ func _dismiss() -> void:
 	fade.tween_property(self, "modulate:a", 0.0, FADE_OUT_DURATION)
 	await fade.finished
 	splash_finished.emit()
-	get_tree().change_scene_to_file(MAIN_MENU_PATH)
+	# ponytail: no scene change here. The splash is a CHILD of the main
+	# menu (main_menu.tscn instances it under SplashOverlay), so navigating
+	# to the main menu reloaded the menu, built a fresh splash, which saw
+	# boot_seen and dismissed again — an endless 0.35s loop. Measured 8
+	# scene changes per 400 frames before this fix.
+	# Ceiling: this splash can never be booted standalone; if it ever is,
+	# the host scene owns what comes next, via splash_finished.
+	visible = false
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func _on_safety_timeout() -> void:

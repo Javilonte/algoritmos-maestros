@@ -46,6 +46,14 @@ func _refresh() -> void:
 		btn.text = "Alt+%d %s" % [i + 1, macro_name]
 		btn.custom_minimum_size = Vector2(120, 28)
 		btn.tooltip_text = "Inserta macro '%s' en el cursor" % macro_name
+		# ponytail: el boton default de Godot es gris de sistema y rompia
+		# la paleta. El chip toma el verde de la terminal, que es donde
+		# vive la barra.
+		btn.add_theme_stylebox_override("normal", CyberStyleBox.chip(CyberStyleBox.GREEN))
+		btn.add_theme_stylebox_override("hover", CyberStyleBox.chip(CyberStyleBox.GREEN))
+		btn.add_theme_stylebox_override("pressed", CyberStyleBox.chip(CyberStyleBox.GREEN))
+		btn.add_theme_color_override("font_color", CyberStyleBox.TEXT_DIM)
+		btn.add_theme_color_override("font_hover_color", CyberStyleBox.GREEN)
 		btn.pressed.connect(_on_macro_button_pressed.bind(macro_name))
 		add_child(btn)
 		_buttons[macro_name] = btn

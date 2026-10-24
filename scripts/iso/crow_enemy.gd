@@ -23,6 +23,7 @@ var tile_position: Vector2i = Vector2i.ZERO
 @export var max_hp: int = 60
 @export var challenge_id: String = "main_exit_check"
 @export var respawn_time: float = 30.0
+@export var xp_reward: int = 50
 
 # Patrol AI.
 @export var patrol_radius: int = 2  # tiles of patrol range
@@ -175,13 +176,8 @@ func _on_body_entered(body: Node) -> void:
 	if not (body.is_in_group("player") or body.name == "IsoPlayer" or body.name == "Player"):
 		return
 	_apply_state("attack")
-	var enemy_data: Dictionary = {
-		"display_name": display_name,
-		"max_hp": max_hp,
-		"challenge_id": challenge_id,
-		"node": self,
-	}
-	EventBus.battle_requested.emit(enemy_data)
+	var data := EnemyData.create(display_name, max_hp, challenge_id, self, "", xp_reward)
+	EventBus.battle_requested.emit(data.to_dict())
 
 
 func take_hit() -> void:

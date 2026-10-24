@@ -9,7 +9,7 @@ extends Control
 ## keywords (templates, lower_bound, lambdas) instead of generic snippets
 ## so the menu subtly advertises the educational angle.
 
-const WORLD_SCENE_PATH := "res://scenes/iso/iso_demo.tscn"
+const WORLD_SCENE_PATH := "res://scenes/platformer/platformer_world.tscn"
 
 @onready var quick_start_button: MenuActionButton = $Body/CenterColumn/ActionGrid/QuickStartButton
 @onready var continue_button: MenuActionButton = $Body/CenterColumn/ActionGrid/ContinueRow/ContinueButton
@@ -72,6 +72,7 @@ func _ready() -> void:
 	options_button.pressed.connect(_on_options_pressed)
 	exit_button.pressed.connect(_on_exit_pressed)
 	_connect_cursor()
+	_grab_focus_when_ready()
 
 
 func _setup_button_states() -> void:
@@ -104,12 +105,18 @@ func _setup_ambient_code() -> void:
 	for line_text in AMBIENT_LINES:
 		var label := Label.new()
 		label.text = line_text
-		label.add_theme_color_override("font_color", Color(0.0, 0.55, 0.50, randf_range(0.05, 0.14)))
+		# ponytail: el codigo ambiente era invisible sobre el fondo
+		# oliva de Diablo II. Sobre el fondo casi negro se lee solo si
+		# sube un poco el alpha — sin robarle el ojo al menu.
+		label.add_theme_color_override("font_color", Color(0.0, 0.55, 0.50, randf_range(0.06, 0.15)))
 		label.add_theme_font_size_override("font_size", 13)
 		var x: float = randf_range(40, max(vp.x - 300, 100))
 		var y: float = randf_range(0, vp.y - 40)
 		label.position = Vector2(x, y)
-		label.z_index = -1
+		# ponytail: z_index = -1 mandaba el codigo POR DEBAJO del panel
+		# de fondo, que es un hermano anterior: nunca se vio. El orden
+		# del arbol ya lo pone detras del menu.
+		label.z_index = 0
 		ambient_code.add_child(label)
 
 	_code_scroll_tween = create_tween().set_loops()
@@ -130,10 +137,22 @@ func _respawn_label(label: Label, start_y: float, vp: Vector2) -> void:
 
 
 func _apply_local_overrides() -> void:
+	# ponytail: el menu usaba D2StyleBox.panel_inner() (marrón oliva) para
+	# el fondo, la cabecera y el pie. Con la pantalla de combate ya
+	# neón, el juego abria en otro sistema de diseño del que jugaba.
+	# Ahora las tres bandas salen de CyberStyleBox.
+	var background: Panel = get_node_or_null("Background")
+	if background:
+		background.add_theme_stylebox_override("panel", CyberStyleBox.backdrop())
 	if header_bar:
-		header_bar.add_theme_stylebox_override("panel", D2StyleBox.panel_inner())
+		header_bar.add_theme_stylebox_override("panel", CyberStyleBox.bar())
 	if footer_bar:
-		footer_bar.add_theme_stylebox_override("panel", D2StyleBox.panel_inner())
+		footer_bar.add_theme_stylebox_override("panel", CyberStyleBox.footer_bar())
+	if neon_strip:
+		neon_strip.add_theme_stylebox_override("panel", CyberStyleBox.neon_strip())
+	var title: Label = get_node_or_null("HeaderBar/TitlePadding/TitleColumn/TitleLabel")
+	if title:
+		title.add_theme_color_override("font_color", CyberStyleBox.CYAN)
 
 
 func _apply_settings() -> void:
@@ -143,13 +162,34 @@ func _apply_settings() -> void:
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 	# ponytail: apply persisted volume to Music + SFX buses on boot.
+	# Uses AudioManager's constants rather than literal bus names: options_menu
+	# already had this loop against the constants, so the literals were a
+	# silent-drift hazard if a bus were ever renamed.
 	var vol_pct: float = float(settings.get("volume", 80))
 	var clamped: float = clampf(vol_pct / 100.0, 0.0, 1.0)
 	var db: float = linear_to_db(clamped if clamped > 0.01 else 0.01)
-	for bus_name in ["Music", "SFX"]:
+	for bus_name in [AudioManager.BUS_MUSIC, AudioManager.BUS_SFX]:
 		var idx: int = AudioServer.get_bus_index(bus_name)
 		if idx >= 0:
 			AudioServer.set_bus_volume_db(idx, db)
+
+
+## ponytail: a menu nobody can reach with the keyboard is not finished.
+## Nothing ever grabbed focus, so Enter/Space did nothing until the player
+## clicked a button with the mouse — the buttons were already FOCUS_ALL.
+## Waits for the splash when there is one, so a keypress during the splash
+## still skips it instead of silently starting the game.
+func _grab_primary_focus() -> void:
+	if quick_start_button != null and not quick_start_button.disabled:
+		quick_start_button.grab_focus()
+
+
+func _grab_focus_when_ready() -> void:
+	var splash := get_node_or_null("SplashOverlay/Splash")
+	if splash != null and splash.has_signal("splash_finished"):
+		splash.connect("splash_finished", _grab_primary_focus)
+	else:
+		_grab_primary_focus.call_deferred()
 
 ## --- Handlers ---
 

@@ -1,63 +1,10 @@
-[gd_scene load_steps=12 format=3 uid="uid://battle0comp0uid"]
+[gd_scene load_steps=8 format=3 uid="uid://battle0comp0uid"]
 
 [ext_resource type="Script" path="res://scripts/battle/battle.gd" id="1_battle"]
 [ext_resource type="Script" path="res://scripts/battle/battle_portrait.gd" id="2_portrait"]
 [ext_resource type="PackedScene" path="res://scenes/battle/battle_terminal.tscn" id="5_battle_terminal"]
-[ext_resource type="Script" path="res://scripts/ui/d2_stylebox.gd" id="7_sb"]
-[ext_resource type="Script" path="res://scripts/ui/d2_palette.gd" id="8_pal"]
 [ext_resource type="SpriteFrames" path="res://resources/crow_spriteframes.tres" id="9_crow_frames"]
 [ext_resource type="SpriteFrames" path="res://resources/personaje_spriteframes.tres" id="10_player_frames"]
-[ext_resource type="Script" path="res://scripts/ui/macro_bar_ui.gd" id="11_macro"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_overlay"]
-bg_color = Color(0.04, 0.06, 0.10, 0.82)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.65, 0.50, 0.28, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vs"]
-bg_color = Color(0.85, 0.70, 0.40, 0.18)
-border_color = Color(0.92, 0.78, 0.42, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-corner_radius_top_left = 50
-corner_radius_top_right = 50
-corner_radius_bottom_right = 50
-corner_radius_bottom_left = 50
-content_margin_left = 0.0
-content_margin_top = 0.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-
-[sub_resource type="LabelSettings" id="LabelSettings_vs"]
-font_size = 32
-font_color = Color(0.95, 0.82, 0.45, 1)
-outline_size = 4
-outline_color = Color(0.1, 0.05, 0.02, 0.9)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_msg"]
-bg_color = Color(0.06, 0.05, 0.04, 0.92)
-border_color = Color(0.65, 0.50, 0.28, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
-content_margin_left = 12.0
-content_margin_top = 8.0
-content_margin_right = 12.0
-content_margin_bottom = 8.0
 
 [node name="Battle" type="CanvasLayer"]
 process_mode = 3
@@ -72,81 +19,141 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Background" type="Panel" parent="BattleArena"]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_overlay")
 
-[node name="PortraitsRow" type="HBoxContainer" parent="BattleArena"]
+[node name="StatusBar" type="HBoxContainer" parent="BattleArena"]
+layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 32.0
-offset_top = 32.0
+offset_top = 14.0
 offset_right = -32.0
-offset_bottom = 320.0
+offset_bottom = 76.0
 grow_horizontal = 2
-theme_override_constants/separation = 32
+theme_override_constants/separation = 16
+
+[node name="ComboLabel" type="Label" parent="BattleArena/StatusBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_colors/font_shadow_color = Color(0, 0.2, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 26
+text = ""
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="TimerChip" type="PanelContainer" parent="BattleArena/StatusBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(208, 0)
+size_flags_horizontal = 8
+size_flags_vertical = 4
+
+[node name="TimerBox" type="VBoxContainer" parent="BattleArena/StatusBar/TimerChip"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TimerRow" type="HBoxContainer" parent="BattleArena/StatusBar/TimerChip/TimerBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TimerCaption" type="Label" parent="BattleArena/StatusBar/TimerChip/TimerBox/TimerRow"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.42, 0.52, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "TURN"
+
+[node name="BattleTimer" type="Label" parent="BattleArena/StatusBar/TimerChip/TimerBox/TimerRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 22
+text = "30"
+horizontal_alignment = 2
+
+[node name="BattleTimerBar" type="ColorRect" parent="BattleArena/StatusBar/TimerChip/TimerBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 6)
+size_flags_horizontal = 3
+mouse_filter = 2
+color = Color(0.4, 0.9, 0.4, 1)
+
+[node name="PortraitsRow" type="HBoxContainer" parent="BattleArena"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = 84.0
+offset_right = -32.0
+offset_bottom = -168.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 48
 alignment = 1
 
 [node name="EnemyPortrait" type="PanelContainer" parent="BattleArena/PortraitsRow"]
-custom_minimum_size = Vector2(240, 290)
+custom_minimum_size = Vector2(380, 340)
 size_flags_horizontal = 4
 size_flags_vertical = 4
 script = ExtResource("2_portrait")
 sprite_frames = ExtResource("9_crow_frames")
 idle_anim = &"idle"
 hurt_anim = &"hurt"
-portrait_scale = 0.4
+portrait_fill = 0.92
 display_name = "Cyberpunk Crow"
 level = 1
 side = "enemy"
 
 [node name="VSDivider" type="PanelContainer" parent="BattleArena/PortraitsRow"]
-custom_minimum_size = Vector2(80, 80)
+custom_minimum_size = Vector2(104, 104)
 size_flags_horizontal = 4
 size_flags_vertical = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_vs")
 
 [node name="VSLabel" type="Label" parent="BattleArena/PortraitsRow/VSDivider"]
 size_flags_horizontal = 4
 size_flags_vertical = 4
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 34
 text = "VS"
-label_settings = SubResource("LabelSettings_vs")
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PlayerPortrait" type="PanelContainer" parent="BattleArena/PortraitsRow"]
-custom_minimum_size = Vector2(240, 290)
+custom_minimum_size = Vector2(380, 340)
 size_flags_horizontal = 4
 size_flags_vertical = 4
 script = ExtResource("2_portrait")
 sprite_frames = ExtResource("10_player_frames")
 idle_anim = &"idle"
 hurt_anim = &"hurt"
-portrait_scale = 0.45
+portrait_fill = 0.92
 display_name = "Player"
 level = 1
 side = "player"
 
 [node name="MessagePanel" type="PanelContainer" parent="BattleArena"]
+layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 200.0
-offset_top = -260.0
-offset_right = -200.0
-offset_bottom = -180.0
+offset_left = 216.0
+offset_top = -156.0
+offset_right = -216.0
+offset_bottom = -98.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_msg")
 
 [node name="MessageLabel" type="RichTextLabel" parent="BattleArena/MessagePanel"]
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(0, 44)
 bbcode_enabled = true
 text = "What will you do?"
 horizontal_alignment = 1
@@ -155,92 +162,30 @@ fit_content = true
 scroll_active = false
 
 [node name="ActionMenu" type="HBoxContainer" parent="BattleArena"]
+layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -190.0
-offset_top = -160.0
-offset_right = 190.0
-offset_bottom = -110.0
+offset_left = -220.0
+offset_top = -86.0
+offset_right = 220.0
+offset_bottom = -36.0
 grow_horizontal = 2
 grow_vertical = 0
 alignment = 1
-theme_override_constants/separation = 16
+theme_override_constants/separation = 20
 
 [node name="AttackButton" type="Button" parent="BattleArena/ActionMenu"]
-custom_minimum_size = Vector2(180, 48)
+custom_minimum_size = Vector2(200, 50)
 theme_override_font_sizes/font_size = 18
-text = "⚔ Attack"
+text = "ATTACK"
 
 [node name="RunButton" type="Button" parent="BattleArena/ActionMenu"]
-custom_minimum_size = Vector2(180, 48)
+custom_minimum_size = Vector2(200, 50)
 theme_override_font_sizes/font_size = 18
-text = "🏃 Run"
-
-[node name="MacroBar" type="HBoxContainer" parent="BattleArena"]
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = -100.0
-offset_right = -32.0
-offset_bottom = -76.0
-grow_horizontal = 2
-grow_vertical = 0
-alignment = 1
-theme_override_constants/separation = 8
-script = ExtResource("11_macro")
-
-[node name="BattleTimer" type="Label" parent="BattleArena"]
-visible = false
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -180.0
-offset_top = 8.0
-offset_right = -16.0
-offset_bottom = 36.0
-grow_horizontal = 0
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.5, 1)
-theme_override_font_sizes/font_size = 20
-text = "30"
-horizontal_alignment = 2
-
-[node name="BattleTimerBar" type="ColorRect" parent="BattleArena"]
-visible = false
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -180.0
-offset_top = 40.0
-offset_right = -16.0
-offset_bottom = 46.0
-grow_horizontal = 0
-mouse_filter = 2
-color = Color(0.4, 0.9, 0.4, 1)
-
-[node name="ComboLabel" type="Label" parent="BattleArena"]
-visible = false
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -120.0
-offset_top = 360.0
-offset_right = 120.0
-offset_bottom = 400.0
-grow_horizontal = 2
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.5, 1, 0.6, 1)
-theme_override_colors/font_shadow_color = Color(0, 0.2, 0, 0.8)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 28
-text = "COMBO x1.0"
-horizontal_alignment = 1
+text = "RUN"
 
 [node name="DamageLayer" type="Node2D" parent="BattleArena"]
 z_index = 50

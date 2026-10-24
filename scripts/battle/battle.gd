@@ -10,11 +10,15 @@ enum BattlePhase { IDLE, EDITING, COMPILING, EXECUTING, RESOLVING, ENEMY_TURN, F
 @onready var player_portrait: BattlePortrait = $BattleArena/PortraitsRow/PlayerPortrait
 @onready var message_label: RichTextLabel = $BattleArena/MessagePanel/MessageLabel
 @onready var battle_terminal: BattleTerminal = $BattleTerminal
-@onready var battle_timer_label: Label = $BattleArena/BattleTimer
-@onready var battle_timer_bar: ColorRect = $BattleArena/BattleTimerBar
-@onready var combo_label: Label = $BattleArena/ComboLabel
+@onready var battle_timer_label: Label = $BattleArena/StatusBar/TimerChip/TimerBox/TimerRow/BattleTimer
+@onready var battle_timer_bar: ColorRect = $BattleArena/StatusBar/TimerChip/TimerBox/BattleTimerBar
+@onready var combo_label: Label = $BattleArena/StatusBar/ComboLabel
+@onready var vs_label: Label = $BattleArena/PortraitsRow/VSDivider/VSLabel
 @onready var damage_layer: Node2D = $BattleArena/DamageLayer
 @onready var battle_arena: Control = $BattleArena
+@onready var background: Panel = $BattleArena/Background
+@onready var vs_badge: PanelContainer = $BattleArena/PortraitsRow/VSDivider
+@onready var message_panel: PanelContainer = $BattleArena/MessagePanel
 
 const ENEMY_AUTO_DAMAGE: int = 12
 const SHAKE_DURATION: float = 0.35
@@ -33,6 +37,7 @@ func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_arena_original_pos = battle_arena.position
+	_apply_cyber_style()
 	EventBus.battle_requested.connect(_on_battle_requested)
 	EventBus.hp_changed.connect(_on_hp_changed)
 	EventBus.code_executed.connect(_on_code_executed)
@@ -41,6 +46,45 @@ func _ready() -> void:
 	attack_button.pressed.connect(_on_attack_pressed)
 	run_button.pressed.connect(_on_run_pressed)
 	battle_terminal.back_pressed.connect(_on_battle_terminal_back)
+
+## ponytail: la escena venía con sub-resources StyleBoxFlat doradas de
+## Diablo II. Se reestilan desde código para que el look neón viva en un
+## solo lugar (CyberStyleBox) y no repartido en el .tscn.
+##
+## ponytail: el fondo es opaco. Con alpha 0.92 el mundo de atrás se
+## transparentaba a través de la pantalla de combate y se leía como
+## layouts rotos.
+func _apply_cyber_style() -> void:
+	background.add_theme_stylebox_override("panel", CyberStyleBox.backdrop())
+	vs_badge.add_theme_stylebox_override("panel", CyberStyleBox.vs_badge())
+	message_panel.add_theme_stylebox_override("panel", CyberStyleBox.panel())
+	vs_label.add_theme_color_override("font_color", CyberStyleBox.TEXT)
+	vs_label.add_theme_constant_override("outline_size", 6)
+	vs_label.add_theme_color_override("font_outline_color", Color(0.05, 0.02, 0.08, 0.9))
+
+	attack_button.add_theme_stylebox_override("normal", CyberStyleBox.button(CyberStyleBox.CYAN))
+	attack_button.add_theme_stylebox_override("hover", CyberStyleBox.button_hover(CyberStyleBox.CYAN))
+	attack_button.add_theme_stylebox_override("pressed", CyberStyleBox.button_pressed(CyberStyleBox.CYAN))
+	attack_button.add_theme_stylebox_override("focus", CyberStyleBox.button_hover(CyberStyleBox.CYAN))
+	attack_button.add_theme_color_override("font_color", CyberStyleBox.CYAN)
+	attack_button.add_theme_color_override("font_hover_color", Color(1, 1, 1))
+	attack_button.add_theme_color_override("font_pressed_color", Color(1, 1, 1))
+
+	# ponytail: "Run" era magenta, y magenta significa ENEMIGO en esta
+	# misma pantalla (el marco del retrato rival). Amber queda para la
+	# accion de cautela y deja el magenta con un solo significado.
+	run_button.add_theme_stylebox_override("normal", CyberStyleBox.button(CyberStyleBox.AMBER))
+	run_button.add_theme_stylebox_override("hover", CyberStyleBox.button_hover(CyberStyleBox.AMBER))
+	run_button.add_theme_stylebox_override("pressed", CyberStyleBox.button_pressed(CyberStyleBox.AMBER))
+	run_button.add_theme_stylebox_override("focus", CyberStyleBox.button_hover(CyberStyleBox.AMBER))
+	run_button.add_theme_color_override("font_color", CyberStyleBox.AMBER)
+	run_button.add_theme_color_override("font_hover_color", Color(1, 1, 1))
+	run_button.add_theme_color_override("font_pressed_color", Color(1, 1, 1))
+
+	battle_timer_label.add_theme_color_override("font_color", CyberStyleBox.CYAN)
+	combo_label.add_theme_color_override("font_color", CyberStyleBox.AMBER)
+	message_label.add_theme_color_override("default_color", CyberStyleBox.TEXT)
+
 
 func _process(_delta: float) -> void:
 	if _phase != BattlePhase.EDITING:
@@ -66,12 +110,15 @@ func _on_battle_requested(enemy_data: Dictionary) -> void:
 	_turn_start_ms = 0
 	battle_arena.position = _arena_original_pos
 	_enemy_data = enemy_data
-	GameManager.start_battle(enemy_data)
+	# ponytail: resolve the challenge BEFORE start_battle(). The old order
+	# reset both HP pools and pushed the FSM into BATTLE, then returned on an
+	# unknown id — leaving the game in a battle state that never began.
 	var challenge_id := String(enemy_data.get("challenge_id", ""))
 	_challenge = ChallengeRegistry.get_by_id(challenge_id)
 	if _challenge == null:
 		push_error("Battle: unknown challenge '%s'" % challenge_id)
 		return
+	GameManager.start_battle(enemy_data)
 	battle_terminal.close()
 	visible = true
 	action_menu.visible = true
@@ -85,7 +132,7 @@ func _on_battle_requested(enemy_data: Dictionary) -> void:
 	battle_timer_bar.visible = false
 	battle_timer_bar.scale.x = 1.0
 	battle_timer_bar.color = Color(0.4, 0.9, 0.4)
-	combo_label.visible = false
+	combo_label.text = ""
 	# ponytail: show a dramatic banner for boss encounters. EnemyData.is_boss
 	# is declared in iso_meta.gd but was unused — this is the first consumer.
 	if bool(enemy_data.get("is_boss", false)):
@@ -103,7 +150,12 @@ func _start_player_turn() -> void:
 	_phase = BattlePhase.EDITING
 	_turn_start_ms = Time.get_ticks_msec()
 	_is_animating = false
-	action_menu.visible = true
+	# ponytail: do not reveal the action menu while the BattleTerminal is
+	# still up. The terminal is a CanvasLayer at 11 with a full-screen dimmer
+	# over Battle at 9, so Attack/Run were rendering behind it and could not
+	# be clicked while the turn timer ran. The compile result stays visible
+	# in the console, and _on_battle_terminal_back reveals the menu.
+	action_menu.visible = not battle_terminal.visible
 	battle_timer_label.visible = true
 	battle_timer_bar.visible = true
 	battle_timer_bar.scale.x = 1.0
@@ -263,10 +315,8 @@ func _end_battle(result: String) -> void:
 		return
 	_phase = BattlePhase.FINISHED
 	_kill_active_shake()
-	if result == "win" and _enemy_data.has("node"):
-		var enemy_node: Variant = _enemy_data["node"]
-		if enemy_node is Enemy:
-			(enemy_node as Enemy).defeat()
+	if result == "win":
+		_defeat_enemy()
 	# ponytail: on lose, show the GameOver screen instead of silently
 	# dumping the player back to overworld. The screen handles its own
 	# retry/run flow and calls queue_free on dismissal.
@@ -278,20 +328,50 @@ func _end_battle(result: String) -> void:
 	action_menu.visible = true
 	battle_timer_label.visible = false
 	battle_timer_bar.visible = false
-	combo_label.visible = false
+	combo_label.text = ""
 	battle_arena.position = _arena_original_pos
 	GameManager.reset_battle_state()
 	GameManager.change_state(GameManager.GameState.OVERWORLD)
 	get_tree().paused = false
 	_is_animating = false
-	# ponytail: wire the XP loop. EnemyData.xp_reward is declared in
-	# iso_meta.gd:104-128 (50..400 by enemy) but the grant was missing —
-	# so skill unlocks never fired from combat. Single line closes the loop.
+	# ponytail: wire the XP loop. xp_reward is authored per enemy in
+	# iso_meta.enemy_data (and EnemyCatalog for the dungeon) but the ISO
+	# enemies used to hand-build their dict without it, so the grant was
+	# missing on that path and skill unlocks never fired from combat.
 	if result == "win":
 		var xp_reward: int = int(_enemy_data.get("xp_reward", 0))
 		if xp_reward > 0:
 			SkillTree.add_xp(xp_reward)
 	EventBus.battle_ended.emit(result)
+
+
+## ponytail: one place decides how an enemy leaves the field. Three enemy
+## classes exist (Enemy, IsoEnemy, CrowEnemy), each owning its own
+## defeat(); the old `is Enemy` test silently skipped the two ISO ones,
+## so winning an ISO fight left the enemy standing and re-triggerable.
+## Ceiling: uses duck-typed call() rather than a shared interface.
+func _defeat_enemy() -> void:
+	if not _enemy_data.has("node"):
+		return
+	var enemy_node: Variant = _enemy_data["node"]
+	# is_inside_tree() matters: is_instance_valid passes for an out-of-tree
+	# object, and every defeat() calls get_tree().create_timer().
+	if is_instance_valid(enemy_node) and enemy_node.is_inside_tree() and enemy_node.has_method("defeat"):
+		enemy_node.call("defeat")
+
+
+## Seconds the defeated enemy stays gone. Read from the node itself so the
+## GameOver screen cannot promise a number the respawn timer won't honour.
+func _enemy_respawn_seconds() -> int:
+	if _enemy_data.has("node"):
+		var enemy_node: Variant = _enemy_data["node"]
+		if is_instance_valid(enemy_node):
+			var raw: Variant = enemy_node.get("respawn_time")
+			if raw is float or raw is int:
+				# ceili, not int(): rounding down would promise less time
+				# than the timer actually waits.
+				return ceili(float(raw))
+	return 30
 
 
 ## ponytail: spawn a transient BattleBanner as a child of the BattleArena.
@@ -316,7 +396,7 @@ func _show_game_over() -> void:
 	action_menu.visible = false
 	battle_timer_label.visible = false
 	battle_timer_bar.visible = false
-	combo_label.visible = false
+	combo_label.text = ""
 	var go_scene: PackedScene = load("res://scenes/ui/game_over.tscn") as PackedScene
 	if go_scene == null:
 		# ponytail: fall back to silent end-of-battle if the scene is
@@ -330,12 +410,16 @@ func _show_game_over() -> void:
 	var go: Node = go_scene.instantiate()
 	if go == null:
 		return
-	# Setup metadata before adding to tree (so handlers are ready).
+	# ponytail: add_child FIRST, then setup. GDScript @onready vars resolve
+	# in _ready(), which add_child triggers — calling setup() before the node
+	# is in the tree left every @onready nil, so the first statement aborted
+	# and the whole method silently no-op'd with a success exit code. That
+	# is why the enemy name never showed before this fix.
+	battle_arena.add_child(go)
 	if go.has_method("setup"):
 		var enemy_name: String = String(_enemy_data.get("display_name", "Enemy"))
 		var challenge_id: StringName = StringName(String(_enemy_data.get("challenge_id", "")))
-		go.setup(challenge_id, enemy_name)
-	battle_arena.add_child(go)
+		go.setup(challenge_id, enemy_name, _enemy_respawn_seconds())
 	if go.has_signal("retry_pressed"):
 		go.retry_pressed.connect(_on_game_over_retry)
 	if go.has_signal("run_pressed"):
@@ -344,8 +428,12 @@ func _show_game_over() -> void:
 
 
 func _on_game_over_retry() -> void:
-	# ponytail: re-open the BattleTerminal with the same challenge.
-	# The player keeps their HP (no penalty), the enemy resets to max.
+	# ponytail: this single call IS the retry mechanic. start_battle() is
+	# the existing helper that resets both sides — enemy to max_hp, player
+	# to max_hp — and zeroes the combo, so retrying costs your streak.
+	# Without it the retry kept HP at 0, the first enemy turn re-lost
+	# instantly, and the fight was unwinnable no matter what you typed.
+	GameManager.start_battle(_enemy_data)
 	visible = true
 	_is_animating = false
 	_phase = BattlePhase.EDITING
@@ -364,12 +452,17 @@ func _on_game_over_retry() -> void:
 
 
 func _on_game_over_run() -> void:
+	# ponytail: fleeing is no longer free. Defeating the enemy node makes
+	# it vanish for its own respawn_time, so running away costs waiting
+	# instead of costing nothing. Same helper the win path uses, so ISO
+	# and crow enemies behave like the overworld one.
+	_defeat_enemy()
 	visible = false
 	battle_terminal.close()
 	action_menu.visible = true
 	battle_timer_label.visible = false
 	battle_timer_bar.visible = false
-	combo_label.visible = false
+	combo_label.text = ""
 	battle_arena.position = _arena_original_pos
 	GameManager.reset_battle_state()
 	GameManager.change_state(GameManager.GameState.OVERWORLD)
@@ -392,12 +485,18 @@ func _set_message(text: String) -> void:
 	message_label.text = text
 
 func _on_combo_changed(combo: int, multiplier: float) -> void:
+	# ponytail: la etiqueta del combo NUNCA se oculta, solo se vacia. Si se
+	# ocultaba, el HBox de la banda de estado perdia su primer hijo y el
+	# chip del contador se iba al borde izquierdo. Visible pero vacio
+	# conserva el hueco y el contador se queda a la derecha.
 	if combo <= 0:
-		combo_label.visible = false
+		combo_label.text = ""
 		return
-	combo_label.visible = true
 	combo_label.text = "COMBO x%.1f" % multiplier
-	combo_label.add_theme_color_override("font_color", Color(0.4 + min(combo, 5) * 0.1, 0.9, 0.5))
+	# ponytail: la rampa va sobre el acento amber en vez de un verde
+	# suelto — el color tiene que salir de la misma paleta que el resto.
+	combo_label.add_theme_color_override("font_color", CyberStyleBox.AMBER.lightened(min(combo, 5) * 0.08))
+	combo_label.pivot_offset = combo_label.size * 0.5
 	combo_label.scale = Vector2(1.3, 1.3) if combo > 1 else Vector2.ONE
 	var t := combo_label.create_tween()
 	t.tween_property(combo_label, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

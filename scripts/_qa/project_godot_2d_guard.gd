@@ -2,15 +2,19 @@ extends SceneTree
 
 ## ponytail: guard that project.godot has no 3D-only settings:
 ##   - physics_engine="Jolt Physics" (or any 3D physics engine)
-##   - rendering_device/driver.windows="d3d12" (or any explicit driver)
 ##   - config/features containing "Forward Plus" (3D-focused renderer)
+##
+## `rendering_device/driver.windows="d3d12"` is deliberately NOT forbidden.
+## It is a display backend choice, not a 3D setting — it also governs how
+## 2D is presented. This guard used to forbid it, which was a category
+## error: satisfying it would mean deleting a legitimate Windows GPU
+## decision just to make a test green.
 ##
 ## Run with:  godot --headless -s scripts/_qa/project_godot_2d_guard.gd --quit-after 10
 
 const PROJECT_FILE := "res://project.godot"
 const FORBIDDEN_SUBSTRINGS: Array[String] = [
 	"physics_engine",
-	"rendering_device/driver",
 	"Forward Plus",
 ]
 
