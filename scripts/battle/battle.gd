@@ -10,9 +10,10 @@ enum BattlePhase { IDLE, EDITING, COMPILING, EXECUTING, RESOLVING, ENEMY_TURN, F
 @onready var player_portrait: BattlePortrait = $BattleArena/PortraitsRow/PlayerPortrait
 @onready var message_label: RichTextLabel = $BattleArena/MessagePanel/MessageLabel
 @onready var battle_terminal: BattleTerminal = $BattleTerminal
-@onready var battle_timer_label: Label = $BattleArena/BattleTimer
-@onready var battle_timer_bar: ColorRect = $BattleArena/BattleTimerBar
-@onready var combo_label: Label = $BattleArena/ComboLabel
+@onready var battle_timer_label: Label = $BattleArena/StatusBar/TimerChip/TimerBox/TimerRow/BattleTimer
+@onready var battle_timer_bar: ColorRect = $BattleArena/StatusBar/TimerChip/TimerBox/BattleTimerBar
+@onready var combo_label: Label = $BattleArena/StatusBar/ComboLabel
+@onready var vs_label: Label = $BattleArena/PortraitsRow/VSDivider/VSLabel
 @onready var damage_layer: Node2D = $BattleArena/DamageLayer
 @onready var battle_arena: Control = $BattleArena
 @onready var background: Panel = $BattleArena/Background
@@ -49,10 +50,17 @@ func _ready() -> void:
 ## ponytail: la escena venía con sub-resources StyleBoxFlat doradas de
 ## Diablo II. Se reestilan desde código para que el look neón viva en un
 ## solo lugar (CyberStyleBox) y no repartido en el .tscn.
+##
+## ponytail: el fondo es opaco. Con alpha 0.92 el mundo de atrás se
+## transparentaba a través de la pantalla de combate y se leía como
+## layouts rotos.
 func _apply_cyber_style() -> void:
-	background.add_theme_stylebox_override("panel", CyberStyleBox.panel())
+	background.add_theme_stylebox_override("panel", CyberStyleBox.backdrop())
 	vs_badge.add_theme_stylebox_override("panel", CyberStyleBox.vs_badge())
 	message_panel.add_theme_stylebox_override("panel", CyberStyleBox.panel())
+	vs_label.add_theme_color_override("font_color", CyberStyleBox.TEXT)
+	vs_label.add_theme_constant_override("outline_size", 6)
+	vs_label.add_theme_color_override("font_outline_color", Color(0.05, 0.02, 0.08, 0.9))
 
 	attack_button.add_theme_stylebox_override("normal", CyberStyleBox.button(CyberStyleBox.CYAN))
 	attack_button.add_theme_stylebox_override("hover", CyberStyleBox.button_hover(CyberStyleBox.CYAN))
@@ -62,17 +70,20 @@ func _apply_cyber_style() -> void:
 	attack_button.add_theme_color_override("font_hover_color", Color(1, 1, 1))
 	attack_button.add_theme_color_override("font_pressed_color", Color(1, 1, 1))
 
-	run_button.add_theme_stylebox_override("normal", CyberStyleBox.button(CyberStyleBox.MAGENTA))
-	run_button.add_theme_stylebox_override("hover", CyberStyleBox.button_hover(CyberStyleBox.MAGENTA))
-	run_button.add_theme_stylebox_override("pressed", CyberStyleBox.button_pressed(CyberStyleBox.MAGENTA))
-	run_button.add_theme_stylebox_override("focus", CyberStyleBox.button_hover(CyberStyleBox.MAGENTA))
-	run_button.add_theme_color_override("font_color", CyberStyleBox.MAGENTA)
+	# ponytail: "Run" era magenta, y magenta significa ENEMIGO en esta
+	# misma pantalla (el marco del retrato rival). Amber queda para la
+	# accion de cautela y deja el magenta con un solo significado.
+	run_button.add_theme_stylebox_override("normal", CyberStyleBox.button(CyberStyleBox.AMBER))
+	run_button.add_theme_stylebox_override("hover", CyberStyleBox.button_hover(CyberStyleBox.AMBER))
+	run_button.add_theme_stylebox_override("pressed", CyberStyleBox.button_pressed(CyberStyleBox.AMBER))
+	run_button.add_theme_stylebox_override("focus", CyberStyleBox.button_hover(CyberStyleBox.AMBER))
+	run_button.add_theme_color_override("font_color", CyberStyleBox.AMBER)
 	run_button.add_theme_color_override("font_hover_color", Color(1, 1, 1))
 	run_button.add_theme_color_override("font_pressed_color", Color(1, 1, 1))
 
 	battle_timer_label.add_theme_color_override("font_color", CyberStyleBox.CYAN)
-	combo_label.add_theme_color_override("font_color", CyberStyleBox.MAGENTA)
-	message_label.add_theme_color_override("default_color", D2Palette.BONE_TEXT)
+	combo_label.add_theme_color_override("font_color", CyberStyleBox.AMBER)
+	message_label.add_theme_color_override("default_color", CyberStyleBox.TEXT)
 
 
 func _process(_delta: float) -> void:
@@ -121,7 +132,7 @@ func _on_battle_requested(enemy_data: Dictionary) -> void:
 	battle_timer_bar.visible = false
 	battle_timer_bar.scale.x = 1.0
 	battle_timer_bar.color = Color(0.4, 0.9, 0.4)
-	combo_label.visible = false
+	combo_label.text = ""
 	# ponytail: show a dramatic banner for boss encounters. EnemyData.is_boss
 	# is declared in iso_meta.gd but was unused — this is the first consumer.
 	if bool(enemy_data.get("is_boss", false)):
@@ -317,7 +328,7 @@ func _end_battle(result: String) -> void:
 	action_menu.visible = true
 	battle_timer_label.visible = false
 	battle_timer_bar.visible = false
-	combo_label.visible = false
+	combo_label.text = ""
 	battle_arena.position = _arena_original_pos
 	GameManager.reset_battle_state()
 	GameManager.change_state(GameManager.GameState.OVERWORLD)
@@ -385,7 +396,7 @@ func _show_game_over() -> void:
 	action_menu.visible = false
 	battle_timer_label.visible = false
 	battle_timer_bar.visible = false
-	combo_label.visible = false
+	combo_label.text = ""
 	var go_scene: PackedScene = load("res://scenes/ui/game_over.tscn") as PackedScene
 	if go_scene == null:
 		# ponytail: fall back to silent end-of-battle if the scene is
@@ -451,7 +462,7 @@ func _on_game_over_run() -> void:
 	action_menu.visible = true
 	battle_timer_label.visible = false
 	battle_timer_bar.visible = false
-	combo_label.visible = false
+	combo_label.text = ""
 	battle_arena.position = _arena_original_pos
 	GameManager.reset_battle_state()
 	GameManager.change_state(GameManager.GameState.OVERWORLD)
@@ -474,12 +485,18 @@ func _set_message(text: String) -> void:
 	message_label.text = text
 
 func _on_combo_changed(combo: int, multiplier: float) -> void:
+	# ponytail: la etiqueta del combo NUNCA se oculta, solo se vacia. Si se
+	# ocultaba, el HBox de la banda de estado perdia su primer hijo y el
+	# chip del contador se iba al borde izquierdo. Visible pero vacio
+	# conserva el hueco y el contador se queda a la derecha.
 	if combo <= 0:
-		combo_label.visible = false
+		combo_label.text = ""
 		return
-	combo_label.visible = true
 	combo_label.text = "COMBO x%.1f" % multiplier
-	combo_label.add_theme_color_override("font_color", Color(0.4 + min(combo, 5) * 0.1, 0.9, 0.5))
+	# ponytail: la rampa va sobre el acento amber en vez de un verde
+	# suelto — el color tiene que salir de la misma paleta que el resto.
+	combo_label.add_theme_color_override("font_color", CyberStyleBox.AMBER.lightened(min(combo, 5) * 0.08))
+	combo_label.pivot_offset = combo_label.size * 0.5
 	combo_label.scale = Vector2(1.3, 1.3) if combo > 1 else Vector2.ONE
 	var t := combo_label.create_tween()
 	t.tween_property(combo_label, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

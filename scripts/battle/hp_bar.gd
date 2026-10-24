@@ -1,17 +1,25 @@
 extends ProgressBar
 class_name HPBar
 
-## Barra de HP estilo Diablo II.
-## Cambia el color del `fill` StyleBox según el porcentaje:
-##   > 50%: HP_RED_HI (rojo brillante)
-##   > 25%: HP_RED (rojo sangre)
-##   < 25%: HP_RED_LOW (rojo coagulado)
+## Barra de HP neón.
+##
+## ponytail: el relleno usaba la rampa roja de Diablo II (HP_RED_HI para
+## un HP lleno). Un HP al 100% en rojo no dice nada — el color ES la
+## informacion. Ahora la rampa es verde -> ambar -> rojo, y vive en
+## CyberStyleBox con el resto de la paleta de combate.
+##
+## ponytail: `percent_text` NO se llama `show_percentage` porque
+## ProgressBar ya tiene esa propiedad y GDScript rechaza el sombra.
 
 @export var side: String = "enemy"
+## ponytail: la barra de XP del menuStatsPanel conserva su etiqueta de
+## porcentaje; la de combate la apaga y muestra "cur/max" como texto aparte.
+@export var percent_text: bool = true
 
 func _ready() -> void:
 	add_theme_stylebox_override("background", CyberStyleBox.track())
-	add_theme_stylebox_override("fill", CyberStyleBox.fill(D2Palette.HP_RED_HI))
+	add_theme_stylebox_override("fill", CyberStyleBox.fill(CyberStyleBox.hp_color(1.0)))
+	show_percentage = percent_text
 	value = max_value
 
 func set_hp(current: int, max_hp: int) -> void:
@@ -21,11 +29,5 @@ func set_hp(current: int, max_hp: int) -> void:
 
 func _update_color() -> void:
 	var fill_ratio := float(value) / float(max_value) if max_value > 0 else 0.0
-	var color: Color
-	if fill_ratio > 0.5:
-		color = D2Palette.HP_RED_HI
-	elif fill_ratio > 0.25:
-		color = D2Palette.HP_RED
-	else:
-		color = D2Palette.HP_RED_LOW
+	var color: Color = CyberStyleBox.CYAN if side == "xp" else CyberStyleBox.hp_color(fill_ratio)
 	add_theme_stylebox_override("fill", CyberStyleBox.fill(color))

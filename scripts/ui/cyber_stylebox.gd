@@ -8,14 +8,38 @@ class_name CyberStyleBox
 ## lugar y reutilizan los acentos que D2Palette ya declaraba
 ## (NEON_CYAN / NEON_MAGENTA) en vez de inventar una paleta nueva.
 ##
+## ponytail: la pantalla de combate mezclaba las dos paletas — el texto del
+## VS en dorado, el mensaje en BONE_TEXT, el relleno de HP en rojo D2. Aquí
+## vive ahora TODO el color de esa pantalla: una sola fuente, cero D2.
+##
 ## Ceiling: son StyleBoxFlat planos con borde. Sin degradados ni glow real:
 ## para el glow de verdad hace falta un shader, y el costo de un
 ## StyleBoxFlat es cero.
 
 const CYAN := Color(0.0, 0.95, 0.85)
 const MAGENTA := Color(0.95, 0.25, 0.95)
+const AMBER := Color(0.98, 0.72, 0.20)
+const GREEN := Color(0.30, 0.95, 0.50)
+const RED := Color(0.95, 0.28, 0.24)
+const TEXT := Color(0.87, 0.94, 0.97)
+const TEXT_DIM := Color(0.42, 0.52, 0.60)
 const DEEP := Color(0.02, 0.03, 0.06, 0.92)
 const DEEPER := Color(0.01, 0.015, 0.03, 0.96)
+
+
+## Fondo de pantalla completa: opaco. El mundo de al detras no debe
+## transparentarse a traves de la pantalla de combate.
+static func backdrop(accent: Color = CYAN) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.008, 0.012, 0.028, 1.0)
+	sb.border_color = accent.darkened(0.62)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(0)
+	sb.content_margin_left = 0.0
+	sb.content_margin_top = 0.0
+	sb.content_margin_right = 0.0
+	sb.content_margin_bottom = 0.0
+	return sb
 
 
 ## Panel principal: fondo casi negro azulado con borde neón.
@@ -32,17 +56,32 @@ static func panel(accent: Color = CYAN, fill: Color = DEEP) -> StyleBoxFlat:
 	return sb
 
 
-## Marco de retrato: borde doble, la linea interior mas tenue.
-static func frame(accent: Color = CYAN) -> StyleBoxFlat:
+## Carta de retrato: el marco exterior de la ficha de combate.
+static func card(accent: Color = CYAN) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = DEEPER
-	sb.border_color = accent
+	sb.bg_color = Color(0.015, 0.022, 0.045, 1.0)
+	sb.border_color = accent.darkened(0.18)
 	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(3)
-	sb.content_margin_left = 8.0
-	sb.content_margin_top = 8.0
-	sb.content_margin_right = 8.0
-	sb.content_margin_bottom = 8.0
+	sb.set_corner_radius_all(4)
+	sb.content_margin_left = 12.0
+	sb.content_margin_top = 10.0
+	sb.content_margin_right = 12.0
+	sb.content_margin_bottom = 12.0
+	return sb
+
+
+## Area de arte: fondo casi negro y una linea de piso abajo. Sin borde
+## propio — un marco dentro del marco de la carta se leia como caja
+## dentro de caja.
+static func art_backdrop(accent: Color = CYAN) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.006, 0.010, 0.022, 1.0)
+	sb.border_color = accent.darkened(0.68)
+	sb.border_width_left = 0
+	sb.border_width_top = 0
+	sb.border_width_right = 0
+	sb.border_width_bottom = 1
+	sb.set_corner_radius_all(0)
 	return sb
 
 
@@ -52,7 +91,7 @@ static func vs_badge() -> StyleBoxFlat:
 	sb.bg_color = Color(0.12, 0.02, 0.14, 0.92)
 	sb.border_color = MAGENTA
 	sb.set_border_width_all(3)
-	sb.set_corner_radius_all(50)
+	sb.set_corner_radius_all(52)
 	sb.content_margin_left = 0.0
 	sb.content_margin_top = 0.0
 	sb.content_margin_right = 0.0
@@ -93,14 +132,14 @@ static func button_pressed(accent: Color = CYAN) -> StyleBoxFlat:
 ## Chip compacto: contador de tiempo, etiquetas sueltas.
 static func chip(accent: Color = CYAN) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.02, 0.03, 0.06, 0.9)
+	sb.bg_color = Color(0.02, 0.03, 0.06, 0.95)
 	sb.border_color = accent.darkened(0.35)
-	sb.set_border_width_all(1)
+	sb.set_border_width_all(2)
 	sb.set_corner_radius_all(3)
-	sb.content_margin_left = 10.0
-	sb.content_margin_top = 4.0
-	sb.content_margin_right = 10.0
-	sb.content_margin_bottom = 4.0
+	sb.content_margin_left = 14.0
+	sb.content_margin_top = 8.0
+	sb.content_margin_right = 14.0
+	sb.content_margin_bottom = 8.0
 	return sb
 
 
@@ -123,3 +162,13 @@ static func fill(color: Color) -> StyleBoxFlat:
 	sb.set_border_width_all(1)
 	sb.set_corner_radius_all(2)
 	return sb
+
+
+## Rampa de vida: verde -> ambar -> rojo. Una barra de HP siempre roja
+## no dice nada: el color ES la informacion.
+static func hp_color(ratio: float) -> Color:
+	if ratio > 0.5:
+		return GREEN
+	if ratio > 0.25:
+		return AMBER
+	return RED
