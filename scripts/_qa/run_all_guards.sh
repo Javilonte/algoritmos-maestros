@@ -41,6 +41,7 @@ SCENE_GUARDS=(
   scenes/qa/main_menu_layout_guard.tscn
   scenes/qa/battle_portrait_guard.tscn
   scenes/qa/battle_layout_guard.tscn
+  scenes/qa/combat_ui_guard.tscn
   scenes/qa/platformer_guard.tscn
 )
 

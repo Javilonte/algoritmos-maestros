@@ -25,6 +25,15 @@ const TEXT := Color(0.87, 0.94, 0.97)
 const TEXT_DIM := Color(0.42, 0.52, 0.60)
 const DEEP := Color(0.02, 0.03, 0.06, 0.92)
 const DEEPER := Color(0.01, 0.015, 0.03, 0.96)
+## Fondo del editor de codigo: casi negro con un tinte verde, para que
+## el campo del editor se separe del panel que lo contiene.
+const EDITOR_BG := Color(0.020, 0.055, 0.045, 1.0)
+
+
+## Color como texto BBCode. Los mensajes del terminal van con etiquetas
+## de color y escribirlas a mano duplicaba la paleta.
+static func hex(color: Color) -> String:
+	return "#" + color.to_html(false)
 
 
 ## Fondo de pantalla completa: opaco. El mundo de al detras no debe
@@ -151,6 +160,22 @@ static func track() -> StyleBoxFlat:
 	sb.border_color = Color(0.26, 0.28, 0.36, 1.0)
 	sb.set_border_width_all(1)
 	sb.set_corner_radius_all(2)
+	return sb
+
+
+## Editor de codigo: fondo casi negro y borde del acento. El fondo real
+## del CodeEdit lo pinta su color de tema `background_color`, NO este
+## stylebox — hay que cambiar los dos.
+static func editor(accent: Color = GREEN) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = EDITOR_BG
+	sb.border_color = accent.darkened(0.55)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(2)
+	sb.content_margin_left = 10.0
+	sb.content_margin_top = 8.0
+	sb.content_margin_right = 10.0
+	sb.content_margin_bottom = 8.0
 	return sb
 
 

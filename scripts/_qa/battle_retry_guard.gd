@@ -97,8 +97,11 @@ func _run() -> void:
 	var go: Node = arena.get_node_or_null("GameOver") if arena != null else null
 	_check(go != null, "show_game_over adds the GameOver screen to the battle")
 	if go != null:
-		var subtitle: Label = go.get_node_or_null("CenterContainer/VBox/Subtitle")
-		var run_button: Button = go.get_node_or_null("CenterContainer/VBox/ButtonRow/RunButton")
+		# ponytail: el contenido de la pantalla de derrota vive dentro de
+		# un PanelContainer (antes flotaba como texto suelto sobre el
+		# dim). El path cambio; el guard tiene que seguirlo.
+		var subtitle: Label = go.get_node_or_null("CenterContainer/Panel/VBox/Subtitle")
+		var run_button: Button = go.get_node_or_null("CenterContainer/Panel/VBox/ButtonRow/RunButton")
 		_check(subtitle != null and subtitle.text.contains("Guard Slime"),
 			"GameOver subtitle names the enemy (setup ran after add_child)")
 		_check(subtitle != null and subtitle.text.contains("combo"),

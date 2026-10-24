@@ -15,10 +15,12 @@ class_name GameOver
 signal retry_pressed
 signal run_pressed
 
-@onready var _title: Label = $CenterContainer/VBox/Title
-@onready var _subtitle: Label = $CenterContainer/VBox/Subtitle
-@onready var _retry_button: Button = $CenterContainer/VBox/ButtonRow/RetryButton
-@onready var _run_button: Button = $CenterContainer/VBox/ButtonRow/RunButton
+@onready var _title: Label = $CenterContainer/Panel/VBox/Title
+@onready var _subtitle: Label = $CenterContainer/Panel/VBox/Subtitle
+@onready var _retry_button: Button = $CenterContainer/Panel/VBox/ButtonRow/RetryButton
+@onready var _run_button: Button = $CenterContainer/Panel/VBox/ButtonRow/RunButton
+@onready var _panel: PanelContainer = $CenterContainer/Panel
+@onready var _dim: ColorRect = $Dim
 
 var _challenge_id: StringName = &""
 
@@ -29,15 +31,34 @@ func _ready() -> void:
 	_run_button.pressed.connect(_on_run_pressed)
 
 
+## ponytail: la pantalla usaba D2StyleBox y D2Palette: marco dorado,
+## texto hueso, botones de madera. Sobre la pantalla de combate ya
+## neón eso se leia como otra aplicacion pegada encima. Ahora comparte
+## paleta con el combate.
 func _apply_style() -> void:
-	_retry_button.add_theme_stylebox_override("normal", D2StyleBox.button_normal())
-	_retry_button.add_theme_stylebox_override("hover", D2StyleBox.button_hover())
-	_retry_button.add_theme_stylebox_override("pressed", D2StyleBox.button_pressed())
-	_run_button.add_theme_stylebox_override("normal", D2StyleBox.button_normal())
-	_run_button.add_theme_stylebox_override("hover", D2StyleBox.button_hover())
-	_run_button.add_theme_stylebox_override("pressed", D2StyleBox.button_pressed())
-	_title.add_theme_color_override("font_color", D2Palette.DANGER_TEXT)
-	_subtitle.add_theme_color_override("font_color", D2Palette.BONE_TEXT)
+	_panel.add_theme_stylebox_override("panel", CyberStyleBox.panel(CyberStyleBox.RED))
+	_dim.color = Color(0, 0, 0, 0.82)
+
+	# Reintentar es la accion del JUGADOR: cyan, igual que ATTACK.
+	_retry_button.add_theme_stylebox_override("normal", CyberStyleBox.button(CyberStyleBox.CYAN))
+	_retry_button.add_theme_stylebox_override("hover", CyberStyleBox.button_hover(CyberStyleBox.CYAN))
+	_retry_button.add_theme_stylebox_override("pressed", CyberStyleBox.button_pressed(CyberStyleBox.CYAN))
+	_retry_button.add_theme_stylebox_override("focus", CyberStyleBox.button_hover(CyberStyleBox.CYAN))
+	_retry_button.add_theme_color_override("font_color", CyberStyleBox.CYAN)
+	_retry_button.add_theme_color_override("font_hover_color", Color(1, 1, 1))
+	_retry_button.add_theme_color_override("font_pressed_color", Color(1, 1, 1))
+
+	# Huir es la misma accion que RUN en la pantalla de combate: amber.
+	_run_button.add_theme_stylebox_override("normal", CyberStyleBox.button(CyberStyleBox.AMBER))
+	_run_button.add_theme_stylebox_override("hover", CyberStyleBox.button_hover(CyberStyleBox.AMBER))
+	_run_button.add_theme_stylebox_override("pressed", CyberStyleBox.button_pressed(CyberStyleBox.AMBER))
+	_run_button.add_theme_stylebox_override("focus", CyberStyleBox.button_hover(CyberStyleBox.AMBER))
+	_run_button.add_theme_color_override("font_color", CyberStyleBox.AMBER)
+	_run_button.add_theme_color_override("font_hover_color", Color(1, 1, 1))
+	_run_button.add_theme_color_override("font_pressed_color", Color(1, 1, 1))
+
+	_title.add_theme_color_override("font_color", CyberStyleBox.RED)
+	_subtitle.add_theme_color_override("font_color", CyberStyleBox.TEXT_DIM)
 
 
 ## Set the metadata before showing.
