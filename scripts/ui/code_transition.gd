@@ -1,6 +1,6 @@
 extends Control
 
-const WORLD_SCENE_PATH := "res://scenes/iso/iso_demo.tscn"
+const WORLD_SCENE_PATH := "res://scenes/platformer/platformer_world.tscn"
 
 @onready var terminal_text: RichTextLabel = $TerminalPanel/TerminalText
 @onready var type_timer: Timer = $TypeTimer

@@ -9,7 +9,7 @@ extends Control
 ## keywords (templates, lower_bound, lambdas) instead of generic snippets
 ## so the menu subtly advertises the educational angle.
 
-const WORLD_SCENE_PATH := "res://scenes/iso/iso_demo.tscn"
+const WORLD_SCENE_PATH := "res://scenes/platformer/platformer_world.tscn"
 
 @onready var quick_start_button: MenuActionButton = $Body/CenterColumn/ActionGrid/QuickStartButton
 @onready var continue_button: MenuActionButton = $Body/CenterColumn/ActionGrid/ContinueRow/ContinueButton

@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/overworld/enemy.gd" id="1_enemy"]
+[ext_resource type="Texture2D" path="res://assets/textures/crow_idle.png" id="2_crow"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_crow"]
+atlas = ExtResource("2_crow")
+region = Rect2(0, 0, 320, 320)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
+size = Vector2(40, 40)
+
+[node name="PlatformerEnemy" type="Area2D"]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_enemy")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_crow")
+position = Vector2(0, -20)
+scale = Vector2(0.16, 0.16)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -20)
+shape = SubResource("RectangleShape2D_enemy")

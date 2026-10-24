@@ -1,0 +1,23 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/platformer/platformer_world.gd" id="1_world"]
+[ext_resource type="PackedScene" path="res://scenes/platformer/platformer_player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/battle/battle.tscn" id="3_battle"]
+[ext_resource type="PackedScene" path="res://scenes/ui/player_hud.tscn" id="4_hud"]
+
+[node name="PlatformerWorld" type="Node2D"]
+script = ExtResource("1_world")
+
+[node name="Ground" type="TileMapLayer" parent="."]
+
+[node name="Entities" type="Node2D" parent="."]
+
+[node name="Player" parent="Entities" instance=ExtResource("2_player")]
+position = Vector2(128, 448)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(128, 336)
+
+[node name="Battle" parent="." instance=ExtResource("3_battle")]
+
+[node name="PlayerHUD" parent="." instance=ExtResource("4_hud")]
