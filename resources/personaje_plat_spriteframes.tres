@@ -8,35 +8,35 @@ animations = [{
 "frames": [{
 "duration": 1.0,
 "texture": ExtResource("1_idle"),
-"region": Rect2(0, 0, 39, 48)
+"region": Rect2(0, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("1_idle"),
-"region": Rect2(39, 0, 39, 48)
+"region": Rect2(30, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("1_idle"),
-"region": Rect2(78, 0, 38, 48)
+"region": Rect2(61, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("1_idle"),
-"region": Rect2(116, 0, 39, 48)
+"region": Rect2(91, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("1_idle"),
-"region": Rect2(155, 0, 36, 48)
+"region": Rect2(122, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("1_idle"),
-"region": Rect2(191, 0, 41, 48)
+"region": Rect2(152, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("1_idle"),
-"region": Rect2(232, 0, 41, 48)
+"region": Rect2(182, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("1_idle"),
-"region": Rect2(273, 0, 37, 48)
+"region": Rect2(213, 0, 30, 48)
 }],
 "loop": true,
 "name": &"idle",
@@ -45,35 +45,35 @@ animations = [{
 "frames": [{
 "duration": 1.0,
 "texture": ExtResource("2_walk"),
-"region": Rect2(0, 0, 33, 48)
+"region": Rect2(0, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("2_walk"),
-"region": Rect2(33, 0, 41, 48)
+"region": Rect2(30, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("2_walk"),
-"region": Rect2(74, 0, 41, 48)
+"region": Rect2(61, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("2_walk"),
-"region": Rect2(115, 0, 42, 48)
+"region": Rect2(91, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("2_walk"),
-"region": Rect2(157, 0, 43, 48)
+"region": Rect2(122, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("2_walk"),
-"region": Rect2(201, 0, 43, 48)
+"region": Rect2(152, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("2_walk"),
-"region": Rect2(244, 0, 43, 48)
+"region": Rect2(182, 0, 30, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("2_walk"),
-"region": Rect2(287, 0, 39, 48)
+"region": Rect2(213, 0, 30, 48)
 }],
 "loop": true,
 "name": &"walk",
@@ -82,35 +82,35 @@ animations = [{
 "frames": [{
 "duration": 1.0,
 "texture": ExtResource("3_interact"),
-"region": Rect2(0, 0, 32, 48)
+"region": Rect2(0, 0, 36, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("3_interact"),
-"region": Rect2(32, 0, 37, 48)
+"region": Rect2(36, 0, 36, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("3_interact"),
-"region": Rect2(68, 0, 35, 48)
+"region": Rect2(73, 0, 36, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("3_interact"),
-"region": Rect2(104, 0, 36, 48)
+"region": Rect2(109, 0, 36, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("3_interact"),
-"region": Rect2(139, 0, 42, 48)
+"region": Rect2(146, 0, 36, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("3_interact"),
-"region": Rect2(181, 0, 42, 48)
+"region": Rect2(182, 0, 36, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("3_interact"),
-"region": Rect2(223, 0, 42, 48)
+"region": Rect2(219, 0, 36, 48)
 }, {
 "duration": 1.0,
 "texture": ExtResource("3_interact"),
-"region": Rect2(265, 0, 33, 48)
+"region": Rect2(255, 0, 36, 48)
 }],
 "loop": false,
 "name": &"interact",

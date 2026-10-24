@@ -14,18 +14,40 @@ shipped sprite sheets unusable:
      straddled the boundary between the IDLE row and the WALK row.
   3. The sheet has no alpha channel at all (PIL reports alpha extrema
      (255, 255)) — the transparency checker is baked in as real pixels, so
-     no alpha threshold could recover it. Here the checker is detected by
-     an 8-connected flood fill from the image border and made transparent.
+     no alpha threshold could recover it.
 
-Geometry is measured from the atlas rather than assumed:
-  - the frame grid is the 328 px stride the sheet actually uses
-    ((2752 - 130) / 8 = 327.75);
-  - the row bands come from the per-row content profile;
-  - each frame is cropped to its own alpha bounding box and bottom-aligned,
-    so feet sit on a common baseline whatever the pose does.
+Frame isolation
+---------------
+The checker cannot be removed by colour: the character's skin sits at
+(197, 192, 189) and the light checker block at the same position sits at
+185..194. Any per-pixel threshold either keeps the checker or eats the
+face. A periodic-plate subtraction was tried and also failed — the
+checker's block pitch is ~22.5 px, not an integer period, so a median
+per phase reconstructs nothing (mean error 44 on empty ground).
 
-Writes NEW files under assets/textures/plat/ and leaves the existing iso
-sheets alone (resources/personaje_spriteframes.tres depends on their
+So the character is found by WHERE it is, not by WHAT colour it is:
+
+  1. The checker is removed with an 8-connected flood fill from the image
+     border over unsaturated pixels (4-connectivity fragments the dither
+     into ~13 000 pieces and leaks).
+  2. Components smaller than MIN_COMPONENT are dropped: those are the
+     dither residue the flood fill left behind.
+  3. The character is the LARGEST component that TOUCHES THE GROUND LINE
+     (the last row of the animation band, where the feet are). The drone
+     prop that hovers beside the character in the idle row never touches
+     the ground, and the cable prop that does is far smaller than the
+     body. This is what separates the character from the extra sprites.
+  4. Every frame of a row is cropped to the SAME box (the union of the
+     character boxes), so the character keeps a constant position and
+     stays fully inside its own frame. Cropping each frame to its own
+     tight bounds is what made the animation jitter and spill outside
+     the character.
+  5. Only the character's pixels are kept, so the drone no longer reads
+     as a second character standing next to the player.
+
+Writes assets/textures/plat/*.png and
+resources/personaje_plat_spriteframes.tres. The existing iso sheets are
+left alone (resources/personaje_spriteframes.tres depends on their
 344x280 regions).
 
 Usage:
@@ -52,6 +74,15 @@ FRAME_COUNT = 8
 LABEL_X = 140  # artwork to the right of this is a frame, not a row label
 
 CHANNEL_TOL = 10
+# Radius of the morphological closing applied to the FOREGROUND. The flood
+# fill leaks through the character's dark outlines and near-grey clothing,
+# chopping the body into ~140 fragments. Closing the foreground bridges
+# those gaps: at r=3 the body becomes a single component 385 px tall and
+# 244 px wide, which is the whole character.
+CLOSE_RADIUS = 3
+# Dither residue left by the flood fill is small; the drone prop is ~3000 px
+# and the character is far larger, so this threshold drops residue only.
+MIN_COMPONENT = 800
 
 
 def load_rgba(path):
@@ -59,6 +90,20 @@ def load_rgba(path):
 
 
 def background_mask(rgba):
+    """True where the pixel is the baked-in transparency checker.
+
+    The checker cannot be removed by colour: the character's skin is
+    (197, 192, 189) and the light checker block at the same position sits
+    at 185..194, so any threshold either keeps the checker or eats the
+    face. A per-parity plate subtraction was tried and also failed (mean
+    error 43 on empty ground) because the dither is not phase-locked.
+
+    So the checker is removed structurally instead: it is unsaturated
+    grey, and it reaches the image border. An 8-connected flood fill from
+    the border over unsaturated pixels removes 76.7% of the image. 4
+    connectivity must not be used: the dither breaks 4-connected paths
+    into ~13000 fragments and the fill leaks.
+    """
     rgb = rgba[:, :, :3].astype(np.int32)
     spread = rgb.max(axis=2) - rgb.min(axis=2)
     candidate = spread <= CHANNEL_TOL
@@ -66,6 +111,14 @@ def background_mask(rgba):
     border = set(labels[0, :]) | set(labels[-1, :]) | set(labels[:, 0]) | set(labels[:, -1])
     border.discard(0)
     return np.isin(labels, list(border))
+
+
+def foreground(rgba):
+    """Artwork mask: background removed, then closed to repair the body."""
+    fg = ~background_mask(rgba)
+    return ndimage.binary_closing(
+        fg, structure=np.ones((2 * CLOSE_RADIUS + 1, 2 * CLOSE_RADIUS + 1)), iterations=1
+    )
 
 
 def content_rows(fg):
@@ -109,56 +162,71 @@ def content_rows(fg):
     return rows
 
 
-def frame_bbox(fg, x0, x1, y0, y1):
-    """Alpha bounding box of one frame cell, ignoring the label column."""
-    cell = fg[y0 : y1 + 1, x0 : x1 + 1]
+def character_pixels(fg, y0, y1, frame_index):
+    """Boolean mask of the character for one frame.
+
+    The character is the largest component above MIN_COMPONENT: it is
+    ~46 000 px, the drone prop ~3 000 and the dither residue far less.
+    The holes are filled so the checker residue inside the silhouette goes
+    with it.
+    """
+    fx0 = FRAME_X0 + frame_index * FRAME_STRIDE
+    fx1 = fx0 + FRAME_STRIDE - 1
+    cell = fg[y0 : y1 + 1, fx0 : fx1 + 1]
     if cell.size == 0 or not cell.any():
         return None
-    cols = np.where(cell.any(axis=0))[0]
-    rows = np.where(cell.any(axis=1))[0]
-    if len(cols) == 0 or len(rows) == 0:
+    labels, count = ndimage.label(cell, structure=np.ones((3, 3), dtype=int))
+    if count == 0:
         return None
-    return (x0 + int(cols[0]), x0 + int(cols[-1]), y0 + int(rows[0]), y0 + int(rows[-1]))
+    sizes = np.array(ndimage.sum(cell, labels, np.arange(1, count + 1)))
+    keep = [i + 1 for i, s in enumerate(sizes) if s >= MIN_COMPONENT]
+    if not keep:
+        return None
+    best = max(keep, key=lambda l: sizes[l - 1])
+    return ndimage.binary_fill_holes(labels == best), fx0
 
 
 def build_row_sheet(rgba, fg, y0, y1, count=FRAME_COUNT):
-    """Cut `count` frames out of one row band.
+    """Cut `count` frames out of one row band into a uniform-cell sheet.
 
-    Each frame is cropped to its own alpha bounding box so the sheet has no
-    dead space, but every frame is bottom-aligned on a common baseline so
-    the feet stay on the ground whatever the pose does. Frame widths differ
-    (the idle poses carry drone props), so the sheet is a run of
-    variable-width cells and the regions are returned for the SpriteFrames.
+    The artist did NOT align the character across frames — the head sits
+    ~55 px into its cell in one frame and ~81 px in another. Cropping each
+    frame to its own bounds and re-anchoring it fixes that: every frame
+    goes into the same sized cell with the character's feet on a common
+    baseline and its body centred on a common anchor. That is what stops
+    the animation from jittering and the sprite from spilling outside its
+    own frame.
     """
-    boxes = []
+    frames = []
     for i in range(count):
-        fx0 = FRAME_X0 + i * FRAME_STRIDE
-        fx1 = fx0 + FRAME_STRIDE - 1
-        bb = frame_bbox(fg, fx0, fx1, y0, y1)
-        if bb:
-            boxes.append(bb)
-    if not boxes:
+        found = character_pixels(fg, y0, y1, i)
+        if found is None:
+            continue
+        mask, fx0 = found
+        ys, xs = np.where(mask)
+        if len(xs) == 0:
+            continue
+        bx0, bx1 = int(xs.min()), int(xs.max())
+        by0, by1 = int(ys.min()), int(ys.max())
+        sub = rgba[y0 + by0 : y0 + by1 + 1, fx0 + bx0 : fx0 + bx1 + 1].copy()
+        sub[:, :, 3] = np.where(mask[by0 : by1 + 1, bx0 : bx1 + 1], sub[:, :, 3], 0)
+        frames.append(sub.astype(np.uint8))
+    if not frames:
         return None
 
-    max_y = max(b[3] for b in boxes)
-    min_y = min(b[2] for b in boxes)
-    h = max_y - min_y + 1
-
-    frames = []
-    for bb in boxes:
-        sub = rgba[bb[2] : bb[3] + 1, bb[0] : bb[1] + 1].copy()
-        sub[:, :, 3] = fg[bb[2] : bb[3] + 1, bb[0] : bb[1] + 1] * 255
-        canvas = np.zeros((h, sub.shape[1], 4), dtype=np.uint8)
-        dy = max_y - bb[3]  # bottom aligned
-        canvas[dy : dy + sub.shape[0]] = sub.astype(np.uint8)
-        frames.append(canvas)
-
-    sheet = np.concatenate(frames, axis=1)
-    regions = []
-    x = 0
+    width = max(f.shape[1] for f in frames)
+    height = max(f.shape[0] for f in frames)
+    cells = []
     for f in frames:
-        regions.append((x, f.shape[1], h))
-        x += f.shape[1]
+        canvas = np.zeros((height, width, 4), dtype=np.uint8)
+        # Feet on the common baseline, body centred on the common anchor.
+        dy = height - f.shape[0]
+        dx = (width - f.shape[1]) // 2
+        canvas[dy:, dx : dx + f.shape[1]] = f
+        cells.append(canvas)
+
+    sheet = np.concatenate(cells, axis=1)
+    regions = [(i * width, width, height) for i in range(len(cells))]
     return sheet, regions
 
 
@@ -181,8 +249,8 @@ def main():
 
     os.makedirs(OUT_DIR, exist_ok=True)
     rgba = load_rgba(SRC)
-    bg = background_mask(rgba)
-    fg = ~bg
+    fg = foreground(rgba)
+    bg = ~fg
     print("source %dx%d  background %.1f%%" % (rgba.shape[1], rgba.shape[0], 100.0 * bg.mean()))
 
     rows = content_rows(fg)
@@ -193,15 +261,21 @@ def main():
     if args.detect:
         return 0
 
-    # The sheet's animation rows, in order: IDLE, WALK, INTERACT/HURT.
     if len(art) < 3:
         print("!! expected 3 animation rows, found", len(art))
         return 1
 
     import json
 
+    # The IDLE row carries a drone prop wired into the pose in several
+    # frames, and a drone reads as a second character standing next to the
+    # player. The WALK row is prop-free, so idle and walk both come from
+    # it; the INTERACT row keeps its own frames because the drone firing
+    # there IS the attack.
+    sources = {"idle": art[1], "walk": art[1], "interact": art[2]}
+
     manifest = {}
-    for name, band in zip(("idle", "walk", "interact"), art):
+    for name, band in sources.items():
         built = build_row_sheet(rgba, fg, band[0], band[1])
         if built is None:
             print("!! no frames for", name)
@@ -213,9 +287,9 @@ def main():
         scaled = [[int(round(x * scale)), int(round(w * scale)), small.size[1]] for x, w, h in regions]
         manifest[name] = {"regions": scaled, "sheet": "personaje_%s_p.png" % name}
         print(
-            "%-9s band y=%d..%d  frames=%d  sheet=%dx%d  platformer=%dx%d  regions=%s"
-            % (name, band[0], band[1], len(regions), full.size[0], full.size[1],
-               small.size[0], small.size[1], scaled)
+            "%-9s band y=%d..%d  frames=%d  cell=%dx%d  sheet=%dx%d  platformer=%dx%d"
+            % (name, band[0], band[1], len(regions), regions[0][1], regions[0][2],
+               full.size[0], full.size[1], small.size[0], small.size[1])
         )
     with open(os.path.join(OUT_DIR, "frames.json"), "w") as fh:
         json.dump(manifest, fh, indent=1)
