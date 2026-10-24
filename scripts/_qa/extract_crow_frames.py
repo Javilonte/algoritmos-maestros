@@ -12,8 +12,32 @@ reaches the image border, so an 8-connected border flood fill removes it,
 and a morphological closing on the FOREGROUND reconnects the parts the
 fill cut through.
 
+ponytail: CHANNEL_TOL=14 alone was not enough. The dark checker squares
+in this sheet are blue-tinted (about 32/32/48), so their channel spread is
+16 — one notch ABOVE the old threshold. They survived the flood fill,
+stayed in the same connected component as the character, and came out as
+opaque grey slabs hanging around the art in the battle portrait.
+
+ponytail: raising CHANNEL_TOL to 18 was the obvious fix and it was WRONG.
+The character's own browns (72/64/56) have the SAME spread of 16, so the
+threshold could not tell the two apart. At 18 the checker went away but
+so did the hood of the first idle frame.
+
+The real discriminator is HUE, not saturation: every checker square in
+this atlas is BLUE-tinted (blue >= red) while every warm brown of the
+character has red > blue. So the background candidate is "unsaturated AND
+blue-tinted". The flood fill then eats the whole checker mesh from the
+border and spares the character, even where it touches the cell edge.
+
 Usage:
   python3 scripts/_qa/extract_crow_frames.py
+  godot --headless --import
+  godot --headless -s scripts/_qa/build_crow_spriteframes.gd
+
+ponytail: the --import step is NOT optional. Godot serves the PNG through
+its import cache, and a headless run does not re-import a changed source
+on its own. Skip it and build_crow_spriteframes.gd reads the OLD sheet
+size and writes the OLD cell regions back into the .tres — silently.
 """
 
 import os
@@ -27,7 +51,10 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SRC = os.path.join(ROOT, "assets", "textures", "cyberpunk_character_sprites_crow.png")
 OUT_DIR = os.path.join(ROOT, "assets", "textures")
 
-CHANNEL_TOL = 14
+CHANNEL_TOL = 18
+# Minimum blue-over-red offset for a pixel to count as checker. The
+# character's browns sit at -16, the checker's dark squares at +16.
+COOL_MIN = 0
 CLOSE_RADIUS = 3
 MIN_COMPONENT = 400
 
@@ -45,8 +72,11 @@ def main():
     rgba = np.array(Image.open(SRC).convert("RGBA"), dtype=np.int16)
     rgb = rgba[:, :, :3].astype(np.int32)
     spread = rgb.max(axis=2) - rgb.min(axis=2)
+    cool = rgb[:, :, 2] - rgb[:, :, 0]
 
-    labels, _ = ndimage.label(spread <= CHANNEL_TOL, structure=np.ones((3, 3), dtype=int))
+    # Unsaturated AND blue-tinted == checker. Everything else == art.
+    candidate = (spread <= CHANNEL_TOL) & (cool >= COOL_MIN)
+    labels, _ = ndimage.label(candidate, structure=np.ones((3, 3), dtype=int))
     border = set(labels[0, :]) | set(labels[-1, :]) | set(labels[:, 0]) | set(labels[:, -1])
     border.discard(0)
     bg = np.isin(labels, list(border))
