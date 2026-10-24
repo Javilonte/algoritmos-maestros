@@ -23,8 +23,14 @@ const CELL_H := 320
 const FPS := 6
 
 
+
 func _init() -> void:
 	var sf := SpriteFrames.new()
+	# ponytail: SpriteFrames.new() ships with an empty "default" animation.
+	# Nothing referenced it and it made the spriteframe dims guard fail on
+	# an animation with zero frames.
+	if sf.has_animation("default"):
+		sf.remove_animation("default")
 
 	for anim_name in ["idle", "walk", "attack", "hurt"]:
 		var atlas_path: String = ATLASES[anim_name]
@@ -33,13 +39,24 @@ func _init() -> void:
 			push_error("Cannot load %s" % atlas_path)
 			quit(1); return
 		var count: int = FRAME_COUNTS[anim_name]
+		# ponytail: the cell size is derived from the sheet instead of being
+		# hardcoded. The extractor now re-anchors the crow into tight uniform
+		# cells, so 320x320 no longer holds, and a hardcoded size silently
+		# selects the wrong region of the sheet.
+		var sheet_w: int = tex.get_width()
+		var sheet_h: int = tex.get_height()
+		if sheet_w % count != 0:
+			push_error("%s width %d is not divisible by %d frames" % [atlas_path, sheet_w, count])
+			quit(1); return
+		var cell_w: int = sheet_w / count
+		var cell_h: int = sheet_h
 		sf.add_animation(anim_name)
 		sf.set_animation_speed(anim_name, FPS)
 		sf.set_animation_loop(anim_name, true)
 		for i in range(count):
 			var atlas := AtlasTexture.new()
 			atlas.atlas = tex
-			atlas.region = Rect2(i * CELL_W, 0, CELL_W, CELL_H)
+			atlas.region = Rect2(i * cell_w, 0, cell_w, cell_h)
 			sf.add_frame(anim_name, atlas)
 
 	var err := ResourceSaver.save(sf, OUT_PATH)

@@ -71,18 +71,39 @@ def main():
                 continue
             best = max(keep, key=lambda l: sizes[l - 1])
             mask = ndimage.binary_fill_holes(cl == best)
-            sub = rgba[row_y : row_y + CELL, x : x + CELL].copy()
-            sub[:, :, 3] = np.where(mask, sub[:, :, 3], 0)
+            ys, xs2 = np.where(mask)
+            if len(xs2) == 0:
+                frames.append(None)
+                continue
+            # Tight crop: the art only, no atlas padding.
+            bx0, bx1 = int(xs2.min()), int(xs2.max())
+            by0, by1 = int(ys.min()), int(ys.max())
+            sub = rgba[row_y + by0 : row_y + by1 + 1, x + bx0 : x + bx1 + 1].copy()
+            sub[:, :, 3] = np.where(mask[by0 : by1 + 1, bx0 : bx1 + 1], sub[:, :, 3], 0)
             frames.append(sub.astype(np.uint8))
 
         usable = [f for f in frames if f is not None]
         if not usable:
             print("!! no frames for", name)
             continue
-        sheet = np.concatenate(usable, axis=1)
+
+        # Re-anchor into a run of uniform cells with the body centred and the
+        # feet on a common baseline. The atlas cells have the art at a
+        # different offset in every frame, so without this the crow drifts
+        # inside its frame and hangs out of the battle portrait's box.
+        width = max(f.shape[1] for f in usable)
+        height = max(f.shape[0] for f in usable)
+        cells = []
+        for f in usable:
+            canvas = np.zeros((height, width, 4), dtype=np.uint8)
+            dx = (width - f.shape[1]) // 2
+            canvas[height - f.shape[0] :, dx : dx + f.shape[1]] = f
+            cells.append(canvas)
+        sheet = np.concatenate(cells, axis=1)
         path = os.path.join(OUT_DIR, name + ".png")
         Image.fromarray(sheet, "RGBA").save(path)
-        print("wrote %-28s %dx%d  (%d frames)" % (name + ".png", sheet.shape[1], sheet.shape[0], len(usable)))
+        print("wrote %-28s %dx%d  (%d frames, cell %dx%d)" % (
+            name + ".png", sheet.shape[1], sheet.shape[0], len(usable), width, height))
     return 0
 
 

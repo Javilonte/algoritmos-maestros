@@ -14,10 +14,18 @@ class_name BattlePortrait
 @export var sprite_frames: SpriteFrames
 @export var idle_anim: StringName = &"idle"
 @export var hurt_anim: StringName = &"hurt"
-@export var portrait_scale: float = 0.45
+## Fraccion del recuadro que puede ocupar el retrato. El arte se escala
+## SOLO para entrar: una escala absoluta se rompia en cada cambio de
+## geometria del atlas y dejaba al personaje colgando del recuadro.
+@export var portrait_fill: float = 0.92
 @export var display_name: String = "???"
 @export var level: int = 1
 @export var side: String = "enemy"  # "enemy" or "player"
+
+## Tamano minimo del recuadro del retrato.
+const SIGIL_SIZE := Vector2(160, 180)
+## Margen interior del estilo del recuadro (CyberStyleBox.frame usa 8).
+const SIGIL_MARGIN := 16.0
 
 var _sprite: AnimatedSprite2D
 var _name_label: Label
@@ -35,6 +43,23 @@ func _ready() -> void:
 ## Acento neon del lado: cyan para el jugador, magenta para el enemigo.
 func _accent() -> Color:
 	return CyberStyleBox.CYAN if side == "player" else CyberStyleBox.MAGENTA
+
+
+## Escala que hace entrar el frame DENTRO del recuadro, con margen.
+## ponytail: antes era una constante (0.45) que valia solo para una
+## geometria de atlas concreta; con otra el arte se salia del recuadro o
+## quedaba chiquito. Ahora se deriva del frame real y del espacio util.
+func _fit_scale() -> float:
+	if sprite_frames == null or not sprite_frames.has_animation(idle_anim):
+		return 1.0
+	var tex: Texture2D = sprite_frames.get_frame_texture(idle_anim, 0)
+	if tex == null:
+		return 1.0
+	var frame_size: Vector2 = tex.region.size if tex is AtlasTexture else tex.get_size()
+	if frame_size.x <= 0.0 or frame_size.y <= 0.0:
+		return 1.0
+	var inner: Vector2 = SIGIL_SIZE - Vector2(SIGIL_MARGIN, SIGIL_MARGIN)
+	return minf(inner.x / frame_size.x, inner.y / frame_size.y) * portrait_fill
 
 
 func _apply_style() -> void:
@@ -75,7 +100,7 @@ func _build() -> void:
 
 	# Sigil panel containing the AnimatedSprite2D.
 	_sigil = Panel.new()
-	_sigil.custom_minimum_size = Vector2(160, 180)
+	_sigil.custom_minimum_size = SIGIL_SIZE
 	_sigil.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_sigil.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_sigil.add_theme_stylebox_override("panel", CyberStyleBox.frame(_accent().darkened(0.15)))
@@ -87,7 +112,7 @@ func _build() -> void:
 	if sprite_frames != null:
 		_sprite = AnimatedSprite2D.new()
 		_sprite.sprite_frames = sprite_frames
-		_sprite.scale = Vector2(portrait_scale, portrait_scale)
+		_sprite.scale = Vector2.ONE * _fit_scale()
 		_sprite.autoplay = String(idle_anim)
 		_sprite.animation = String(idle_anim)
 		sigil_center.add_child(_sprite)
