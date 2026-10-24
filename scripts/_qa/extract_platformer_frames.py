@@ -299,24 +299,39 @@ def main():
 
 
 def write_spriteframes(manifest):
-    """Emit resources/personaje_plat_spriteframes.tres from the manifest."""
+    """Emit resources/personaje_plat_spriteframes.tres from the manifest.
+
+    Each frame becomes an AtlasTexture SUB-RESOURCE, not a "region" field.
+    Godot's SpriteFrames parser ignores "region" in a .tres frame dictionary:
+    the frame then draws the whole sheet, which is what made the player
+    render as eight characters standing in a row. The existing
+    resources/personaje_spriteframes.tres already used AtlasTexture
+    sub-resources for the same reason.
+    """
     out = os.path.join(ROOT, "resources", "personaje_plat_spriteframes.tres")
     names = list(manifest.keys())
-    lines = ['[gd_resource type="SpriteFrames" load_steps=%d format=3]\n' % (len(names) + 1)]
+    total_frames = sum(len(manifest[n]["regions"]) for n in names)
+
+    lines = ['[gd_resource type="SpriteFrames" load_steps=%d format=3]\n' % (len(names) + total_frames + 1)]
     for i, name in enumerate(names, start=1):
         lines.append(
             '[ext_resource type="Texture2D" path="res://assets/textures/plat/%s" id="%d_%s"]\n'
             % (manifest[name]["sheet"], i, name)
         )
-    lines.append("\n[resource]\nanimations = [{\n")
+    lines.append("\n")
+    for ni, name in enumerate(names):
+        for fi, (x, w, h) in enumerate(manifest[name]["regions"]):
+            lines.append('[sub_resource type="AtlasTexture" id="AtlasTexture_%s_%d"]\n' % (name, fi))
+            lines.append('atlas = ExtResource("%d_%s")\n' % (ni + 1, name))
+            lines.append('region = Rect2(%d, 0, %d, %d)\n' % (x, w, h))
+            lines.append("\n")
+    lines.append("[resource]\nanimations = [{\n")
     for ni, name in enumerate(names):
         regions = manifest[name]["regions"]
         lines.append('"frames": [{\n')
         for fi, region in enumerate(regions):
-            x, w, h = region
             lines.append('"duration": 1.0,\n')
-            lines.append('"texture": ExtResource("%d_%s"),\n' % (ni + 1, name))
-            lines.append('"region": Rect2(%d, 0, %d, %d)\n' % (x, w, h))
+            lines.append('"texture": SubResource("AtlasTexture_%s_%d")\n' % (name, fi))
             lines.append('}, {\n' if fi < len(regions) - 1 else '}],\n')
         lines.append('"loop": %s,\n' % ("false" if name == "interact" else "true"))
         lines.append('"name": &"%s",\n' % name)

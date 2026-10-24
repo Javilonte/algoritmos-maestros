@@ -32,6 +32,19 @@ const ATLAS_ROWS := 2
 const ATLAS_W := TILE_W * ATLAS_COLS  # 128
 const ATLAS_H := TILE_H * ATLAS_ROWS  # 64
 
+# Paleta propia del plataformero. D2Palette esta disenada para una
+# mazmorra negra: sus tonos de piedra (0.18, 0.15, 0.12) no se leen
+# como superficie sino como agujeros cuando el fondo es un cielo. Estos
+# tonos tienen cuerpo y separan del fondo por valor, no solo por borde.
+const GROUND_BODY := Color(0.32, 0.23, 0.17)
+const GROUND_BODY_DARK := Color(0.23, 0.16, 0.12)
+const GROUND_EDGE := Color(0.44, 0.57, 0.29)  # musgo de la superficie
+const STONE_BODY := Color(0.42, 0.44, 0.50)
+const STONE_EDGE := Color(0.60, 0.62, 0.68)
+const BRICK_BODY := Color(0.56, 0.29, 0.21)
+const BRICK_EDGE := Color(0.72, 0.42, 0.30)
+const VOID := Color(0, 0, 0, 0)
+
 # IDs semanticos (coinciden con la posicion en el atlas).
 const T_VOID := 0
 const T_GROUND_TOP := 1
@@ -56,17 +69,21 @@ static func build() -> Array:
 
 	# Fila superior: terreno.
 	_paint_ground_top(img, 0, 0)
-	_paint_ground_fill(img, 1, 0, D2Palette.STONE_MID)
-	_paint_ground_fill(img, 2, 0, D2Palette.STONE_DARK)
-	_paint_block(img, 3, 0, D2Palette.STONE_LIGHT, D2Palette.STONE_HIGHLIGHT)
+	_paint_ground_fill(img, 1, 0, GROUND_BODY)
+	_paint_ground_fill(img, 2, 0, GROUND_BODY_DARK)
+	_paint_block(img, 3, 0, STONE_BODY, STONE_EDGE)
 	# Fila inferior: bloques y acentos.
-	_paint_block(img, 0, 1, D2Palette.STONE_MID, D2Palette.STONE_LIGHT)
+	_paint_block(img, 0, 1, STONE_BODY.darkened(0.15), STONE_EDGE.darkened(0.2))
 	_paint_brick(img, 1, 1)
 	_paint_crystal(img, 2, 1)
-	_paint_block(img, 3, 1, D2Palette.BRONZE_DARK, D2Palette.BRONZE_MID)
+	_paint_block(img, 3, 1, GROUND_BODY_DARK, GROUND_EDGE.darkened(0.35))
 
 	var texture := ImageTexture.create_from_image(img)
 	var tile_set := TileSet.new()
+	# BOTH are needed. TileSet.tile_size drives the collision grid; the
+	# atlas source's texture_region_size drives the drawing. Set only one and
+	# the two disagree: the tiles draw at 32 px while the collision boxes
+	# land on a 16 px grid, and the player falls between them.
 	tile_set.tile_size = Vector2i(TILE_W, TILE_H)
 
 	# Capa de fisica 0: colision de cuadrado completo en los tiles solidos.
@@ -75,6 +92,10 @@ static func build() -> Array:
 
 	var atlas := TileSetAtlasSource.new()
 	atlas.texture = texture
+	# Godot 4 sizes atlas regions per SOURCE, not on the TileSet: without
+	# this the atlas has no region size and every tile renders as a black
+	# square. TileSet.tile_size alone is not enough.
+	atlas.texture_region_size = Vector2i(TILE_W, TILE_H)
 	tile_set.add_source(atlas)
 	for i in range(ATLAS_COLS * ATLAS_ROWS):
 		var pos := Vector2i(i % ATLAS_COLS, i / ATLAS_COLS)
@@ -85,27 +106,35 @@ static func build() -> Array:
 
 
 ## Poligono de colision de cuadrado completo dentro del tile.
+##
+## ponytail: the points are relative to the tile's ORIGIN, which in Godot 4
+## is the tile's region origin inside the atlas — not the region top-left.
+## With texture_region_size set, (0,0)..(32,32) placed the collision one
+## cell down-and-right of the drawn tile, so the level had no floor under
+## it and the player fell through. The origin sits at the region's centre,
+## so the box is half a tile around it.
 static func _add_box_collision(atlas: TileSetAtlasSource, pos: Vector2i) -> void:
 	var data: TileData = atlas.get_tile_data(pos, 0)
 	data.add_collision_polygon(0)
+	var h := Vector2(TILE_W, TILE_H) * 0.5
 	data.set_collision_polygon_points(0, 0, PackedVector2Array([
-		Vector2(0, 0),
-		Vector2(TILE_W, 0),
-		Vector2(TILE_W, TILE_H),
-		Vector2(0, TILE_H),
+		Vector2(-h.x, -h.y),
+		Vector2(h.x, -h.y),
+		Vector2(h.x, h.y),
+		Vector2(-h.x, h.y),
 	]))
 
 
-## Superficie de terreno: borde superior iluminado, cuerpo oscuro.
+## Superficie de terreno: borde de musgo iluminado sobre tierra.
 static func _paint_ground_top(img: Image, col: int, row: int) -> void:
 	var ox := col * TILE_W
 	var oy := row * TILE_H
-	img.fill_rect(Rect2i(ox, oy, TILE_W, TILE_H), D2Palette.STONE_MID)
+	img.fill_rect(Rect2i(ox, oy, TILE_W, TILE_H), GROUND_BODY)
 	# Franja de superficie.
-	img.fill_rect(Rect2i(ox, oy, TILE_W, 4), D2Palette.STONE_HIGHLIGHT)
-	img.fill_rect(Rect2i(ox, oy + 4, TILE_W, 2), D2Palette.BRONZE_DARK)
+	img.fill_rect(Rect2i(ox, oy, TILE_W, 5), GROUND_EDGE)
+	img.fill_rect(Rect2i(ox, oy + 5, TILE_W, 3), GROUND_EDGE.darkened(0.35))
 	# Granos.
-	_dither(img, ox, oy + 8, D2Palette.STONE_DARK, 5)
+	_dither(img, ox, oy + 10, GROUND_BODY_DARK, 5)
 
 
 ## Relleno de tierra con textura granulada.
@@ -131,8 +160,8 @@ static func _paint_block(img: Image, col: int, row: int, base: Color, edge: Colo
 static func _paint_brick(img: Image, col: int, row: int) -> void:
 	var ox := col * TILE_W
 	var oy := row * TILE_H
-	img.fill_rect(Rect2i(ox, oy, TILE_W, TILE_H), D2Palette.BRONZE_DARK)
-	var brick := D2Palette.BRONZE_MID
+	img.fill_rect(Rect2i(ox, oy, TILE_W, TILE_H), BRICK_BODY.darkened(0.35))
+	var brick := BRICK_BODY
 	for by in range(4):
 		var offset := 0 if by % 2 == 0 else 8
 		for bx in range(2):
@@ -147,7 +176,7 @@ static func _paint_brick(img: Image, col: int, row: int) -> void:
 static func _paint_crystal(img: Image, col: int, row: int) -> void:
 	var ox := col * TILE_W
 	var oy := row * TILE_H
-	img.fill_rect(Rect2i(ox, oy, TILE_W, TILE_H), D2Palette.STONE_DARK)
+	img.fill_rect(Rect2i(ox, oy, TILE_W, TILE_H), STONE_BODY.darkened(0.55))
 	var glow := D2Palette.NEON_CYAN
 	img.fill_rect(Rect2i(ox + 8, oy + 4, 16, 24), glow.darkened(0.35))
 	img.fill_rect(Rect2i(ox + 12, oy + 8, 8, 16), glow)

@@ -1,12 +1,37 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/platformer/platformer_world.gd" id="1_world"]
 [ext_resource type="PackedScene" path="res://scenes/platformer/platformer_player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://scenes/battle/battle.tscn" id="3_battle"]
 [ext_resource type="PackedScene" path="res://scenes/ui/player_hud.tscn" id="4_hud"]
 
+[sub_resource type="Gradient" id="Gradient_sky"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(0.043, 0.055, 0.106, 1, 0.114, 0.086, 0.169, 1, 0.216, 0.129, 0.231, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_sky"]
+gradient = SubResource("Gradient_sky")
+width = 16
+height = 256
+fill_from = Vector2(0, 0)
+fill_to = Vector2(0, 1)
+
 [node name="PlatformerWorld" type="Node2D"]
 script = ExtResource("1_world")
+
+[node name="Sky" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="Gradient" type="TextureRect" parent="Sky"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_sky")
+expand_mode = 1
+stretch_mode = 0
 
 [node name="Ground" type="TileMapLayer" parent="."]
 
