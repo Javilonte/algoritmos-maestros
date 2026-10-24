@@ -15,6 +15,9 @@ enum BattlePhase { IDLE, EDITING, COMPILING, EXECUTING, RESOLVING, ENEMY_TURN, F
 @onready var combo_label: Label = $BattleArena/ComboLabel
 @onready var damage_layer: Node2D = $BattleArena/DamageLayer
 @onready var battle_arena: Control = $BattleArena
+@onready var background: Panel = $BattleArena/Background
+@onready var vs_badge: PanelContainer = $BattleArena/PortraitsRow/VSDivider
+@onready var message_panel: PanelContainer = $BattleArena/MessagePanel
 
 const ENEMY_AUTO_DAMAGE: int = 12
 const SHAKE_DURATION: float = 0.35
@@ -33,6 +36,7 @@ func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_arena_original_pos = battle_arena.position
+	_apply_cyber_style()
 	EventBus.battle_requested.connect(_on_battle_requested)
 	EventBus.hp_changed.connect(_on_hp_changed)
 	EventBus.code_executed.connect(_on_code_executed)
@@ -41,6 +45,35 @@ func _ready() -> void:
 	attack_button.pressed.connect(_on_attack_pressed)
 	run_button.pressed.connect(_on_run_pressed)
 	battle_terminal.back_pressed.connect(_on_battle_terminal_back)
+
+## ponytail: la escena venía con sub-resources StyleBoxFlat doradas de
+## Diablo II. Se reestilan desde código para que el look neón viva en un
+## solo lugar (CyberStyleBox) y no repartido en el .tscn.
+func _apply_cyber_style() -> void:
+	background.add_theme_stylebox_override("panel", CyberStyleBox.panel())
+	vs_badge.add_theme_stylebox_override("panel", CyberStyleBox.vs_badge())
+	message_panel.add_theme_stylebox_override("panel", CyberStyleBox.panel())
+
+	attack_button.add_theme_stylebox_override("normal", CyberStyleBox.button(CyberStyleBox.CYAN))
+	attack_button.add_theme_stylebox_override("hover", CyberStyleBox.button_hover(CyberStyleBox.CYAN))
+	attack_button.add_theme_stylebox_override("pressed", CyberStyleBox.button_pressed(CyberStyleBox.CYAN))
+	attack_button.add_theme_stylebox_override("focus", CyberStyleBox.button_hover(CyberStyleBox.CYAN))
+	attack_button.add_theme_color_override("font_color", CyberStyleBox.CYAN)
+	attack_button.add_theme_color_override("font_hover_color", Color(1, 1, 1))
+	attack_button.add_theme_color_override("font_pressed_color", Color(1, 1, 1))
+
+	run_button.add_theme_stylebox_override("normal", CyberStyleBox.button(CyberStyleBox.MAGENTA))
+	run_button.add_theme_stylebox_override("hover", CyberStyleBox.button_hover(CyberStyleBox.MAGENTA))
+	run_button.add_theme_stylebox_override("pressed", CyberStyleBox.button_pressed(CyberStyleBox.MAGENTA))
+	run_button.add_theme_stylebox_override("focus", CyberStyleBox.button_hover(CyberStyleBox.MAGENTA))
+	run_button.add_theme_color_override("font_color", CyberStyleBox.MAGENTA)
+	run_button.add_theme_color_override("font_hover_color", Color(1, 1, 1))
+	run_button.add_theme_color_override("font_pressed_color", Color(1, 1, 1))
+
+	battle_timer_label.add_theme_color_override("font_color", CyberStyleBox.CYAN)
+	combo_label.add_theme_color_override("font_color", CyberStyleBox.MAGENTA)
+	message_label.add_theme_color_override("default_color", D2Palette.BONE_TEXT)
+
 
 func _process(_delta: float) -> void:
 	if _phase != BattlePhase.EDITING:

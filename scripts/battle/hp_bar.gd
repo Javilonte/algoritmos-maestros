@@ -10,8 +10,8 @@ class_name HPBar
 @export var side: String = "enemy"
 
 func _ready() -> void:
-	add_theme_stylebox_override("background", D2StyleBox.bar_bg())
-	add_theme_stylebox_override("fill", D2StyleBox.bar_fill(D2Palette.HP_RED_HI))
+	add_theme_stylebox_override("background", CyberStyleBox.track())
+	add_theme_stylebox_override("fill", CyberStyleBox.fill(D2Palette.HP_RED_HI))
 	value = max_value
 
 func set_hp(current: int, max_hp: int) -> void:
@@ -28,4 +28,4 @@ func _update_color() -> void:
 		color = D2Palette.HP_RED
 	else:
 		color = D2Palette.HP_RED_LOW
-	add_theme_stylebox_override("fill", D2StyleBox.bar_fill(color))
+	add_theme_stylebox_override("fill", CyberStyleBox.fill(color))

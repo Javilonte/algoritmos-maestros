@@ -32,8 +32,16 @@ func _ready() -> void:
 	_build()
 
 
+## Acento neon del lado: cyan para el jugador, magenta para el enemigo.
+func _accent() -> Color:
+	return CyberStyleBox.CYAN if side == "player" else CyberStyleBox.MAGENTA
+
+
 func _apply_style() -> void:
-	add_theme_stylebox_override("panel", D2StyleBox.sigil())
+	# ponytail: el retrato usaba D2StyleBox.sigil(), que es el marco dorado
+	# de Diablo II. CyberStyleBox.frame() da el marco neón equivalente.
+	var accent: Color = CyberStyleBox.CYAN if side == "player" else CyberStyleBox.MAGENTA
+	add_theme_stylebox_override("panel", CyberStyleBox.frame(accent))
 
 
 func _build() -> void:
@@ -55,13 +63,13 @@ func _build() -> void:
 	_name_label.text = display_name
 	_name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_name_label.add_theme_color_override("font_color", D2Palette.GOLD_TEXT_BRIGHT)
+	_name_label.add_theme_color_override("font_color", _accent())
 	_name_label.add_theme_font_size_override("font_size", 16)
 	header.add_child(_name_label)
 
 	_level_label = Label.new()
 	_level_label.text = "Lv %d" % level
-	_level_label.add_theme_color_override("font_color", D2Palette.BONE_TEXT)
+	_level_label.add_theme_color_override("font_color", _accent().lightened(0.2))
 	_level_label.add_theme_font_size_override("font_size", 12)
 	header.add_child(_level_label)
 
@@ -70,7 +78,7 @@ func _build() -> void:
 	_sigil.custom_minimum_size = Vector2(160, 180)
 	_sigil.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_sigil.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_sigil.add_theme_stylebox_override("panel", D2StyleBox.code_inner())
+	_sigil.add_theme_stylebox_override("panel", CyberStyleBox.frame(_accent().darkened(0.15)))
 	var sigil_center := CenterContainer.new()
 	sigil_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sigil_center.size_flags_vertical = Control.SIZE_EXPAND_FILL
