@@ -29,7 +29,7 @@ extends RefCounted
 ## el borde derecho es el que importa) y hay DOS estirones de 4, que
 ## parecen de 3 si contás desde uno. El índice equivocado te deja corto.
 
-const REQUIRES_SKILL := &"ptr_arrays"
+const REQUIRES_SKILLS: Array[StringName] = [&"ptr_arrays"]
 
 const ID := "level_04"
 const DISPLAY_NAME := "Distrito Neón: El Índice"

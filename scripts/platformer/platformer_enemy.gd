@@ -32,7 +32,10 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	# `Enemy` no mueve nada: sólo dispara la batalla al contacto. El
 	# movimiento es de acá.
-	if not visible:
+	# ponytail: un enemigo bloqueado esta dormido: no patrulla. Si
+	# patrullara, pareceria vivo y el jugador pensaria que si se puede
+	# pelear con el.
+	if not visible or locked:
 		return
 	global_position.x += _direction * patrol_speed * delta
 	if global_position.x <= patrol_min_x:

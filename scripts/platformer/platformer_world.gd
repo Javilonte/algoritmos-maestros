@@ -42,6 +42,9 @@ var _respawning: bool = false
 ## Indices de los spots ya spawneados: el mismo enemigo puede aparecer dos
 ## veces en el nivel, asi que el indice es la identidad, no el id.
 var _spawned_spots: Array[int] = []
+## Los enemigos spawneados, por indice del spot. Hace falta para
+## despertarlos cuando se desbloquea su skill.
+var _spawned_enemies: Dictionary = {}
 ## Capa del arbol de skills, abierta con la tecla ` .
 var _skill_tree_layer: CanvasLayer = null
 var _skill_tree_ui: Control = null
@@ -134,17 +137,22 @@ func _spawn_enemies() -> void:
 	SkillTree.skill_unlocked.connect(_on_skill_unlocked)
 
 
-## Spawnea el enemigo del spot si su skill esta desbloqueado.
+## Spawnea el enemigo del spot.
+##
+## ponytail: el enemigo BLOQUEADO tambien se spawnea, dormido (gris, sin
+## patrulla, sin pelea, con el skill que le falta escrito encima). Antes
+## no se spawneaba y el nivel se veia vacio: el jugador pensaba que le
+## faltaba contenido. La garantia del gate no cambia — la pelea no se
+## puede ganar sin el skill — pero el mapa ahora cuenta la verdad.
 func _maybe_spawn_enemy(index: int) -> void:
 	if index in _spawned_spots:
+		_wake_enemy(index)
 		return
 	var spots: Array = _level.get("enemies", [])
 	if index >= spots.size():
 		return
 	var spot: Dictionary = spots[index]
 	var enemy_id: String = String(spot.get("id", ""))
-	if not SkillTree.is_enemy_unlocked(enemy_id):
-		return
 	var scene: PackedScene = load("res://scenes/platformer/platformer_enemy.tscn") as PackedScene
 	if scene == null:
 		push_error("PlatformerWorld: could not load platformer_enemy.tscn")
@@ -162,6 +170,7 @@ func _maybe_spawn_enemy(index: int) -> void:
 	enemy.set("challenge_id", String(data.get("challenge_id", "main_exit_check")))
 	enemy.set("challenge_id_next", String(data.get("challenge_id_next", "")))
 	enemy.set("enemy_id", enemy_id)
+	enemy.set("locked", not SkillTree.is_enemy_unlocked(enemy_id))
 	var patrol: Vector2i = spot.get("patrol", Vector2i.ZERO)
 	enemy.set("patrol_min_x", patrol.x * TILE + TILE / 2)
 	enemy.set("patrol_max_x", patrol.y * TILE + TILE / 2)
@@ -169,11 +178,24 @@ func _maybe_spawn_enemy(index: int) -> void:
 	enemy.global_position = Vector2(spawn_x * TILE + TILE / 2, int(spot["y"]) * TILE)
 	entities.add_child(enemy)
 	_spawned_spots.append(index)
+	_spawned_enemies[index] = enemy
 
 
 func _on_skill_unlocked(_skill_id: StringName) -> void:
 	for i in _level.get("enemies", []).size():
 		_maybe_spawn_enemy(i)
+
+
+## El enemigo ya estaba en el mapa, dormido: ahora que su skill esta
+## desbloqueado se despierta y se puede pelear con el.
+func _wake_enemy(index: int) -> void:
+	var enemy: Node = _spawned_enemies.get(index, null)
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	if not SkillTree.is_enemy_unlocked(String(enemy.get("enemy_id"))):
+		return
+	if enemy.has_method("wake"):
+		enemy.call("wake")
 
 
 func _spawn_checkpoints() -> void:

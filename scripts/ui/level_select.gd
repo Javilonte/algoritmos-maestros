@@ -50,7 +50,7 @@ func _build_cards() -> void:
 		# gate que los enemigos. Con un flag estatico, el nivel 02 habria
 		# estado bloqueado para siempre.
 		var unlocked: bool = bool(entry.get("unlocked", true)) \
-			or SkillTree.is_skill_unlocked(level.get("requires_skill", &""))
+			or _any_skill_unlocked(level.get("requires_skills", []))
 		var card: MenuActionButton = MenuActionButton.new()
 		card.variant = "primary" if unlocked else "subtle"
 		card.disabled = not unlocked
@@ -75,15 +75,29 @@ func _level_number(id: String) -> String:
 
 func _subtitle_for(entry: Dictionary, level: Dictionary, unlocked: bool) -> String:
 	if not unlocked:
-		var skill_id: StringName = level.get("requires_skill", &"")
-		var info: Dictionary = SkillTree.skill_info(skill_id)
-		var skill_name: String = String(info.get("name", ""))
-		return "BLOQUEADO · %s" % skill_name if not skill_name.is_empty() else "BLOQUEADO"
+		var names: Array[String] = []
+		for skill_id in level.get("requires_skills", []):
+			var info: Dictionary = SkillTree.skill_info(skill_id)
+			var skill_name: String = String(info.get("name", ""))
+			if not skill_name.is_empty():
+				names.append(skill_name)
+		if names.is_empty():
+			return "BLOQUEADO"
+		return "BLOQUEADO · %s" % " o ".join(names)
 	var enemies: int = level.get("enemies", []).size()
 	var chapter: String = String(entry.get("chapter", ""))
 	if chapter.is_empty():
 		return "%d enemigos" % enemies
 	return "%s · %d enemigos" % [chapter.to_upper(), enemies]
+
+
+## Con mas de un skill, basta con uno: el nivel se abre y el resto de los
+## enemigos del capitulo aparecen dormidos.
+func _any_skill_unlocked(skill_ids: Array) -> bool:
+	for skill_id in skill_ids:
+		if SkillTree.is_skill_unlocked(skill_id):
+			return true
+	return false
 
 
 func _on_level_pressed(id: String) -> void:

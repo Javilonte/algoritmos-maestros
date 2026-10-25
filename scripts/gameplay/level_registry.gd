@@ -40,6 +40,13 @@ const LEVELS: Array[Dictionary] = [
 		"unlocked": false,
 		"script": preload("res://data/levels/level_04.gd"),
 	},
+	{
+		"id": "level_05",
+		"name": "Distrito Neón: La Ordenación",
+		"chapter": "Distrito Neón",
+		"unlocked": false,
+		"script": preload("res://data/levels/level_05.gd"),
+	},
 ]
 
 
@@ -59,7 +66,7 @@ static func get_level(id: String) -> Dictionary:
 		"enemies": consts.get("ENEMY_SPOTS", []),
 		"checkpoints": consts.get("CHECKPOINTS", []),
 		"player_start": consts.get("PLAYER_START", Vector2i(4, 15)),
-		"requires_skill": consts.get("REQUIRES_SKILL", &""),
+		"requires_skills": consts.get("REQUIRES_SKILLS", []),
 	}
 
 

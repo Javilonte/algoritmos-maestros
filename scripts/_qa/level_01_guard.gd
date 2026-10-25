@@ -144,21 +144,35 @@ func _behavior() -> void:
 		"falling out of the level respawns the player at the checkpoint (%.1f, %.1f)"
 		% [player.global_position.x, player.global_position.y])
 
-	# --- el gate: solo aparecen los enemigos desbloqueados --------------------
-	var spawned_ids: Array = []
+	# --- el gate: los enemigos bloqueados EXISTEN pero duermen ----------------
+	# ponytail: antes el gate no spawneaba al enemigo bloqueado y el nivel
+	# se veía vacio ("en el mapa solo veo 1"). Ahora todos estan en el
+	# mapa, los bloqueados en gris y dormidos, y el gate sigue valiendo:
+	# con un enemigo bloqueado no se puede pelear.
+	var spawned: Array = []
+	var locked_ids: Array = []
+	var awake_ids: Array = []
 	for child in entities.get_children():
 		if child.has_method("defeat"):
-			spawned_ids.append(String(child.get("enemy_id")))
+			spawned.append(child)
+			if bool(child.get("locked")):
+				locked_ids.append(String(child.get("enemy_id")))
+			else:
+				awake_ids.append(String(child.get("enemy_id")))
 	var level_enemy_count: int = _level_enemy_count(world)
-	_check(spawned_ids.size() < level_enemy_count,
-		"the level starts gated (%d of %d enemies spawned)" % [spawned_ids.size(), level_enemy_count])
-	_check(spawned_ids.has("slime_aritm"),
-		"the root skill is unlocked, so the first enemy is in the level")
-	_check(not spawned_ids.has("compilador_divino"),
-		"the final boss is NOT in the level before its skill is unlocked")
+	_check(spawned.size() == level_enemy_count,
+		"every enemy of the level is on the map (%d of %d)" % [spawned.size(), level_enemy_count])
+	_check(awake_ids.has("slime_aritm"),
+		"the root skill is unlocked, so the first enemy is awake")
+	# el Memory Leak esta en el roster del nivel 01 y su skill (ptr_dynamic)
+	# no esta desbloqueado al arrancar: tiene que estar en el mapa dormido.
+	_check(locked_ids.has("memory_leak"),
+		"an enemy whose skill is locked is on the map but asleep")
 
-	# desbloquear un skill mete a su enemigo en el nivel
-	var before: int = spawned_ids.size()
+	# desbloquear un skill DESPIERTA a su enemigo
+	var ogre_before: Node = _find_enemy(spawned, "ogro_bucle")
+	_check(ogre_before != null and bool(ogre_before.get("locked")),
+		"the ogre sleeps before its skill is unlocked")
 	# stl_loops pide nivel 2 y 150 XP. Cuanta XP haga falta depende de la
 	# curva (las subidas de nivel se la comen), asi que el guard gana XP
 	# hasta que el nodo cae, en vez de codificar un numero.
@@ -172,20 +186,9 @@ func _behavior() -> void:
 			break
 	_check(unlocked, "the player can unlock a skill with the XP they earned")
 	await get_tree().process_frame
-	var after_ids: Array = []
-	for child in entities.get_children():
-		if child.has_method("defeat"):
-			after_ids.append(String(child.get("enemy_id")))
-	_check(after_ids.size() > before,
-		"unlocking a skill spawns its enemy in the level (%d -> %d)" % [before, after_ids.size()])
-	# el nivel tiene DOS ogro_bucle (acto 4): desbloquear el skill mete a
-	# los dos, y ninguno más.
-	var unexpected: Array = []
-	for id in after_ids:
-		if not id in spawned_ids and id != "ogro_bucle":
-			unexpected.append(id)
-	_check(unexpected.is_empty(),
-		"only the unlocked skill's enemies appeared (%s)" % str(unexpected))
+	var ogre_after: Node = _find_enemy(spawned, "ogro_bucle")
+	_check(ogre_after != null and not bool(ogre_after.get("locked")),
+		"unlocking a skill wakes its enemy")
 
 	# --- el arbol de skills se abre desde el platformer ---------------------
 	# Sin esto el gate no tiene salida: el jugador no tendria como
@@ -203,6 +206,14 @@ func _behavior() -> void:
 	_check(not get_tree().paused, "closing the skill tree unpauses the world")
 
 	_finish()
+
+
+## El enemigo spawneado con ese id, o null.
+func _find_enemy(nodes: Array, enemy_id: String) -> Node:
+	for node in nodes:
+		if String(node.get("enemy_id")) == enemy_id:
+			return node
+	return null
 
 
 ## Cuántos enemigos declara el nivel (para comparar con los spawneados).

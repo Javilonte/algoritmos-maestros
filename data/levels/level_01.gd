@@ -20,10 +20,11 @@ extends RefCounted
 ## real del jugador): hueco <= 3 tiles cómodo, 4 estirón, 5 imposible;
 ## subida <= 3 tiles; una plataforma a <= 3 tiles del suelo de abajo.
 
-## El skill que habilita este nivel. El gate es el mismo que el de los
+## Los skills que habilitan este nivel. El gate es el mismo que el de los
 ## enemigos: el jugador abre el arbol, desbloquea el skill del capitulo y
-## el nivel aparece. Vacío = el nivel esta disponible desde el arranque.
-const REQUIRES_SKILL := &""
+## el nivel aparece. Con mas de uno, basta con uno: el otro enemigo del
+## capi­tulo aparece dormido hasta que se desbloquee el suyo.
+const REQUIRES_SKILLS: Array[StringName] = []
 
 const ID := "level_01"
 const DISPLAY_NAME := "Distrito Neón: El Umbral"

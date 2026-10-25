@@ -29,7 +29,7 @@ extends RefCounted
 ## capítulo del bucle es el primero donde repetir la cuenta importa, y el
 ## nivel tiene que hacer que repetirla salga a cuenta.
 
-const REQUIRES_SKILL := &"stl_loops"
+const REQUIRES_SKILLS: Array[StringName] = [&"stl_loops"]
 
 const ID := "level_03"
 const DISPLAY_NAME := "Distrito Neón: El Bucle"

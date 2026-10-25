@@ -33,7 +33,7 @@ extends RefCounted
 ## El skill que habilita este nivel. El gate es el mismo que el de los
 ## enemigos: el jugador abre el arbol, desbloquea el skill del capitulo y
 ## el nivel aparece.
-const REQUIRES_SKILL := &"ptr_if_else"
+const REQUIRES_SKILLS: Array[StringName] = [&"ptr_if_else"]
 
 const ID := "level_02"
 const DISPLAY_NAME := "Distrito Neón: La Bifurcación"

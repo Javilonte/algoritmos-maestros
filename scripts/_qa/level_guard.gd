@@ -64,15 +64,22 @@ func _run() -> void:
 		# nivel tiene que pertenecer al skill del capitulo. Si no, el
 		# gate por skill deja el nivel VACIO (nadie puede pelear) o deja
 		# una pelea de otro capitulo.
-		var skill_id: StringName = data.get("requires_skill", &"")
-		if skill_id != &"":
-			var node = SkillTree.skills.get(skill_id, null)
-			_check(node != null, "the level '%s' names a skill that exists (%s)" % [id, skill_id])
-			if node != null:
-				for spot in enemies:
-					var enemy_id: String = String(spot.get("id", ""))
-					_check(enemy_id in node.enemies_unlocked,
-						"the level '%s' only fights the enemies of '%s' ('%s')" % [id, skill_id, enemy_id])
+		var skill_ids: Array = data.get("requires_skills", [])
+		if skill_ids.is_empty():
+			continue
+		for skill_id in skill_ids:
+			_check(SkillTree.skills.get(skill_id, null) != null,
+				"the level '%s' names a skill that exists (%s)" % [id, skill_id])
+		for spot in enemies:
+			var enemy_id: String = String(spot.get("id", ""))
+			var owner_skill: String = ""
+			for skill_id in skill_ids:
+				var node = SkillTree.skills.get(skill_id, null)
+				if node != null and enemy_id in node.enemies_unlocked:
+					owner_skill = String(skill_id)
+					break
+			_check(not owner_skill.is_empty(),
+				"the level '%s' only fights the enemies of its chapter skills ('%s')" % [id, enemy_id])
 
 	print("\n========== LEVEL GUARD ==========")
 	for p in _passed:

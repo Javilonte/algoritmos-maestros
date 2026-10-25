@@ -14,6 +14,16 @@ class_name Enemy
 @export var challenge_id_next: String = ""
 @export var respawn_time: float = 30.0
 @export var enemy_id: String = ""  # id of the EnemyCatalog, optional
+## El enemigo esta bloqueado: se ve, pero no se puede pelear con el hasta
+## desbloquear el skill de su capitulo.
+##
+## ponytail: el gate antes NO lo spawneaba. El nivel se veia vacio y el
+## jugador pensaba que le faltaba contenido (o que el juego estaba roto):
+## "en el mapa solo veo 1". Ahora el enemigo bloqueado existe y esta
+## dormido — gris, sin patrulla, sin pelea — con el skill que le falta
+## escrito encima. La garantia del gate no cambia: la pelea no se puede
+## ganar sin el skill.
+@export var locked: bool = false
 ## ponytail: el enemigo tomaba la region del atlas A MANO en el .tscn
 ## (Rect2(0, 0, 320, 320)). El extractor regenera las hojas con otra
 ## geometria cada vez que cambia el arte, y un recorte escrito a mano
@@ -27,11 +37,54 @@ class_name Enemy
 
 var _is_defeated: bool = false
 var _respawn_timer: SceneTreeTimer = null
+var _lock_label: Label = null
 
 func _ready() -> void:
 	add_to_group("enemies")
 	body_entered.connect(_on_body_entered)
 	_apply_sprite_frames()
+	if locked:
+		_go_locked()
+
+
+## El enemigo bloqueado: gris, sin colision y con el skill que falta.
+func _go_locked() -> void:
+	if sprite != null:
+		sprite.modulate = Color(0.55, 0.55, 0.65, 0.75)
+	set_deferred("monitoring", false)
+	_show_lock_label()
+
+
+## Despierta al enemigo: el skill se desbloqueo y ya se puede pelear.
+func wake() -> void:
+	if not locked:
+		return
+	locked = false
+	if sprite != null:
+		sprite.modulate = Color(1, 1, 1, 1)
+	monitoring = true
+	if _lock_label != null and is_instance_valid(_lock_label):
+		_lock_label.queue_free()
+		_lock_label = null
+
+
+## El skill que le falta, escrito encima del enemigo.
+func _show_lock_label() -> void:
+	var skill_name: String = ""
+	var challenge: ChallengeResource = ChallengeRegistry.get_by_id(challenge_id)
+	if challenge != null:
+		var info: Dictionary = SkillTree.skill_info(challenge.skill_id)
+		skill_name = String(info.get("name", ""))
+	if skill_name.is_empty():
+		skill_name = "el skill de su capitulo"
+	_lock_label = Label.new()
+	_lock_label.text = "BLOQUEADO · %s" % skill_name
+	_lock_label.add_theme_font_size_override("font_size", 11)
+	_lock_label.add_theme_color_override("font_color", CyberStyleBox.AMBER)
+	_lock_label.position = Vector2(-40, -74)
+	_lock_label.size = Vector2(120, 16)
+	_lock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	add_child(_lock_label)
 
 
 ## Toma el frame idle del SpriteFrames como textura del sprite.
@@ -43,7 +96,7 @@ func _apply_sprite_frames() -> void:
 		sprite.texture = frame
 
 func _on_body_entered(body: Node2D) -> void:
-	if _is_defeated:
+	if _is_defeated or locked:
 		return
 	if not body.is_in_group("player"):
 		return
