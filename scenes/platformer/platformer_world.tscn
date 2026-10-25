@@ -4,10 +4,11 @@
 [ext_resource type="PackedScene" path="res://scenes/platformer/platformer_player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://scenes/battle/battle.tscn" id="3_battle"]
 [ext_resource type="PackedScene" path="res://scenes/ui/player_hud.tscn" id="4_hud"]
+[ext_resource type="Script" path="res://scripts/platformer/city_backdrop.gd" id="5_city"]
 
 [sub_resource type="Gradient" id="Gradient_sky"]
-offsets = PackedFloat32Array(0, 0.5, 1)
-colors = PackedColorArray(0.043, 0.055, 0.106, 1, 0.114, 0.086, 0.169, 1, 0.216, 0.129, 0.231, 1)
+offsets = PackedFloat32Array(0, 0.55, 1)
+colors = PackedColorArray(0.016, 0.02, 0.055, 1, 0.09, 0.04, 0.17, 1, 0.26, 0.09, 0.29, 1)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_sky"]
 gradient = SubResource("Gradient_sky")
@@ -32,6 +33,10 @@ mouse_filter = 2
 texture = SubResource("GradientTexture2D_sky")
 expand_mode = 1
 stretch_mode = 0
+
+[node name="City" type="Node2D" parent="."]
+z_index = -50
+script = ExtResource("5_city")
 
 [node name="Ground" type="TileMapLayer" parent="."]
 
