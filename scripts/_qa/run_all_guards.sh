@@ -51,6 +51,7 @@ SCENE_GUARDS=(
   scenes/qa/challenge_gate_guard.tscn
   scenes/qa/cpp_sandbox_guard.tscn
   scenes/qa/battle_sandbox_guard.tscn
+  scenes/qa/curriculum_guard.tscn
 )
 
 TOTAL=0

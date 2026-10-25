@@ -163,15 +163,26 @@ Un log de eventos local, una línea JSON por evento, en `user://plays/<timestamp
 4. **Recalcular el objetivo**: si un enemigo se mata en 1 turno pero debería llevar 2, el ajuste es `max_hp`, no `perfect_damage`: subir el HP sube los turnos sin tocar la economía de daño.
 5. **Repetir**: el ciclo completo es de horas, no de minutos. Por eso el log tiene que existir ANTES de tocar el balance: sin datos, cualquier ajuste es una carta.
 
+## Specs
+
+La espina del plan, en numeros de spec. Los valores salen de las tablas de arriba y son lo que el guard del curriculo verifica.
+
+- S1 — El tutorial pelea con `main_exit_check` (d1), no con el challenge mas dificil del juego.
+- S2 — El jefe final pelea con `final_gate` (d7), no con el challenge mas facil.
+- S3 — Los cuatro challenges nuevos existen, con su `.tres` y su runner: `use_std_sort` (d3, 5 casos), `template_generic` (d5, 5 casos), `thread_join` (d6, 4 casos), `final_gate` (d7, 8 casos).
+- S4 — El gate reconoce `template`: una funcion template es un `template_declaration` que CONTIENE la funcion, asi que el template vive en el padre.
+- S5 — Un enemigo puede escalar: `challenge_id_next` es la segunda fase y el enemigo no desaparece.
+- S6 — El curriculo es verificable: el guard comprueba el mapeo enemigo -> challenge Y que la solucion natural de cada challenge nuevo pasa el gate y los test cases.
+
 ## Tareas
 
 - T1 — Gate de roster por skill desbloqueado. S-D2. Route: inline. Commit W1. HECHO: el mundo sólo spawnea enemigos con su skill desbloqueado; desbloquear un skill mete a su enemigo en el nivel sin reentrar. La raíz se desbloquea sola (cuesta 0): si arrancara bloqueada, el gate dejaría el nivel vacío.
-- T2 — Remapeo de challenges. S-D1, S-D2. Route: inline. Los 6 mapeos de la tabla; `simple_dp` y `main_exit_check` salen de donde están.
-- T3 — Los 4 challenges nuevos. S-D2. Route: inline. `use_std_sort`, `template_generic`, `thread_join`, `final_gate`, con su `.tres` y su runner, siguiendo el patrón de los 8 existentes.
+- T2 — Remapeo de challenges. S-D1, S-D2. Route: inline. Los 6 mapeos de la tabla; `simple_dp` y `main_exit_check` salen de donde están. **HECHO**: el catalogo mapea al capitulo (slime -> `main_exit_check`, dragon -> `use_std_sort`, wyrm -> `template_generic`, compilador -> `final_gate`) y dos enemigos escalan con `challenge_id_next` (hidra: `fibonacci` -> `simple_dp`; wyrm: `template_generic` -> `thread_join`). El guard del curriculo verifica el mapeo completo.
+- T3 — Los 4 challenges nuevos. S-D2. Route: inline. `use_std_sort`, `template_generic`, `thread_join`, `final_gate`, con su `.tres` y su runner, siguiendo el patrón de los 8 existentes. **HECHO**: los cuatro existen, compilan y se ganan. Para que `template_generic` fuera ganable hubo que ampliar el gate (S4).
 - T4 — Economía de XP. S-D3. Route: inline. Commit W1 (primera pasada). HECHO a medias: los `xp_reward` del catálogo se re-afinan (350/250/350/350/550/550/1300/2000/2500/1500) para que la cadena fluya, con un simulador de progresión como oráculo. La curva de niveles NO se tocó: el barrido mostró que 1.5 rinde mejor que 1.25 (con la curva más plana el jugador sube de nivel antes y las subidas se comen el XP). Falta calibrar con datos de playtest (T5/T6).
 - T5 — `PlayLog` (autoload). S-D4. Route: inline. Buffer de eventos + escritura JSONL en `user://plays/`, con flush en los momentos seguros (nivel, batalla, muerte) y nunca durante un frame de combate.
 - T6 — Botón de exportación + `play_report.py`. S-D4. Route: inline. Exporta a `user://plays_export.jsonl`; el script agrega las 8 métricas y marca las que rompen su umbral.
-- T7 — Guard del currículo. S-D2. Route: inline. Commit W1 (la parte del gate). HECHO: el guard asserta que el nivel arranca gateado (1 de 10 enemigos), que el jefe final NO está, que desbloquear un skill mete a su enemigo, y que el árbol de skills abre/pausa/reanuda. Falta la parte del remapeo de challenges (T2).
+- T7 — Guard del currículo. S-D2. Route: inline. Commit W1 (la parte del gate). HECHO: el guard asserta que el nivel arranca gateado (1 de 10 enemigos), que el jefe final NO está, que desbloquear un skill mete a su enemigo, y que el árbol de skills abre/pausa/reanuda. **HECHO tambien la parte del remapeo**: `scripts/_qa/curriculum_guard.gd` (44 asserts) verifica el mapeo enemigo -> challenge del plan Y que la solucion natural de cada challenge nuevo pasa el gate de forma y los test cases en el sandbox.
 - T8 — Niveles 02 a 09. S-A. Route: inline. Un commit por nivel, con la geometría validada por el guard de T7 antes de commitear.
 
 ## Open
@@ -201,3 +212,11 @@ Un log de eventos local, una línea JSON por evento, en `user://plays/<timestamp
 - L16 — Decision: la curva de niveles NO se toca. El barrido (growth 1.5/1.25/1.15 × cuatro valores del primer enemigo) dio 16-19 peleas con 1.5 y 20-27 con 1.25: una curva más plana hace que el jugador suba de nivel antes y las subidas se comen el XP que los skills necesitan. El número que hay que mover es el XP por enemigo, no la curva.
 - L17 — Evidence: el gate es correcto y el nivel no se vacía: el guard mide 1 de 10 enemigos al arrancar (el slime, con la raíz desbloqueada) y el jefe final no aparece hasta desbloquear su skill.
 - L18 — Verification: W1 — `level_01_guard` 116/116, suite 15/15, capturas reales del nivel gateado y del árbol de skills.
+- L19 (2026-10-25) — User: "sigue con t2 y t3 bro". Implementa T2 (el remapeo) y T3 (los 4 challenges nuevos).
+- L20 — Evidence: para que `template_generic` fuera ganable hubo que ampliar el gate: el vocabulario era loop/conditional/call/return y `template` no existia, o sea el challenge nasia IMPOSIBLE (el mismo bug que `if` vs `conditional`). En tree-sitter-cpp una funcion template es un `template_declaration` que CONTIENE la funcion, asi que el template vive en el PADRE de la funcion: buscarlo adentro del body daria false siempre.
+- L21 — Decision: el gate ahora acepta "if" como alias de "conditional". Todo el mundo escribe "if"; el gate lo llama "conditional". Aceptar los dos evita repetir el challenge imposible.
+- L22 — Evidence: el `.dylib` de macOS esta VERSIONADO en el repo (`addons/algorithm-validator/bin/`), asi que el rebuild es parte del commit. El build incremental con scons toma 7 segundos (godot-cpp ya estaba compilado). El `.dll` de Windows NO se pudo recompilar: esta maquina no tiene mingw. Queda pendiente recompilarlo en una maquina Windows: sin eso, `template_generic` es invencible en Windows porque el binario viejo no conoce la feature.
+- L23 — Decision: un enemigo puede escalar. `challenge_id_next` es la segunda fase: al ganar, el enemigo cambia de challenge y SIGUE en el mundo. Los capitulos 07 (fibonacci -> simple_dp) y 08 (template_generic -> thread_join) son dos peleas del mismo enemigo, no dos enemigos distintos.
+- L24 — Decision (desviacion del plan): el plan pedia que `final_gate` usara "recursion + sort + mapa", pero el gate solo inspecciona el CUERPO de la funcion nombrada: una solucion que delega la recursion a un helper seria rechazada por falta de loop/condicion. `final_gate` exige loop + condicion + llamada + return (las cuatro, en la funcion nombrada) y el enunciado enseña sort + mapa. La recursion ya se ensena en el capitulo 07 (fibonacci).
+- L25 — Evidence: el camino de los vectores en la sandbox nunca lo habia corrido nadie: antes de la sandbox, los runners en GDScript hacian ese trabajo. `cpp_sandbox_guard` ahora prueba `bubble_sort` (6 casos con vector) para que una regresion ahi no pase inadvertida.
+- L26 — Verification: W4 — suite 19/19 en verde. `curriculum_guard` 44/44 (mapeo + las 4 soluciones canonicas pasan el gate y los 22 casos de prueba), `cpp_sandbox_guard` 14/14, `challenge_gate_guard` 12/12, `battle_sandbox_guard` 11/11, `level_01_guard` 116/116.

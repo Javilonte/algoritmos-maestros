@@ -70,10 +70,17 @@ func _run() -> void:
 ## Un C++ que contiene las cuatro estructuras que el gate conoce: bucle,
 ## condicion, llamada a funcion y return. Si el challenge pide un subconjunto
 ## de ellas, esta solucion lo satisface.
+##
+## ponytail: el template va en el PADRE de la funcion (asi es como lo
+## parsea tree-sitter-cpp), asi que la solucion del probe se declara
+## `template <typename T>` cuando el challenge lo pide.
 func _solution_with_every_structure(challenge: ChallengeResource) -> String:
+	var head: String = ""
+	if "template" in challenge.ast_required_features:
+		head = "template <typename T>\n"
 	return (
 		"int __probe(int x) { return x; }\n"
-		+ challenge.function_signature + " {\n"
+		+ head + challenge.function_signature + " {\n"
 		+ "\tint __t = 0;\n"
 		+ "\tint __u = 0;\n"
 		+ "\tfor (int __i = 0; __i < 3; __i++) {\n"

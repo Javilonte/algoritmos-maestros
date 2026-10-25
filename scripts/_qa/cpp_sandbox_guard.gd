@@ -32,6 +32,21 @@ const WRONG := """int climbStairs(int n) {
     return 0;
 }"""
 
+const BUBBLE_SORT := """#include <algorithm>
+
+vector<int> bubbleSort(vector<int> arr) {
+    for (int i = 0; i < (int)arr.size(); i++) {
+        for (int j = 0; j + 1 < (int)arr.size() - i; j++) {
+            if (arr[j] > arr[j + 1]) {
+                int tmp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = tmp;
+            }
+        }
+    }
+    return arr;
+}"""
+
 const BROKEN := """int climbStairs(int n) {
     for (int i = 0 i < n; i++) {}
     return 0
@@ -108,6 +123,22 @@ func _run() -> void:
 	var main_result: Dictionary = await sandbox.run("int main() { return 0; }", main_challenge)
 	_check(bool(main_result.get("compiled", false)), "a player's main compiles")
 	_check(not bool(main_result.get("timed_out", false)), "a player's main does not hang")
+
+	# --- 5. los vectores: el camino que nunca se probo ------------------------
+	# bubble_sort, hash_map y binary_search devuelven o reciben un
+	# vector<int>. Antes de la sandbox los resolvian los runners en GDScript,
+	# asi que el camino C++ de los vectores no lo habia corrido nadie.
+	var sort_challenge: ChallengeResource = load("res://data/challenges/bubble_sort.tres")
+	var bubble: Dictionary = await sandbox.run(BUBBLE_SORT, sort_challenge)
+	_check(bool(bubble.get("compiled", false)), "a vector solution compiles")
+	var sort_results: Array = bubble.get("results", [])
+	_check(sort_results.size() == sort_challenge.test_cases.size(),
+		"every vector case ran (%d)" % sort_challenge.test_cases.size())
+	var vector_passed: bool = sort_results.size() == sort_challenge.test_cases.size()
+	for r in sort_results:
+		if not bool((r as Dictionary).get("passed", false)):
+			vector_passed = false
+	_check(vector_passed, "every vector case passes")
 
 	_finish()
 
