@@ -165,13 +165,13 @@ Un log de eventos local, una línea JSON por evento, en `user://plays/<timestamp
 
 ## Tareas
 
-- T1 — Gate de roster por skill desbloqueado. S-D2. Route: inline. El mundo sólo spawnea enemigos con su skill desbloqueado; la raíz del árbol es la excepción que abre el Nivel 01. Es el fix del bypass del jefe final.
+- T1 — Gate de roster por skill desbloqueado. S-D2. Route: inline. Commit W1. HECHO: el mundo sólo spawnea enemigos con su skill desbloqueado; desbloquear un skill mete a su enemigo en el nivel sin reentrar. La raíz se desbloquea sola (cuesta 0): si arrancara bloqueada, el gate dejaría el nivel vacío.
 - T2 — Remapeo de challenges. S-D1, S-D2. Route: inline. Los 6 mapeos de la tabla; `simple_dp` y `main_exit_check` salen de donde están.
 - T3 — Los 4 challenges nuevos. S-D2. Route: inline. `use_std_sort`, `template_generic`, `thread_join`, `final_gate`, con su `.tres` y su runner, siguiendo el patrón de los 8 existentes.
-- T4 — Economía de XP. S-D3. Route: inline. Curva de niveles 1.5 → 1.25, `xp_reward` por enemigo escalado por capítulo, y el primer enemigo da 100 para que la rama se abra en una pelea.
+- T4 — Economía de XP. S-D3. Route: inline. Commit W1 (primera pasada). HECHO a medias: los `xp_reward` del catálogo se re-afinan (350/250/350/350/550/550/1300/2000/2500/1500) para que la cadena fluya, con un simulador de progresión como oráculo. La curva de niveles NO se tocó: el barrido mostró que 1.5 rinde mejor que 1.25 (con la curva más plana el jugador sube de nivel antes y las subidas se comen el XP). Falta calibrar con datos de playtest (T5/T6).
 - T5 — `PlayLog` (autoload). S-D4. Route: inline. Buffer de eventos + escritura JSONL en `user://plays/`, con flush en los momentos seguros (nivel, batalla, muerte) y nunca durante un frame de combate.
 - T6 — Botón de exportación + `play_report.py`. S-D4. Route: inline. Exporta a `user://plays_export.jsonl`; el script agrega las 8 métricas y marca las que rompen su umbral.
-- T7 — Guard del currículo. S-D2. Route: inline. Asserta que cada enemigo del nivel tiene su challenge mapeado como en la tabla, que la dificultad del challenge **no decrece** a lo largo de los niveles, y que los turnos objetivo se sostienen contra el motor de daño real.
+- T7 — Guard del currículo. S-D2. Route: inline. Commit W1 (la parte del gate). HECHO: el guard asserta que el nivel arranca gateado (1 de 10 enemigos), que el jefe final NO está, que desbloquear un skill mete a su enemigo, y que el árbol de skills abre/pausa/reanuda. Falta la parte del remapeo de challenges (T2).
 - T8 — Niveles 02 a 09. S-A. Route: inline. Un commit por nivel, con la geometría validada por el guard de T7 antes de commitear.
 
 ## Open
@@ -193,3 +193,11 @@ Un log de eventos local, una línea JSON por evento, en `user://plays/<timestamp
 - L8 — Decision: los turnos objetivo (1 → 2 → 3 → 6) escalan con el concepto, no con el HP: la dificultad se sube con el contenido, y el HP se usa para calibrar el ritmo una vez que el contenido está.
 - L9 — Decision: el gate de roster se implementa, no se documenta. Es lo que convierte el árbol de skills en un currículo real en vez de un contador decorativo.
 - L10 — Verification: los números de D1-D3 se calcularon con el modelo de daño real (`ScoringEngine.calculate_damage`) y con la curva de XP real (`XP_PER_LEVEL_BASE/GROWTH`), no a ojo.
+- L11 (2026-10-25) — User: "vamos por el gate". Implementa T1 (el gate) + la primera pasada de T4 (la economía de XP), porque el gate sin números es un nivel vacío.
+- L12 — Evidence: el gate tenía una dependencia dura que nadie había visto. `SkillTree.get_unlocked_enemies()` sólo se usaba en el menú; la pantalla del árbol la instanciaba `scripts/overworld.gd`, que está HUÉRFANO (ninguna escena lo usa). O sea: la pantalla de skills era inalcanzable en el juego. Con el gate, eso era un deadlock: sin árbol no se desbloqueaba nada y sin desbloqueos no spawneaba ningún enemigo.
+- L13 — Evidence: el InputMap mapeaba `toggle_skill_tree` a F6 y F2, ninguna tecla que un jugador vaya a buscar. Se agregó el backtick (physical 96). El guard lo asserta: abre, pausa el mundo y cerrar reanuda.
+- L14 — Evidence: la raíz del árbol ahora se desbloquea sola. Cuesta 0 y es el conocimiento inicial; si arrancara bloqueada, el gate dejaría el nivel sin enemigos y el jugador sin saber por qué.
+- L15 — Decision: la XP por enemigo se afinó con un SIMULADOR de progresión (no a ojo): el simulador juega el árbol como lo juega un jugador —desbloquea lo más barato que abre un enemigo, pelea, sube de nivel— y cuenta las peleas. Con los valores del catálogo: 54 peleas y el slime 13 veces. Con los afinados: 17 peleas y el slime 5.
+- L16 — Decision: la curva de niveles NO se toca. El barrido (growth 1.5/1.25/1.15 × cuatro valores del primer enemigo) dio 16-19 peleas con 1.5 y 20-27 con 1.25: una curva más plana hace que el jugador suba de nivel antes y las subidas se comen el XP que los skills necesitan. El número que hay que mover es el XP por enemigo, no la curva.
+- L17 — Evidence: el gate es correcto y el nivel no se vacía: el guard mide 1 de 10 enemigos al arrancar (el slime, con la raíz desbloqueada) y el jefe final no aparece hasta desbloquear su skill.
+- L18 — Verification: W1 — `level_01_guard` 116/116, suite 15/15, capturas reales del nivel gateado y del árbol de skills.

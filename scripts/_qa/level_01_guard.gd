@@ -194,8 +194,71 @@ func _behavior() -> void:
 		"falling out of the level respawns the player at the checkpoint (%.1f, %.1f)"
 		% [player.global_position.x, player.global_position.y])
 
-	_registry_and_picker()
+	# --- el gate: solo aparecen los enemigos desbloqueados --------------------
+	var spawned_ids: Array = []
+	for child in entities.get_children():
+		if child.has_method("defeat"):
+			spawned_ids.append(String(child.get("enemy_id")))
+	var level_enemy_count: int = _level_enemy_count(world)
+	_check(spawned_ids.size() < level_enemy_count,
+		"the level starts gated (%d of %d enemies spawned)" % [spawned_ids.size(), level_enemy_count])
+	_check(spawned_ids.has("slime_aritm"),
+		"the root skill is unlocked, so the first enemy is in the level")
+	_check(not spawned_ids.has("compilador_divino"),
+		"the final boss is NOT in the level before its skill is unlocked")
+
+	# desbloquear un skill mete a su enemigo en el nivel
+	var before: int = spawned_ids.size()
+	# stl_loops pide nivel 2 y 150 XP. Cuanta XP haga falta depende de la
+	# curva (las subidas de nivel se la comen), asi que el guard gana XP
+	# hasta que el nodo cae, en vez de codificar un numero.
+	var unlocked: bool = false
+	for i in range(10):
+		SkillTree.add_xp(200)
+		# el nodo depende de la rama: primero la rama, despues el nodo
+		SkillTree.try_unlock(&"branch_stl")
+		if SkillTree.try_unlock(&"stl_loops"):
+			unlocked = true
+			break
+	_check(unlocked, "the player can unlock a skill with the XP they earned")
+	await get_tree().process_frame
+	var after_ids: Array = []
+	for child in entities.get_children():
+		if child.has_method("defeat"):
+			after_ids.append(String(child.get("enemy_id")))
+	_check(after_ids.size() > before,
+		"unlocking a skill spawns its enemy in the level (%d -> %d)" % [before, after_ids.size()])
+	# el nivel tiene DOS ogro_bucle (acto 4): desbloquear el skill mete a
+	# los dos, y ninguno más.
+	var unexpected: Array = []
+	for id in after_ids:
+		if not id in spawned_ids and id != "ogro_bucle":
+			unexpected.append(id)
+	_check(unexpected.is_empty(),
+		"only the unlocked skill's enemies appeared (%s)" % str(unexpected))
+
+	# --- el arbol de skills se abre desde el platformer ---------------------
+	# Sin esto el gate no tiene salida: el jugador no tendria como
+	# desbloquear nada. La tecla ` es el mapeo 96 del InputMap.
+	var ev := InputEventKey.new()
+	ev.keycode = 96
+	ev.physical_keycode = 96
+	ev.pressed = true
+	Input.parse_input_event(ev)
+	await get_tree().process_frame
+	_check(world.get("_skill_tree_layer") != null, "the skill tree opens from the platformer")
+	_check(get_tree().paused, "the skill tree pauses the world")
+	world.call("_close_skill_tree")
+	await get_tree().process_frame
+	_check(not get_tree().paused, "closing the skill tree unpauses the world")
+
 	_finish()
+
+
+## Cuántos enemigos declara el nivel (para comparar con los spawneados).
+func _level_enemy_count(world: Node) -> int:
+	var level: Dictionary = LevelRegistry.get_level(String(world.get("level_id")))
+	return level.get("enemies", []).size()
 
 
 ## Fase 3: el nivel es elegible desde el menú.

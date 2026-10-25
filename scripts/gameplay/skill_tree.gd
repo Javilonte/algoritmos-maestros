@@ -155,6 +155,10 @@ func _register_defaults() -> void:
 		n.depends_on = PackedStringArray(d["deps"])
 		n.icon_color = _color_for_category(n.id)
 		skills[n.id] = n
+	# ponytail: la raiz se desbloquea sola. Cuesta 0 y es el conocimiento
+	# inicial; si arrancara bloqueada, el gate del nivel no spawnearia ni
+	# al primer enemigo y el jugador vería un nivel vacío.
+	skills[_root_id].unlocked = true
 
 func _color_for_category(id: StringName) -> Color:
 	if id in [&"branch_pointers", &"ptr_if_else", &"ptr_arrays", &"ptr_dynamic"]:
@@ -241,6 +245,25 @@ func get_unlocked_enemies() -> PackedStringArray:
 			for e in n.enemies_unlocked:
 				out.append(e)
 	return out
+
+
+## ¿Está habilitado este enemigo?
+##
+## Lo habilita el skill que lo lista en `enemies_unlocked`. Es el gate del
+## nivel: un enemigo cuyo skill no está desbloqueado no aparece.
+##
+## ponytail: un enemigo que NINGÚN skill menciona queda siempre
+## disponible. Si el default fuera "bloqueado", una errata en el catálogo
+## dejaría el nivel vacío y el jugador sin saber por qué.
+func is_enemy_unlocked(enemy_id: String) -> bool:
+	var mentioned: bool = false
+	for id in skills:
+		var n: SkillNode = skills[id]
+		if n.enemies_unlocked.has(enemy_id):
+			mentioned = true
+			if n.unlocked:
+				return true
+	return not mentioned
 
 func is_keyword_available(keyword: String) -> bool:
 	for k in get_unlocked_keywords():

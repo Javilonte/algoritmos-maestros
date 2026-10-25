@@ -24,6 +24,10 @@ var _node_panels: Dictionary = {}  # id -> Panel
 var _positions: Dictionary = {}
 
 func _ready() -> void:
+	# ponytail: el arbol pausa el mundo (el player queda congelado), asi que
+	# el UI tiene que seguir procesando input con el arbol pausado. Sin
+	# esto el boton de cerrar no responde.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_apply_responsive_layout()
 	_apply_local_overrides()
 	_tree = get_node_or_null("/root/SkillTree") as SkillTreeData
@@ -58,6 +62,13 @@ func _apply_local_overrides() -> void:
 func _on_close_pressed() -> void:
 	get_tree().paused = false
 	queue_free()
+
+## La misma tecla que lo abre lo cierra. El mundo queda pausado mientras
+## el arbol esta abierto, asi que este UI tiene que recibir el input.
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("toggle_skill_tree"):
+		_on_close_pressed()
+		get_viewport().set_input_as_handled()
 
 func _compute_layout() -> void:
 	# Layout manual: posiciones fijas por id (diagrama horizontal).

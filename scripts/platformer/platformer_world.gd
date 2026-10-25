@@ -18,6 +18,8 @@ const LEVEL_ROWS: int = 20
 const CAMERA_HEIGHT: float = 110.0
 const CAMERA_LOOKAHEAD: float = 90.0
 const CAMERA_LERP: float = 7.0
+## Escena del arbol de skills, abierta con la tecla ` .
+const SKILL_TREE_UI_PATH := "res://scenes/ui/skill_tree_ui.tscn"
 ## Fila del plano de muerte: una fila más abajo del fondo del nivel.
 const DEATH_ROW: int = LEVEL_ROWS + 1
 const DEATH_Y: float = DEATH_ROW * TILE
@@ -37,6 +39,12 @@ var _level: Dictionary = {}
 var _level_width: int = 0
 var _respawn_point: Vector2 = Vector2.ZERO
 var _respawning: bool = false
+## Indices de los spots ya spawneados: el mismo enemigo puede aparecer dos
+## veces en el nivel, asi que el indice es la identidad, no el id.
+var _spawned_spots: Array[int] = []
+## Capa del arbol de skills, abierta con la tecla ` .
+var _skill_tree_layer: CanvasLayer = null
+var _skill_tree_ui: Control = null
 
 
 func _ready() -> void:
@@ -106,30 +114,53 @@ func _place_player() -> void:
 
 
 func _spawn_enemies() -> void:
+	for i in _level.get("enemies", []).size():
+		_maybe_spawn_enemy(i)
+	# ponytail: un enemigo recien habilitado aparece en el momento, sin que
+	# el jugador tenga que volver a entrar al nivel. Antes el gate era
+	# "todo o nada" y el nivel se vaciaba al empezar.
+	SkillTree.skill_unlocked.connect(_on_skill_unlocked)
+
+
+## Spawnea el enemigo del spot si su skill esta desbloqueado.
+func _maybe_spawn_enemy(index: int) -> void:
+	if index in _spawned_spots:
+		return
+	var spots: Array = _level.get("enemies", [])
+	if index >= spots.size():
+		return
+	var spot: Dictionary = spots[index]
+	var enemy_id: String = String(spot.get("id", ""))
+	if not SkillTree.is_enemy_unlocked(enemy_id):
+		return
 	var scene: PackedScene = load("res://scenes/platformer/platformer_enemy.tscn") as PackedScene
 	if scene == null:
 		push_error("PlatformerWorld: could not load platformer_enemy.tscn")
 		return
-	for spot in _level.get("enemies", []):
-		# El nivel declara el id del catálogo; nombre, HP y challenge salen
-		# del catálogo, no del nivel. Hoy el nivel duplicaba los nombres a
-		# mano y dos no coincidían con el catálogo.
-		var enemy_id: String = String(spot.get("id", ""))
-		var data: Dictionary = EnemyCatalog.fetch(enemy_id)
-		if data.is_empty():
-			push_warning("PlatformerWorld: unknown enemy id '%s'" % enemy_id)
-			continue
-		var enemy: Node = scene.instantiate()
-		enemy.set("display_name", String(data.get("display_name", "Enemy")))
-		enemy.set("max_hp", int(data.get("max_hp", 60)))
-		enemy.set("challenge_id", String(data.get("challenge_id", "main_exit_check")))
-		enemy.set("enemy_id", enemy_id)
-		var patrol: Vector2i = spot.get("patrol", Vector2i.ZERO)
-		enemy.set("patrol_min_x", patrol.x * TILE + TILE / 2)
-		enemy.set("patrol_max_x", patrol.y * TILE + TILE / 2)
-		var spawn_x: int = int(round((patrol.x + patrol.y) * 0.5))
-		enemy.global_position = Vector2(spawn_x * TILE + TILE / 2, int(spot["y"]) * TILE)
-		entities.add_child(enemy)
+	# El nivel declara el id del catálogo; nombre, HP y challenge salen
+	# del catálogo, no del nivel. Hoy el nivel duplicaba los nombres a
+	# mano y dos no coincidían con el catálogo.
+	var data: Dictionary = EnemyCatalog.fetch(enemy_id)
+	if data.is_empty():
+		push_warning("PlatformerWorld: unknown enemy id '%s'" % enemy_id)
+		return
+	var enemy: Node = scene.instantiate()
+	enemy.set("display_name", String(data.get("display_name", "Enemy")))
+	enemy.set("max_hp", int(data.get("max_hp", 60)))
+	enemy.set("challenge_id", String(data.get("challenge_id", "main_exit_check")))
+	enemy.set("enemy_id", enemy_id)
+	var patrol: Vector2i = spot.get("patrol", Vector2i.ZERO)
+	enemy.set("patrol_min_x", patrol.x * TILE + TILE / 2)
+	enemy.set("patrol_max_x", patrol.y * TILE + TILE / 2)
+	var spawn_x: int = int(round((patrol.x + patrol.y) * 0.5))
+	enemy.global_position = Vector2(spawn_x * TILE + TILE / 2, int(spot["y"]) * TILE)
+	entities.add_child(enemy)
+	_spawned_spots.append(index)
+
+
+func _on_skill_unlocked(_skill_id: StringName) -> void:
+	for i in _level.get("enemies", []).size():
+		_maybe_spawn_enemy(i)
 
 
 func _spawn_checkpoints() -> void:
@@ -162,6 +193,12 @@ func _compute_level_width() -> int:
 func _process(delta: float) -> void:
 	if player == null:
 		return
+	# El arbol de skills se cierra solo con su boton: si el UI se libero
+	# solo, la capa que lo contenia queda vacia y hay que limpiarla.
+	if _skill_tree_layer != null and not is_instance_valid(_skill_tree_ui):
+		_skill_tree_layer.queue_free()
+		_skill_tree_layer = null
+		_skill_tree_ui = null
 	if not _respawning and player.global_position.y > DEATH_Y:
 		_respawn()
 		return
@@ -186,3 +223,41 @@ func _respawn() -> void:
 	await fade_out.finished
 	player.set_physics_process(true)
 	_respawning = false
+
+
+## El arbol de skills se abre con la tecla ` (la accion ya existia en el
+## InputMap). Sin esto el gate no tiene salida: el jugador no tendria como
+## desbloquear nada y el nivel quedaria vacio.
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("toggle_skill_tree"):
+		_toggle_skill_tree()
+		get_viewport().set_input_as_handled()
+
+
+func _toggle_skill_tree() -> void:
+	if _skill_tree_layer != null and is_instance_valid(_skill_tree_layer):
+		_close_skill_tree()
+		return
+	if not ResourceLoader.exists(SKILL_TREE_UI_PATH):
+		push_error("PlatformerWorld: skill_tree_ui.tscn not found at " + SKILL_TREE_UI_PATH)
+		return
+	var scene: PackedScene = load(SKILL_TREE_UI_PATH)
+	_skill_tree_ui = scene.instantiate() as Control
+	if _skill_tree_ui == null:
+		push_error("PlatformerWorld: failed to instantiate SkillTreeUI")
+		return
+	_skill_tree_layer = CanvasLayer.new()
+	_skill_tree_layer.layer = 50
+	_skill_tree_layer.add_child(_skill_tree_ui)
+	add_child(_skill_tree_layer)
+	# El arbol pausa el mundo: si no, el jugador sigue cayendo mientras
+	# mira el arbol y se puede matar sin querer.
+	get_tree().paused = true
+
+
+func _close_skill_tree() -> void:
+	get_tree().paused = false
+	if _skill_tree_layer != null and is_instance_valid(_skill_tree_layer):
+		_skill_tree_layer.queue_free()
+	_skill_tree_layer = null
+	_skill_tree_ui = null
