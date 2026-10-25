@@ -169,7 +169,9 @@ El battle tiene que enseñar lo mismo que el árbol de skills:
 - T7 — Economia del combate. S-D5. Route: inline. Reloj congelado con el editor, 0 dmg por forma incompleta, daño por error de algoritmo, intentos según dificultad, cura al acertar.
 - T8 — Consola honesta. S-D3, S-D4. Route: inline. Que las fases digan lo que pasa. Si T9 entra, compila de verdad y las fases vuelven a ser ciertas.
 - T9 — Ejecutar el código del jugador. S-D3. Route: inline (o bloqueada por T4/P4 si se elige la opción B). Sandbox local con clang++: compilar a un temporal, ejecutar con timeout, comparar con los `test_cases`, y recién ahí calcular el daño. Requiere T8 para que la consola sea coherente.
-- T10 — El concepto en la pelea. S-P5. Route: inline. El enemigo y el checklist nombran el skill que la pelea práctica.
+- T10 — El concepto en la pelea. S-P5. Route: inline. El enemigo y el checklist nombran el skill que la pelea practica.
+- T11 — **HECHO (W1, commit `1cce870`)**: el vocabulario del gate. Los dos challenges que pedian `"if"` piden ahora `"conditional"`, el nombre que el gate conoce, y un guard nuevo (`challenge_gate_guard`) prueba que TODO challenge es ganable: arma un C++ con las estructuras que cada challenge declara y lo pasa por el gate real. Un challenge imposible falla el guard por nombre.
+- T12 — **HECHO (W2, commit `8de477d`)**: el contrato y el checklist en vivo. El editor muestra objetivo, firma, requisitos con tick y dos casos resueltos; todo estaba en los datos del challenge y nada lo leia. Los ticks usan el `has_loop`/`has_conditional`/`has_return`/`has_call` que el validador ya calculaba y se descartaban.
 
 ## Open
 
@@ -189,3 +191,6 @@ El battle tiene que enseñar lo mismo que el árbol de skills:
 - L8 — Decision: el guard de "todo challenge es ganable" construye un C++ sintético con las features pedidas y lo pasa por el gate real. Es la invariante que impide que la clase D1 vuelva, y no depende de que haya ejecución real.
 - L9 — Decision: recomendar el compilador local (A) para P4: `clang++` 17 ya está en la máquina, no hay clave de Judge0 en el entorno y el juego es offline. Riesgo cubierto con timeout y proceso aparte.
 - L10 — Verification: el bug se reprodujo con el validador real (no con una lectura del código) y el plan del guard T2 sale directamente de esa reproducción.
+- L11 — Evidence (W1): reproducido el bug con el validador real y el código del jugador: `valid: false`, `errors: ["Missing required features: if."]`, pero `has_loop/has_conditional/has_return` en true y quality 0.95 — el AST estaba bien, el nombre mal. Con `"conditional"`: `valid: true`. El guard nuevo falla con `FAIL: 'simple_dp' is UNWINNABLE` si se reintroduce el bug (probado).
+- L12 — Evidence (W2): `text_changed` dispara 35 veces al tipear 35 caracteres (las lambdas de GDScript capturan por valor: un contador en lambda miente, y por ahi el primer test dio falso negativo). El debounce corre con el arbol pausado porque el BattleTerminal es PROCESS_MODE_ALWAYS. El gate sólo mira DENTRO del cuerpo de la funcion: un `for` escrito fuera de la funcion deja el tick en ○, que es lo correcto.
+- L13 — Decision: el checklist se refresca tambien en el submit. El debounce puede no haber disparado todavia y el contrato que ve el jugador tiene que ser el del codigo que va a hacer falta.
