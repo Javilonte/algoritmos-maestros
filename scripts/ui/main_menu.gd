@@ -16,6 +16,7 @@ const WORLD_SCENE_PATH := "res://scenes/platformer/platformer_world.tscn"
 @onready var new_game_button: MenuActionButton = $Body/CenterColumn/ActionGrid/ContinueRow/NewGameButton
 @onready var options_button: MenuActionButton = $Body/CenterColumn/ActionGrid/SecondaryRow/OptionsButton
 @onready var exit_button: MenuActionButton = $Body/CenterColumn/ActionGrid/SecondaryRow/ExitButton
+@onready var levels_button: MenuActionButton = $Body/CenterColumn/ActionGrid/LevelsButton
 @onready var hero_card: MenuHeroCard = $Body/LeftColumn/HeroCard
 @onready var stats_panel: MenuStatsPanel = $Body/RightColumn/StatsPanel
 @onready var title_label: Label = $HeaderBar/TitlePadding/TitleColumn/TitleLabel
@@ -70,6 +71,7 @@ func _ready() -> void:
 	continue_button.pressed.connect(_on_continue_pressed)
 	new_game_button.pressed.connect(_on_new_game_pressed)
 	options_button.pressed.connect(_on_options_pressed)
+	levels_button.pressed.connect(_on_levels_pressed)
 	exit_button.pressed.connect(_on_exit_pressed)
 	_connect_cursor()
 	_grab_focus_when_ready()
@@ -230,6 +232,10 @@ func _on_new_game_pressed() -> void:
 
 func _on_options_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/ui/options_menu.tscn")
+
+
+func _on_levels_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenes/ui/level_select.tscn")
 
 
 func _on_exit_pressed() -> void:

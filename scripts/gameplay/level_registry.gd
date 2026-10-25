@@ -16,6 +16,7 @@ const LEVELS: Array[Dictionary] = [
 		"id": "level_01",
 		"name": "Distrito Neón: El Umbral",
 		"chapter": "Distrito Neón",
+		"unlocked": true,
 		"script": preload("res://data/levels/level_01.gd"),
 	},
 ]

@@ -44,9 +44,9 @@ func _ready() -> void:
 	# iso_dungeon): el mundo es quien abre el estado OVERWORLD, no la
 	# escena que lo carga. El player exige ese estado para recibir input.
 	GameManager.change_state(GameManager.GameState.OVERWORLD)
-	_level = LevelRegistry.get_level(level_id)
+	_level = LevelRegistry.get_level(_resolve_level_id())
 	if _level.is_empty():
-		push_error("PlatformerWorld: unknown level '%s'" % level_id)
+		push_error("PlatformerWorld: unknown level '%s'" % _resolve_level_id())
 		return
 	_build_tileset()
 	_paint_level()
@@ -59,6 +59,14 @@ func _ready() -> void:
 ## El punto de reaparición: el último checkpoint tocado, o el spawn.
 func get_respawn_point() -> Vector2:
 	return _respawn_point
+
+
+## El nivel que se pinta: el que eligió la pantalla de selección, o el de
+## por defecto si nadie eligió ninguno.
+func _resolve_level_id() -> String:
+	if not GameManager.current_level_id.is_empty():
+		return GameManager.current_level_id
+	return level_id
 
 
 func _build_tileset() -> void:
