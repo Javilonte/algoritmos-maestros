@@ -496,7 +496,14 @@ func _on_combo_changed(combo: int, multiplier: float) -> void:
 	# ponytail: la rampa va sobre el acento amber en vez de un verde
 	# suelto — el color tiene que salir de la misma paleta que el resto.
 	combo_label.add_theme_color_override("font_color", CyberStyleBox.AMBER.lightened(min(combo, 5) * 0.08))
-	combo_label.pivot_offset = combo_label.size * 0.5
+	# ponytail: el pivot sale del tamano del TEXTO, no del tamano del
+	# Label: la etiqueta se acaba de vaciar y su `size` de layout es
+	# todavia el viejo, asi que el escalado 1.3x giraba sobre un punto
+	# que no era el centro de lo que se veia.
+	var combo_font: Font = combo_label.get_theme_font("font")
+	var combo_font_size: int = combo_label.get_theme_font_size("font_size")
+	combo_label.pivot_offset = combo_font.get_string_size(
+		combo_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, combo_font_size) * 0.5
 	combo_label.scale = Vector2(1.3, 1.3) if combo > 1 else Vector2.ONE
 	var t := combo_label.create_tween()
 	t.tween_property(combo_label, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

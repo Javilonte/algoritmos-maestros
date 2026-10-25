@@ -30,9 +30,18 @@ static func fit(sprite: AnimatedSprite2D, area: Control, fill: float = 0.92, pad
 		return
 	var cell: Vector2 = frame_size(sprite)
 	if cell.x <= 0.0 or cell.y <= 0.0:
+		# ponytail: sin esto el sprite se queda con la escala por defecto
+		# (1.0) y se dibuja del tamano del atlas entero, desbordando el
+		# marco. Cero es el estado seguro: invisible hasta el proximo
+		# `resized`.
+		sprite.scale = Vector2.ZERO
 		return
 	var inner: Vector2 = Vector2(area.size.x - padding * 2.0, area.size.y - padding)
 	if inner.x <= 0.0 or inner.y <= 0.0:
+		# ponytail: mismo motivo que arriba. El area todavia sin layout
+		# puede medir cero; sin esta guarda el sprite se dibuja del
+		# tamano del atlas entero hasta el proximo `resized`.
+		sprite.scale = Vector2.ZERO
 		return
 	var scale_factor: float = minf(inner.x / cell.x, inner.y / cell.y) * fill
 	sprite.scale = Vector2.ONE * scale_factor

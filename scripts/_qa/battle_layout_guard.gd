@@ -68,13 +68,16 @@ func _run() -> void:
 			failed += 1
 			print("FAIL: %s portrait has no sprite/art panel" % side)
 			continue
-		var cell: Vector2 = _frame_size(sprite)
+		# ponytail: el rect dibujado lo calcula SpriteInFrame, el helper
+		# que existe para que esa aritmetica este en un solo lugar. Este
+		# guard lo reimplementaba y las dos copias podian divergir sin
+		# que ningun test lo notara.
+		var cell: Vector2 = SpriteInFrame.frame_size(sprite)
 		if cell.x <= 0.0 or cell.y <= 0.0:
 			failed += 1
 			print("FAIL: %s sprite has no measurable frame" % side)
 			continue
-		var drawn: Vector2 = cell * sprite.scale
-		var drawn_rect := Rect2(sprite.global_position - drawn * 0.5, drawn)
+		var drawn_rect: Rect2 = SpriteInFrame.drawn_rect(sprite)
 		var art_rect: Rect2 = art.get_global_rect()
 		if art_rect.encloses(drawn_rect):
 			passed += 1
@@ -197,15 +200,6 @@ func _has_emoji(text: String) -> bool:
 		if text.unicode_at(i) >= 0x2500:
 			return true
 	return false
-
-
-func _frame_size(sprite: AnimatedSprite2D) -> Vector2:
-	if sprite.sprite_frames == null or not sprite.sprite_frames.has_animation(sprite.animation):
-		return Vector2.ZERO
-	var tex: Texture2D = sprite.sprite_frames.get_frame_texture(sprite.animation, 0)
-	if tex == null:
-		return Vector2.ZERO
-	return tex.region.size if tex is AtlasTexture else tex.get_size()
 
 
 func _find_sprite(node: Node) -> AnimatedSprite2D:

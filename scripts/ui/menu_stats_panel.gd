@@ -217,28 +217,22 @@ func _refresh_skills(st: Node) -> void:
 		return
 	_clear_row(_skills_row)
 	var unlocked: int = 0
-	var known: Dictionary = {}
 	if st.has_method("skills"):
 		var skills_dict: Dictionary = st.skills
 		for id in skills_dict:
 			var n: SkillNode = skills_dict[id]
 			if n.unlocked:
 				unlocked += 1
-			known[id] = n.unlocked
-	# ponytail: un punto por ranura, bloqueada o no. Antes solo se
-	# dibujaban los dots de las habilidades REGISTRADAS y con el color
-	# bloqueado casi negro, asi que el panel parecia vacio.
+	# ponytail: un punto por ranura, bloqueada o no. Los dots NO
+	# representan una habilidad en particular: son un contador. Los
+	# primeros `unlocked` quedan encendidos y el resto apagados. Antes
+	# el estado de cada dot salia de recorrer el Dictionary por
+	# posicion, asi que que punto estaba encendido dependia del orden
+	# de iteracion y no de nada que el jugador pueda leer.
 	for i in TOTAL_SKILLS:
-		var is_unlocked: bool = false
-		var index: int = 0
-		for id in known:
-			if index == i:
-				is_unlocked = bool(known[id])
-				break
-			index += 1
 		var dot := Panel.new()
 		dot.custom_minimum_size = Vector2(12, 12)
-		dot.add_theme_stylebox_override("panel", CyberStyleBox.dot(is_unlocked))
+		dot.add_theme_stylebox_override("panel", CyberStyleBox.dot(i < unlocked))
 		_skills_row.add_child(dot)
 	if _skills_value:
 		_skills_value.text = "%d/%d" % [unlocked, TOTAL_SKILLS]

@@ -11,6 +11,9 @@ class_name HPBar
 ## ponytail: `percent_text` NO se llama `show_percentage` porque
 ## ProgressBar ya tiene esa propiedad y GDScript rechaza el sombra.
 
+## Which side this bar represents. Allowed values: "player", "enemy" and
+## "xp". "xp" is the special case: it fills with cyan instead of the HP
+## ramp. Any other value falls back to the HP ramp.
 @export var side: String = "enemy"
 ## ponytail: la barra de XP del menuStatsPanel conserva su etiqueta de
 ## porcentaje; la de combate la apaga y muestra "cur/max" como texto aparte.
