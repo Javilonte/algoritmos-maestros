@@ -89,6 +89,15 @@ bool _check_required_feature(const String &feature, TSNode func_def) {
 	if (feature == "return") {
 		return ast_utils::function_has_return(func_def);
 	}
+	if (feature == "template") {
+		return ast_utils::function_has_template(func_def);
+	}
+	if (feature == "if") {
+		// ponytail: alias. Todo el mundo escribe "if"; el gate lo llama
+		// "conditional". Aceptar los dos evita el challenge imposible:
+		// el gate pide la feature, no la encuentra y el juego es invencible.
+		return ast_utils::function_has_conditional(func_def);
+	}
 	return false;
 }
 
@@ -124,6 +133,7 @@ Dictionary validate_structure(TSTree *tree, const String &code, const Dictionary
 	result["has_conditional"] = false;
 	result["has_call"] = false;
 	result["has_return"] = false;
+	result["has_template"] = false;
 	result["min_statements_required"] = (int)structure_spec.get("min_statements", 1);
 	result["required_features_missing"] = Array();
 	result["errors"] = Array();
@@ -180,6 +190,7 @@ Dictionary validate_structure(TSTree *tree, const String &code, const Dictionary
 	result["has_conditional"] = ast_utils::function_has_conditional(func_def);
 	result["has_call"] = ast_utils::function_has_call(func_def);
 	result["has_return"] = ast_utils::function_has_return(func_def);
+	result["has_template"] = ast_utils::function_has_template(func_def);
 
 	Array required_features = structure_spec.get("required_features", Array());
 	Array missing_features;

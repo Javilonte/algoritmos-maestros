@@ -87,15 +87,18 @@ static func friendly_errors(ast: Dictionary) -> PackedStringArray:
 ## jugador.
 ##
 ## ponytail: el vocabulario vive en el validador de C++
-## (gdextension/src/validators.cpp: _check_required_feature) y recognizes
-## only loop, conditional, call and return. A challenge asking for "if" is
-## IMPOSSIBLE: the gate looks for a feature whose name it does not know.
-## `challenge_gate_guard.gd` proves every challenge is winnable.
+## (gdextension/src/validators.cpp: _check_required_feature) y reconoce
+## loop, conditional, call, return y template. Un challenge que pide una
+## feature con un nombre que el gate no conoce —"if" en vez de
+## "conditional"— es IMPOSIBLE: el gate la pide igual, no la encuentra
+## nunca y el challenge es invencible. `challenge_gate_guard.gd` prueba
+## que todo challenge es ganable.
 const FEATURE_LABELS: Dictionary = {
 	"loop": "un bucle (for/while)",
 	"conditional": "una condición (if/else)",
 	"return": "un return",
 	"call": "una llamada a función",
+	"template": "una función template",
 }
 
 ## Que estructuras del AST satisface el codigo, por nombre de feature.
@@ -105,6 +108,7 @@ static func feature_status(ast: Dictionary) -> Dictionary:
 		"conditional": bool(ast.get("has_conditional", false)),
 		"return": bool(ast.get("has_return", false)),
 		"call": bool(ast.get("has_call", false)),
+		"template": bool(ast.get("has_template", false)),
 	}
 
 ## Como se le dice al jugador una feature del vocabulario.

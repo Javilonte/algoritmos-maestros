@@ -267,5 +267,20 @@ bool function_has_return(TSNode func_def) {
 	return has_descendant_of_type(body, "return_statement");
 }
 
+bool function_has_template(TSNode func_def) {
+	if (ts_node_is_null(func_def)) {
+		return false;
+	}
+	// ponytail: en tree-sitter-cpp una funcion template es un
+	// template_declaration que CONTIENE el function_definition, asi que
+	// el template vive en el PADRE de la funcion, no en su cuerpo. Buscarlo
+	// adentro del body daria false siempre.
+	TSNode parent = ts_node_parent(func_def);
+	if (ts_node_is_null(parent)) {
+		return false;
+	}
+	return node_type_is(parent, "template_declaration");
+}
+
 } // namespace ast_utils
 } // namespace godot

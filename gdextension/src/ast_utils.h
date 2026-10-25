@@ -44,6 +44,9 @@ bool function_has_call(TSNode func_def);
 // True if the body contains a return_statement (any return at any nesting).
 bool function_has_return(TSNode func_def);
 
+/// The function itself is a template (the template_declaration is its parent).
+bool function_has_template(TSNode func_def);
+
 } // namespace ast_utils
 } // namespace godot
 
