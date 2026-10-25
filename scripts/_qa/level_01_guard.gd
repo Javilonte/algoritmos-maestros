@@ -68,68 +68,18 @@ func _run() -> void:
 	_check(enemies.size() >= 8, "the level has %d enemies" % enemies.size())
 	_check(checkpoints.size() >= 3, "the level has %d checkpoints" % checkpoints.size())
 
-	# --- los huecos entre spans ---------------------------------------------
-	for i in range(ground.size() - 1):
-		var a: Dictionary = ground[i]
-		var b: Dictionary = ground[i + 1]
-		var gap: int = int(b["x0"]) - int(a["x1"]) - 1
-		var rise: int = int(a["top"]) - int(b["top"])
-		_check(gap <= max_gap,
-			"gap %d->%d is %d tiles (max %d)" % [i + 1, i + 2, gap, max_gap])
-		# Un hueco largo sólo puede aterrizar a la misma altura o más abajo:
-		# subir mientras se cruza un的最大_gap tiles no cabe en el salto.
-		_check(not (gap >= max_gap and rise > 0),
-			"gap %d->%d does not climb while crossing %d tiles" % [i + 1, i + 2, gap])
-
-	# --- las subidas ---------------------------------------------------------
-	for i in range(ground.size() - 1):
-		var a: Dictionary = ground[i]
-		var b: Dictionary = ground[i + 1]
-		var rise: int = int(a["top"]) - int(b["top"])
-		_check(rise <= max_rise,
-			"step %d->%d rises %d tiles (max %d)" % [i + 1, i + 2, rise, max_rise])
-
-	# --- las plataformas -----------------------------------------------------
-	for plat in floating:
-		var px0: int = int(plat["x0"])
-		var px1: int = int(plat["x1"])
-		var py: int = int(plat["y"])
-		var below: Array = []
-		for span in ground:
-			if not (int(span["x1"]) < px0 or int(span["x0"]) > px1):
-				below.append(int(span["top"]))
-		if below.is_empty():
-			_check(false, "platform %d-%d has ground under it" % [px0, px1])
-			continue
-		var rise: int = int(below.min()) - py
-		_check(rise <= max_rise and rise >= 0,
-			"platform %d-%d sits %d tiles above the ground (max %d)" % [px0, px1, rise, max_rise])
-
-	# --- los enemigos --------------------------------------------------------
-	for spot in enemies:
-		var enemy_id: String = String(spot.get("id", ""))
-		var row: int = int(spot.get("y", -1))
-		var patrol: Vector2i = spot.get("patrol", Vector2i.ZERO)
-		var catalog: Dictionary = EnemyCatalog.fetch(enemy_id)
-		_check(not catalog.is_empty(), "enemy '%s' exists in the catalog" % enemy_id)
-		if not catalog.is_empty():
-			_check(ChallengeRegistry.has(String(catalog.get("challenge_id", ""))),
-				"enemy '%s' points at a shipped challenge (%s)"
-				% [enemy_id, String(catalog.get("challenge_id", ""))])
-		_check(_surface_at(ground, floating, patrol.x) == row
-				and _surface_at(ground, floating, patrol.y) == row,
-			"enemy '%s' patrols solid ground at row %d" % [enemy_id, row])
-
-	# --- los checkpoints -----------------------------------------------------
-	for cp in checkpoints:
-		var cx: int = int(cp["x"])
-		var cy: int = int(cp["y"])
-		_check(_surface_at(ground, floating, cx) == cy,
-			"checkpoint %d stands on solid ground at row %d" % [cx, cy])
-
-	# --- el spawn ------------------------------------------------------------
-	_check(_surface_at(ground, floating, player_start.x) == player_start.y,
-		"the player spawns on solid ground at row %d" % player_start.y)
+	# --- la geometria --------------------------------------------------------
+	# ponytail: las invariantes viven en LevelGeometry (las comparten todos
+	# los niveles). Este guard conserva sus conteos, que son del nivel 01.
+	for check in LevelGeometry.validate({
+		"id": "level_01",
+		"ground": ground,
+		"floating": floating,
+		"enemies": enemies,
+		"checkpoints": checkpoints,
+		"player_start": player_start,
+	}, {"max_gap": max_gap, "max_rise": max_rise}):
+		_check(bool(check.get("ok", false)), String(check.get("label", "")))
 
 	_behavior()
 
@@ -290,16 +240,6 @@ func _registry_and_picker() -> void:
 
 
 ## La fila de superficie bajo una columna, o -1 si no hay nada.
-func _surface_at(ground: Array, floating: Array, x: int) -> int:
-	for span in ground:
-		if int(span["x0"]) <= x and x <= int(span["x1"]):
-			return int(span["top"])
-	for plat in floating:
-		if int(plat["x0"]) <= x and x <= int(plat["x1"]):
-			return int(plat["y"])
-	return -1
-
-
 func _finish() -> void:
 	print("\n========== LEVEL 01 GUARD ==========")
 	for p in _passed:

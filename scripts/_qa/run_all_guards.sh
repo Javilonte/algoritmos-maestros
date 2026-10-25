@@ -54,6 +54,7 @@ SCENE_GUARDS=(
   scenes/qa/curriculum_guard.tscn
   scenes/qa/battle_economy_guard.tscn
   scenes/qa/play_log_guard.tscn
+  scenes/qa/level_guard.tscn
 )
 
 TOTAL=0

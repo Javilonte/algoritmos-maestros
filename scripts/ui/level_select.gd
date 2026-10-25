@@ -45,7 +45,12 @@ func _build_cards() -> void:
 	for entry in levels:
 		var id: String = String(entry["id"])
 		var level: Dictionary = LevelRegistry.get_level(id)
-		var unlocked: bool = bool(entry.get("unlocked", true))
+		# ponytail: el flag dice si el nivel esta disponible SIN nada (el
+		# primero). El resto se abre con el skill del capitulo: el mismo
+		# gate que los enemigos. Con un flag estatico, el nivel 02 habria
+		# estado bloqueado para siempre.
+		var unlocked: bool = bool(entry.get("unlocked", true)) \
+			or SkillTree.is_skill_unlocked(level.get("requires_skill", &""))
 		var card: MenuActionButton = MenuActionButton.new()
 		card.variant = "primary" if unlocked else "subtle"
 		card.disabled = not unlocked
@@ -70,7 +75,10 @@ func _level_number(id: String) -> String:
 
 func _subtitle_for(entry: Dictionary, level: Dictionary, unlocked: bool) -> String:
 	if not unlocked:
-		return "BLOQUEADO"
+		var skill_id: StringName = level.get("requires_skill", &"")
+		var info: Dictionary = SkillTree.skill_info(skill_id)
+		var skill_name: String = String(info.get("name", ""))
+		return "BLOQUEADO · %s" % skill_name if not skill_name.is_empty() else "BLOQUEADO"
 	var enemies: int = level.get("enemies", []).size()
 	var chapter: String = String(entry.get("chapter", ""))
 	if chapter.is_empty():

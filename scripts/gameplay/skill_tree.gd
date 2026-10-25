@@ -271,6 +271,14 @@ func get_unlocked_enemies() -> PackedStringArray:
 ## ponytail: un enemigo que NINGÚN skill menciona queda siempre
 ## disponible. Si el default fuera "bloqueado", una errata en el catálogo
 ## dejaría el nivel vacío y el jugador sin saber por qué.
+## Si un skill esta desbloqueado (para el gate de los niveles).
+func is_skill_unlocked(skill_id: StringName) -> bool:
+	if skill_id == &"":
+		return true
+	var node = skills.get(skill_id, null)
+	return node != null and bool(node.unlocked)
+
+
 func is_enemy_unlocked(enemy_id: String) -> bool:
 	var mentioned: bool = false
 	for id in skills:
