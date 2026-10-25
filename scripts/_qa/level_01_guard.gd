@@ -13,6 +13,7 @@ const TILE := 32
 const LEVEL_SCRIPT := "res://data/levels/level_01.gd"
 const PLAYER_SCRIPT := "res://scripts/platformer/platformer_player.gd"
 const WORLD := "res://scenes/platformer/platformer_world.tscn"
+const LEVEL_SELECT := "res://scenes/ui/level_select.tscn"
 
 var _passed: Array = []
 var _failed: Array = []
@@ -193,7 +194,36 @@ func _behavior() -> void:
 		"falling out of the level respawns the player at the checkpoint (%.1f, %.1f)"
 		% [player.global_position.x, player.global_position.y])
 
+	_registry_and_picker()
 	_finish()
+
+
+## Fase 3: el nivel es elegible desde el menú.
+func _registry_and_picker() -> void:
+	var ids: PackedStringArray = LevelRegistry.get_ids()
+	_check(ids.has("level_01"), "the registry lists level_01")
+
+	var select_scene: PackedScene = load(LEVEL_SELECT) as PackedScene
+	_check(select_scene != null, "the level select scene loads")
+
+	# El mundo tiene que pintar el nivel que elige el menú, no uno fijo.
+	var carries_level: bool = "current_level_id" in GameManager
+	_check(carries_level, "GameManager carries the level the menu chose")
+	if not carries_level:
+		return
+	GameManager.set("current_level_id", "level_01")
+	var world: Node = (load(WORLD) as PackedScene).instantiate()
+	get_tree().root.add_child(world)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var ground: TileMapLayer = world.get_node("Ground")
+	# La fila 13 en la columna 120 sólo existe en el Nivel 01: es el suelo
+	# del acto 3, el del hueco de 4 tiles.
+	_check(ground.get_cell_source_id(Vector2i(120, 13)) != -1,
+		"the world paints the level the menu chose")
+	_check(world.get("level_id") == "level_01",
+		"the world reports the level it painted")
+	GameManager.set("current_level_id", "")
 
 
 ## La fila de superficie bajo una columna, o -1 si no hay nada.
