@@ -148,6 +148,7 @@ func _maybe_spawn_enemy(index: int) -> void:
 	enemy.set("display_name", String(data.get("display_name", "Enemy")))
 	enemy.set("max_hp", int(data.get("max_hp", 60)))
 	enemy.set("challenge_id", String(data.get("challenge_id", "main_exit_check")))
+	enemy.set("challenge_id_next", String(data.get("challenge_id_next", "")))
 	enemy.set("enemy_id", enemy_id)
 	var patrol: Vector2i = spot.get("patrol", Vector2i.ZERO)
 	enemy.set("patrol_min_x", patrol.x * TILE + TILE / 2)

@@ -8,6 +8,10 @@ class_name Enemy
 @export var display_name: String = "Bug Monster"
 @export var max_hp: int = 100
 @export var challenge_id: String = "main_exit_check"
+## Segunda fase del enemigo, si la tiene. El cap 07 (fibonacci -> simple_dp)
+## y el cap 08 (template_generic -> thread_join) son dos peleas del mismo
+## enemigo: gana una, vuelve con la siguiente.
+@export var challenge_id_next: String = ""
 @export var respawn_time: float = 30.0
 @export var enemy_id: String = ""  # id of the EnemyCatalog, optional
 ## ponytail: el enemigo tomaba la region del atlas A MANO en el .tscn
@@ -58,7 +62,15 @@ func apply_data(data: EnemyData) -> void:
 		enemy_id = String(data.node.name)
 
 ## Desactiva al enemigo e inicia el timer de respawn.
+##
+## ponytail: si el enemigo tiene segunda fase, NO desaparece: escala al
+## siguiente challenge y sigue en el mundo. El capitulo es una secuencia de
+## peleas contra el mismo enemigo, no dos enemigos distintos.
 func defeat() -> void:
+	if not challenge_id_next.is_empty():
+		challenge_id = challenge_id_next
+		challenge_id_next = ""
+		return
 	_is_defeated = true
 	visible = false
 	set_deferred("monitoring", false)

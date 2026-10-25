@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="ChallengeResource" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://resources/challenge_resource.gd" id="1_cr"]
+[ext_resource type="Script" path="res://resources/test_case.gd" id="2_tc"]
+
+[sub_resource type="Resource" id="TestCase_1"]
+script = ExtResource("2_tc")
+name = "n=1"
+inputs = [1]
+expected = 1
+weight = 0.5
+
+[sub_resource type="Resource" id="TestCase_2"]
+script = ExtResource("2_tc")
+name = "n=5"
+inputs = [5]
+expected = 15
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_3"]
+script = ExtResource("2_tc")
+name = "n=10"
+inputs = [10]
+expected = 55
+weight = 1.5
+
+[sub_resource type="Resource" id="TestCase_4"]
+script = ExtResource("2_tc")
+name = "n=100"
+inputs = [100]
+expected = 5050
+weight = 2.0
+
+[resource]
+script = ExtResource("1_cr")
+id = &"thread_join"
+display_name = "El Wyrm de los Hilos"
+difficulty = 6
+prompt = "Implementa `int sumInThreads(int n)` que devuelva la suma de 1 a n repartiendo el trabajo entre varios hilos con `std::thread` y esperándolos con `join()` antes de devolver."
+starter_code = "#include <thread>\n\nint sumInThreads(int n) {\n    // tu código aquí\n    return 0;\n}"
+function_signature = "int sumInThreads(int n)"
+function_name_hint = "sumInThreads"
+test_cases = Array[Resource]([SubResource("TestCase_1"), SubResource("TestCase_2"), SubResource("TestCase_3"), SubResource("TestCase_4")])
+time_limit_ms = 30000
+base_damage = 40
+perfect_damage = 145
+tags = PackedStringArray("concurrency", "thread", "advanced")
+runner_path = "res://data/challenges/thread_join_runner.gd"
+ast_min_statements = 4
+ast_required_features = PackedStringArray("loop", "call", "return")
+ast_return_substring = "int"
+validation_mode = "ast_oracle"

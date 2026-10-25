@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="ChallengeResource" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://resources/challenge_resource.gd" id="1_cr"]
+[ext_resource type="Script" path="res://resources/test_case.gd" id="2_tc"]
+
+[sub_resource type="Resource" id="TestCase_1"]
+script = ExtResource("2_tc")
+name = "empty_array"
+inputs = [[]]
+expected = []
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_2"]
+script = ExtResource("2_tc")
+name = "single_element"
+inputs = [[42]]
+expected = [42]
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_3"]
+script = ExtResource("2_tc")
+name = "unsorted"
+inputs = [[5, 3, 8, 1]]
+expected = [1, 3, 5, 8]
+weight = 1.0
+
+[sub_resource type="Resource" id="TestCase_4"]
+script = ExtResource("2_tc")
+name = "with_duplicates"
+inputs = [[3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]]
+expected = [1, 1, 2, 3, 3, 4, 5, 5, 5, 6, 9]
+weight = 1.5
+
+[sub_resource type="Resource" id="TestCase_5"]
+script = ExtResource("2_tc")
+name = "negative_numbers"
+inputs = [[-3, 5, -1, 0, 7, -10, 2]]
+expected = [-10, -3, -1, 0, 2, 5, 7]
+weight = 1.0
+
+[resource]
+script = ExtResource("1_cr")
+id = &"use_std_sort"
+display_name = "El Archivista Real"
+difficulty = 3
+prompt = "Implementa `vector<int> sortWithStd(vector<int> arr)` que retorne el vector ordenado ascendentemente usando `std::sort` de la biblioteca estándar."
+starter_code = "vector<int> sortWithStd(vector<int> arr) {\n    // tu código aquí\n    return arr;\n}"
+function_signature = "vector<int> sortWithStd(vector<int> arr)"
+function_name_hint = "sortWithStd"
+test_cases = Array[Resource]([SubResource("TestCase_1"), SubResource("TestCase_2"), SubResource("TestCase_3"), SubResource("TestCase_4"), SubResource("TestCase_5")])
+time_limit_ms = 30000
+base_damage = 25
+perfect_damage = 100
+tags = PackedStringArray("stl", "sorting", "intermediate")
+runner_path = "res://data/challenges/use_std_sort_runner.gd"
+ast_min_statements = 2
+ast_required_features = PackedStringArray("call", "return")
+ast_return_substring = "vector"
+validation_mode = "ast_oracle"

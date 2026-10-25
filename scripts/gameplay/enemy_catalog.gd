@@ -7,19 +7,21 @@ class_name EnemyCatalog
 ## ponytail: challenge_id used to be a fictional slug per enemy
 ## (slime_aritm, buggo_ciego, ogro_bucle, ...) and NONE of them matched a
 ## shipped data/challenges/*.tres, so every dungeon battle resolved
-## _challenge == null and could not start. They now point at the eight
-## real challenges, chosen by affinity: blind -> linear_search, infinite
-## loop -> factorial, off-by-one -> binary_search, memory -> hash_map,
-## final boss -> main_exit_check. Ten enemies, eight challenges, so a
-## few legitimately share one. Ceiling: reorder these freely, it is
-## pure content data and no code depends on the pairing.
-
+## _challenge == null and could not start.
+##
+## ponytail: el mapeo ahora es el CURRICULO (odd/tasks/
+## learning-path-and-difficulty.md): cada enemigo pelea con el concepto de
+## su capitulo. El tutorial es "escribi una funcion que compile", no el
+## challenge mas dificil del juego; y el jefe final no puede ser el mas
+## facil. `challenge_id_next` es la segunda fase: el enemigo escala en vez
+## de desaparecer (la hidra: fibonacci -> simple_dp; el wyrm:
+## template_generic -> thread_join).
 const CATALOG: Dictionary = {
 	"slime_aritm": {
 		"display_name": "Slime Aritmético",
 		"max_hp": 60,
 		"respawn_time": 25.0,
-		"challenge_id": "simple_dp",
+		"challenge_id": "main_exit_check",
 		"element_weaknesses": {"arithmetic": 2.0, "control_flow": 1.0},
 		"xp_reward": 350,
 		"flavor": "Resistente a la confusión; vulnerable a operaciones básicas.",
@@ -75,6 +77,7 @@ const CATALOG: Dictionary = {
 		"max_hp": 180,
 		"respawn_time": 50.0,
 		"challenge_id": "fibonacci",
+		"challenge_id_next": "simple_dp",
 		"element_weaknesses": {"control_flow": 2.5},
 		"xp_reward": 2000,
 		"flavor": "Cada llamada recursiva le corta una cabeza.",
@@ -96,7 +99,7 @@ const CATALOG: Dictionary = {
 		"display_name": "Dragón del Caos",
 		"max_hp": 220,
 		"respawn_time": 55.0,
-		"challenge_id": "linear_search",
+		"challenge_id": "use_std_sort",
 		"element_weaknesses": {"stl": 2.5, "control_flow": 1.5},
 		"xp_reward": 550,
 		"flavor": "Desordena vectores; std::sort lo calma.",
@@ -107,7 +110,8 @@ const CATALOG: Dictionary = {
 		"display_name": "Wyrm Paralelo",
 		"max_hp": 260,
 		"respawn_time": 60.0,
-		"challenge_id": "bubble_sort",
+		"challenge_id": "template_generic",
+		"challenge_id_next": "thread_join",
 		"element_weaknesses": {"concurrency": 3.0},
 		"xp_reward": 2500,
 		"flavor": "Solo muere si todos los hilos completan.",
@@ -118,7 +122,7 @@ const CATALOG: Dictionary = {
 		"display_name": "Jefe Final: Compilador Divino",
 		"max_hp": 500,
 		"respawn_time": 120.0,
-		"challenge_id": "main_exit_check",
+		"challenge_id": "final_gate",
 		"element_weaknesses": {"pointer": 2.0, "stl": 2.0, "template": 2.0, "concurrency": 2.0},
 		"xp_reward": 1500,
 		"flavor": "Solo #include <bits/stdc++.h> lo abate.",
