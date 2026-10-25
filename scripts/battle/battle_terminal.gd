@@ -100,7 +100,7 @@ func open_for(challenge_id: String) -> void:
 	console_output.text = "[color=%s]// Write code to attack![/color]\n" % CyberStyleBox.hex(CyberStyleBox.TEXT_DIM)
 	visible = true
 	code_editor.grab_focus()
-	_refresh_contract()
+	await _refresh_contract()
 
 
 ## El contrato del ejercicio: que hay que hacer, con que firma, que
@@ -109,6 +109,7 @@ func open_for(challenge_id: String) -> void:
 ## ponytail: TODO esto ya estaba en los datos del challenge (prompt,
 ## function_signature, ast_required_features, test_cases) pero NADA lo
 ## mostraba. El jugador peleaba contra una tarea invisible.
+## CORRUTINA: el checklist lee el AST, y el AST viene de clang.
 func _refresh_contract() -> void:
 	if _challenge == null:
 		contract_text.text = ""
@@ -123,7 +124,7 @@ func _refresh_contract() -> void:
 
 	# Los requisitos con el tick en vivo: el jugador ve lo que falta
 	# ANTES de submitir, no despues del error.
-	var status: Dictionary = AstValidator.feature_status(_last_ast())
+	var status: Dictionary = AstValidator.feature_status(await _last_ast())
 	var req: Array[String] = []
 	for feature in _challenge.ast_required_features:
 		var ok: bool = bool(status.get(String(feature), false))
@@ -167,10 +168,11 @@ func _escape_bbcode(text: String) -> String:
 
 
 ## El ultimo AST que se calculo del codigo del jugador.
+## CORRUTINA: el gate corre clang en un proceso aparte.
 func _last_ast() -> Dictionary:
 	if _challenge == null:
 		return {}
-	return AstValidator.validate(code_editor.text, _challenge)
+	return await AstValidator.validate(code_editor.text, _challenge)
 
 
 func _on_code_text_changed() -> void:
@@ -178,7 +180,7 @@ func _on_code_text_changed() -> void:
 
 
 func _on_checklist_timer_timeout() -> void:
-	_refresh_contract()
+	await _refresh_contract()
 
 
 func close() -> void:
@@ -197,6 +199,7 @@ func _on_submit_pressed() -> void:
 	# ponytail: el checklist se refresca tambien en el submit. El timer de
 	# debounce puede no haber disparado todavia y el contrato que ve el
 	# jugador tiene que ser el del codigo que va a hacer falta.
+	await _refresh_contract()
 	_refresh_contract()
 	console_output.append_text("[color=%s]>> Compiling and running...[/color]\n" % CyberStyleBox.hex(CyberStyleBox.AMBER))
 	CodeCompiler.compile_and_execute(_challenge_id, code_editor.text)

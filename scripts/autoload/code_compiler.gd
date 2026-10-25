@@ -28,7 +28,11 @@ func compile_and_execute(challenge_id: String, code: String) -> void:
 	await get_tree().create_timer(0.15).timeout
 	EventBus.compiling_progress.emit("parsing AST", 0.25)
 	await get_tree().create_timer(0.1).timeout
-	var ast: Dictionary = AstValidator.validate(code, challenge)
+	# ponytail: la validacion corre clang en un proceso aparte, asi que es
+	# una corrutina: el gate tarda un poco mas que antes (que era un
+	# tree-sitter en proceso) pero valida el MISMO codigo que despues se
+	# compila.
+	var ast: Dictionary = await AstValidator.validate(code, challenge)
 	if not bool(ast.get("valid", false)):
 		await _fail_structure(challenge_id, challenge, ast)
 		return

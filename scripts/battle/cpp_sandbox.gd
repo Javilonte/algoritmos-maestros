@@ -128,7 +128,7 @@ func run(code: String, challenge: ChallengeResource) -> Dictionary:
 ## El harness: los includes, el codigo del jugador y una llamada por caso
 ## de prueba que escribe el resultado a un archivo.
 func _harness_source(code: String, challenge: ChallengeResource) -> String:
-	var head := "#include <fstream>\n#include <iostream>\n#include <string>\n#include <vector>\nusing namespace std;\n\n"
+	var head: String = CppToolchain.PREAMBLE
 	head += code
 	head += "\n\n"
 	# ponytail: el challenge "main_exit_check" ES escribir un main: el

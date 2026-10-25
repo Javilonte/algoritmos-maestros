@@ -152,7 +152,7 @@ func _check_canonical(sandbox: CppSandbox) -> void:
 			_failed.append("'%s' does not load" % id)
 			continue
 		var code: String = String(CANONICAL[id])
-		var ast: Dictionary = AstValidator.validate(code, challenge)
+		var ast: Dictionary = await AstValidator.validate(code, challenge)
 		var valid: bool = bool(ast.get("valid", false))
 		_check("'%s': the gate accepts the canonical solution" % id, valid)
 		if not valid:

@@ -80,7 +80,7 @@ Sumado: no sabés qué construir, no sabés qué te piden, tenés 30 segundos, y
 Tres capas, de la más chica a la más durable:
 
 1. **Los datos**: `"if"` → `"conditional"` en `simple_dp.tres` y `binary_search.tres`. Data-only, sin recompilar.
-2. **El validador**: que `_check_required_feature` acepte los nombres naturales como alias — `if`/`else`/`switch` → conditional, `for`/`while` → loop — y que un nombre desconocido **sea un error de configuración explícito**, no un "te falta esta feature". Requiere recompilar la extensión (hay toolchain: `gdextension/addons/algorithm-validator/bin/`).
+2. **El validador**: que el gate acepte los nombres naturales como alias — `if`/`else`/`switch` → conditional, `for`/`while` → loop — y que un nombre desconocido **sea un error de configuración explícito**, no un "te falta esta feature". ~~Requiere recompilar la extensión~~ **RESUELTO en `odd/tasks/validator-on-clang.md`**: el gate ahora es GDScript sobre el AST de clang, sin extension que recompilar.
 3. **El guard que lo impide volver a pasar**: un guard que, para cada challenge, construye un C++ sintético con las features pedidas y lo pasa por el gate. Si el vocabulario está roto, el guard falla. Si el challenge pide algo imposible, el guard falla.
 
 ```gdscript

@@ -48,7 +48,7 @@ func _run() -> void:
 			continue
 
 		var solution: String = _solution_with_every_structure(challenge)
-		var ast: Dictionary = AstValidator.validate(solution, challenge)
+		var ast: Dictionary = await AstValidator.validate(solution, challenge)
 		if bool(ast.get("valid", false)):
 			passed += 1
 			print("PASS: '%s' is winnable (needs %s)"
@@ -74,13 +74,23 @@ func _run() -> void:
 ## ponytail: el template va en el PADRE de la funcion (asi es como lo
 ## parsea tree-sitter-cpp), asi que la solucion del probe se declara
 ## `template <typename T>` cuando el challenge lo pide.
+##
+## ponytail: el probe tiene que COMPILAR, no solo parsear. Con clang (que
+## es el gate ahora) devolver un int de una funcion que devuelve
+## vector<int> es un error de compilacion, no un detalle de forma: el
+## probe declara una variable del tipo de retorno y la devuelve.
 func _solution_with_every_structure(challenge: ChallengeResource) -> String:
 	var head: String = ""
 	if "template" in challenge.ast_required_features:
 		head = "template <typename T>\n"
+	var return_type: String = AstValidator._extract_return_token(String(challenge.function_signature))
+	if return_type.is_empty():
+		return_type = "int"
 	return (
 		"int __probe(int x) { return x; }\n"
+		+ "using __R = %s;\n" % return_type
 		+ head + challenge.function_signature + " {\n"
+		+ "\t__R __r;\n"
 		+ "\tint __t = 0;\n"
 		+ "\tint __u = 0;\n"
 		+ "\tfor (int __i = 0; __i < 3; __i++) {\n"
@@ -91,6 +101,6 @@ func _solution_with_every_structure(challenge: ChallengeResource) -> String:
 		+ "\t\t}\n"
 		+ "\t}\n"
 		+ "\twhile (__u < 2) { __u++; }\n"
-		+ "\treturn __t;\n"
+		+ "\treturn __r;\n"
 		+ "}\n"
 	)

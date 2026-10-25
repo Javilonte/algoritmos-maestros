@@ -5,9 +5,6 @@
 *.import.bak
 
 # GDExtension build artifacts
-gdextension/addons/
-gdextension/godot-cpp/bin/
-gdextension/.sconsign.dblite
 *.obj
 *.obj.import
 *.o
