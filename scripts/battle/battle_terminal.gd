@@ -26,6 +26,9 @@ func _ready() -> void:
 	_apply_cyber_style()
 	EventBus.compiling_progress.connect(_on_compiling_progress)
 	EventBus.compiling_finished.connect(_on_compiling_finished)
+	# ponytail: el detalle por caso vivia en el TestResult y nunca llegaba
+	# a la consola. El jugador veia "4/5 tests" y nada mas.
+	EventBus.code_executed.connect(_on_code_executed)
 	# ponytail: el checklist se recalcula mientras escribís, con un debounce
 	# para no parsear el AST en cada tecla.
 	code_editor.text_changed.connect(_on_code_text_changed)
@@ -227,3 +230,22 @@ func _on_compiling_finished(success: bool, message: String) -> void:
 		if (message.find("AST:") != -1 or message.find("Function") != -1 or message.find("Return type") != -1 or message.find("body too simple") != -1):
 			prefix = "[color=%s][AST][/color]" % CyberStyleBox.hex(CyberStyleBox.AMBER)
 	console_output.append_text("%s %s\n" % [prefix, message])
+
+
+## El detalle de cada caso fallido: "expected 3, got 0" con el nombre del
+## caso. Es lo que el jugador necesita para arreglar su algoritmo.
+func _on_code_executed(result) -> void:
+	if not visible or result == null:
+		return
+	# ponytail: el resultado es un TestResult (RefCounted), no un
+	# Dictionary: `.get("errors")` no existe y rompe la consola.
+	var errors: Array = result.errors
+	if errors.is_empty():
+		return
+	var shown: int = 0
+	for err in errors:
+		if shown >= 8:
+			break
+		shown += 1
+		console_output.append_text("[color=%s]   %s[/color]\n" % [
+			CyberStyleBox.hex(CyberStyleBox.AMBER), String(err)])

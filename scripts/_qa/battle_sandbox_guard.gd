@@ -1,0 +1,177 @@
+extends Node
+
+## Guard end-to-end de la pelea: el codigo del JUGADOR se compila, corre y
+## le hace dano al enemigo. Run: godot --headless scenes/qa/battle_sandbox_guard.tscn --quit-after 900
+##
+## ponytail: hasta ahora la pelea evaluaba la solucion de referencia del
+## runner. Este guard cierra el circuito: escribe una solucion en el
+## editor, la manda y comprueba que el enemigo pierde HP de verdad.
+
+const BATTLE_SCENE := "res://scenes/battle/battle.tscn"
+const ENEMY_SCENE := "res://scenes/overworld/enemy.tscn"
+
+const CORRECT := """int climbStairs(int n) {
+    int a = 1;
+    int b = 1;
+    for (int i = 2; i <= n; i++) {
+        int c = a + b;
+        a = b;
+        b = c;
+    }
+    if (n <= 1) {
+        return 1;
+    }
+    return b;
+}"""
+
+# La estructura correcta y el algoritmo equivocado: el gate de forma
+# pasa, compila y los tests fallan. Un "return 0" solo probaria el gate.
+const WRONG := """int climbStairs(int n) {
+    int total = 0;
+    for (int i = 1; i <= n; i++) {
+        if (i % 2 == 0) {
+            total += i;
+        } else {
+            total -= i;
+        }
+    }
+    return total;
+}"""
+
+var _passed: Array = []
+var _failed: Array = []
+var _last_result: Variant = null
+
+
+func _ready() -> void:
+	EventBus.code_executed.connect(_on_code_executed)
+	_run()
+
+
+func _check(condition: bool, label: String) -> void:
+	if condition:
+		_passed.append(label)
+	else:
+		_failed.append(label)
+
+
+func _on_code_executed(result) -> void:
+	_last_result = result
+
+
+func _run() -> void:
+	if CppSandbox.new().find_compiler().is_empty():
+		print("SKIP: no C++ compiler on this machine")
+		_finish()
+		return
+
+	var battle_scene: PackedScene = load(BATTLE_SCENE)
+	var enemy_scene: PackedScene = load(ENEMY_SCENE)
+	if battle_scene == null or enemy_scene == null:
+		_failed.append("could not load battle or enemy scene")
+		_finish()
+		return
+
+	var enemy := enemy_scene.instantiate()
+	add_child(enemy)
+	enemy.set("display_name", "Guard Slime")
+	enemy.set("max_hp", 80)
+	enemy.set("challenge_id", "simple_dp")
+	enemy.set("respawn_time", 30.0)
+
+	var battle := battle_scene.instantiate()
+	add_child(battle)
+	var data := EnemyData.create("Guard Slime", 80, "simple_dp", enemy, "slime_aritm", 25)
+	battle.set("_enemy_data", data.to_dict())
+	# ponytail: la batalla arranca con el EVENTO, no con
+	# GameManager.start_battle: el challenge lo resuelve el battle a partir
+	# del enemy_data. Sin esto el editor se abria con su challenge por
+	# defecto (bubble_sort) y el AST buscaba la funcion equivocada.
+	EventBus.battle_requested.emit(data.to_dict())
+	# ponytail: la pelea entra en EDITING despues de una animacion de
+	# 0.8 s. Si se manda antes, "Attack" se ignora y el editor se queda
+	# con su challenge por defecto.
+	await _wait_for_phase(battle, Battle.BattlePhase.EDITING)
+
+	var terminal := battle.get_node_or_null("BattleTerminal")
+	_check(terminal != null, "the battle has its code editor")
+	if terminal == null:
+		_finish()
+		return
+	var editor: CodeEdit = terminal.get_node("Panel/CodeEdit")
+	_check(editor != null, "the editor exposes the code area")
+	if editor == null:
+		_finish()
+		return
+	# abrir el editor: asi el challenge es el del enemigo, no el de por defecto
+	battle.call("_on_attack_pressed")
+	await get_tree().process_frame
+	_check(String(terminal.get("_challenge_id")) == "simple_dp",
+		"the editor opened with the enemy's challenge (%s)" % String(terminal.get("_challenge_id")))
+
+	# --- 1. la solucion correcta le hace dano al enemigo ---------------------
+	var hp_before: int = GameManager.get_hp("enemy")
+	editor.text = CORRECT
+	terminal.call("_on_submit_pressed")
+	var result: Variant = await _wait_for_result()
+	_check(result != null, "the battle produced a result")
+	if result != null:
+		_check(bool(result.success),
+			"the player's correct solution wins the challenge")
+		_check(int(result.passed) == int(result.total),
+			"every case passed (%d/%d)" % [int(result.passed), int(result.total)])
+	await get_tree().create_timer(0.8).timeout
+	_check(GameManager.get_hp("enemy") < hp_before,
+		"the enemy loses HP: %d -> %d" % [hp_before, GameManager.get_hp("enemy")])
+
+	# --- 2. una solucion incorrecta no le hace dano --------------------------
+	GameManager.reset_battle_state()
+	EventBus.battle_requested.emit(data.to_dict())
+	await _wait_for_phase(battle, Battle.BattlePhase.EDITING)
+	battle.call("_on_attack_pressed")
+	await get_tree().process_frame
+	hp_before = GameManager.get_hp("enemy")
+	editor.text = WRONG
+	terminal.call("_on_submit_pressed")
+	var bad: Variant = await _wait_for_result()
+	_check(bad != null, "the wrong solution produced a result")
+	if bad != null:
+		_check(not bool(bad.success),
+			"the wrong solution loses the challenge")
+		var errors: Array = bad.errors
+		_check(errors.size() > 0 and String(errors[0]).contains("expected"),
+			"the failure says what was expected (%s)" % str(errors))
+	await get_tree().create_timer(0.8).timeout
+	_check(GameManager.get_hp("enemy") == hp_before,
+		"a wrong solution does not damage the enemy")
+
+	_finish()
+
+
+## Espera a que la pelea llegue a una fase.
+func _wait_for_phase(battle: Node, phase: int) -> void:
+	for i in 300:
+		await get_tree().process_frame
+		if int(battle.get("_phase")) == phase:
+			return
+
+
+## Espera el resultado del proximo code_executed.
+func _wait_for_result() -> Variant:
+	for i in 900:
+		await get_tree().process_frame
+		if _last_result != null:
+			var r: Variant = _last_result
+			_last_result = null
+			return r
+	return null
+
+
+func _finish() -> void:
+	print("\n========== BATTLE SANDBOX GUARD ==========")
+	for p in _passed:
+		print("  PASS: ", p)
+	for f in _failed:
+		print("  FAIL: ", f)
+	print("PASSED: %d | FAILED: %d" % [_passed.size(), _failed.size()])
+	get_tree().quit(1 if _failed.size() > 0 else 0)

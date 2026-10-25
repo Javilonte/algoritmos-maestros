@@ -22,7 +22,10 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT" || exit 1
 
 GODOT="${GODOT:-godot}"
-TIMEOUT_FRAMES="${TIMEOUT_FRAMES:-400}"
+# ponytail: 2500 y no 400 porque el guard de batalla espera las fases
+# REALES de la pelea (0.8 s) y compila de verdad (~1 s por compile). En
+# headless los frames vuelan y 400 frames no cubren ni 2 segundos.
+TIMEOUT_FRAMES="${TIMEOUT_FRAMES:-2500}"
 
 # Guards that run as a SceneTree script: godot --headless -s <script>.
 SCRIPT_GUARDS=(
@@ -46,6 +49,8 @@ SCENE_GUARDS=(
   scenes/qa/code_transition_guard.tscn
   scenes/qa/level_01_guard.tscn
   scenes/qa/challenge_gate_guard.tscn
+  scenes/qa/cpp_sandbox_guard.tscn
+  scenes/qa/battle_sandbox_guard.tscn
 )
 
 TOTAL=0

@@ -110,3 +110,17 @@ static func feature_status(ast: Dictionary) -> Dictionary:
 ## Como se le dice al jugador una feature del vocabulario.
 static func feature_label(feature: String) -> String:
 	return String(FEATURE_LABELS.get(feature, feature))
+
+
+## El error de features en el idioma del jugador.
+##
+## ponytail: "Missing required features: if." no le dice nada a un jugador
+## que no sabe el vocabulario del analizador. El editor ya muestra el
+## checklist con el tick en vivo; este mensaje es el mismo dato en texto.
+static func missing_features_message(missing: Array) -> String:
+	if missing.is_empty():
+		return ""
+	var labels: Array[String] = []
+	for feature in missing:
+		labels.append(feature_label(String(feature)))
+	return "Te falta: %s." % ", ".join(labels)
