@@ -62,6 +62,18 @@ func _ready() -> void:
 	_spawn_enemies()
 	_spawn_checkpoints()
 	_level_width = _compute_level_width()
+	# ponytail: el log de partidas arranca con el nivel. Sin esto no hay
+	# forma de saber que un enemigo es dificil porque es dificil o porque
+	# el concepto no se enseno.
+	PlayLog.begin_level(_resolve_level_id())
+
+
+func _exit_tree() -> void:
+	# ponytail: el nivel 01 todavia no tiene meta (es un gauntlet), asi que
+	# "complete" se registra con completed=false. Cuando los niveles 02-09
+	# tengan meta, se emite con true.
+	PlayLog.end_level(_resolve_level_id(), false)
+	PlayLog.flush()
 
 
 ## El punto de reaparición: el último checkpoint tocado, o el spawn.
@@ -178,6 +190,17 @@ func _spawn_checkpoints() -> void:
 
 func _on_checkpoint_activated(checkpoint: Node) -> void:
 	_respawn_point = checkpoint.get_checkpoint_position()
+	PlayLog.note_checkpoint(_resolve_level_id(), _checkpoint_index(checkpoint))
+
+
+## El indice del checkpoint en la lista del nivel (el orden del recorrido).
+func _checkpoint_index(checkpoint: Node) -> int:
+	var spots: Array = _level.get("checkpoints", [])
+	for i in spots.size():
+		var spot: Dictionary = spots[i]
+		if int(spot.get("x", -1)) * TILE + TILE / 2 == int(checkpoint.global_position.x):
+			return i
+	return -1
 
 
 func _compute_level_width() -> int:
@@ -212,6 +235,7 @@ func _process(delta: float) -> void:
 ## Caer al vacío mata y devuelve al jugador al último checkpoint.
 func _respawn() -> void:
 	_respawning = true
+	PlayLog.note_death(_resolve_level_id(), player.global_position, "fall")
 	player.set_physics_process(false)
 	var fade_in := create_tween()
 	fade_in.tween_property(fade, "color:a", 1.0, RESPAWN_FADE)

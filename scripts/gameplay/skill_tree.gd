@@ -230,6 +230,7 @@ func try_unlock(skill_id: StringName) -> bool:
 	var n: SkillNode = skills[skill_id]
 	n.unlocked = true
 	current_xp -= n.cost_xp
+	PlayLog.note_skill_unlocked(String(n.id), current_xp, current_level)
 	skill_unlocked.emit(n.id)
 	xp_changed.emit(current_xp, _xp_for_next_level())
 	return true

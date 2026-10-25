@@ -6,6 +6,8 @@ const SFX_BUS := "SFX"
 @onready var fullscreen_check: CheckButton = $CenterContainer/VBoxContainer/FullscreenCheck
 @onready var volume_slider: HSlider = $CenterContainer/VBoxContainer/VolumeRow/VolumeSlider
 @onready var volume_label: Label = $CenterContainer/VBoxContainer/VolumeRow/VolumeLabel
+@onready var export_button: Button = $CenterContainer/VBoxContainer/ExportButton
+@onready var export_label: Label = $CenterContainer/VBoxContainer/ExportLabel
 @onready var back_button: Button = $CenterContainer/VBoxContainer/BackButton
 
 var _settings: Dictionary = {}
@@ -21,6 +23,7 @@ func _ready() -> void:
 	_apply_volume_to_buses(volume_slider.value)
 	fullscreen_check.toggled.connect(_on_fullscreen_toggled)
 	volume_slider.value_changed.connect(_on_volume_changed)
+	export_button.pressed.connect(_on_export_pressed)
 	back_button.pressed.connect(_on_back_pressed)
 
 func _on_fullscreen_toggled(pressed: bool) -> void:
@@ -50,6 +53,18 @@ func _apply_volume_to_buses(linear_0_100: float) -> void:
 
 func _update_volume_label(value: float) -> void:
 	volume_label.text = "%d%%" % int(value)
+
+## Exporta los datos de juego a un archivo JSONL y dice donde quedo.
+##
+## ponytail: los datos son del jugador y el juego es offline: no hay
+## servidor y no se manda nada a ningun lado. El boton deja el archivo en
+## disco y dice la ruta, y el jugador decide si lo comparte.
+func _on_export_pressed() -> void:
+	var path: String = PlayLog.export_all()
+	if path.is_empty():
+		export_label.text = "No se pudo exportar el log."
+		return
+	export_label.text = "Datos exportados en:\n%s" % path
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/main_menu/main_menu.tscn")

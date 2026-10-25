@@ -41,6 +41,7 @@ DialogueManager="*res://scripts/autoload/dialogue_manager.gd"
 SkillTree="*res://scripts/gameplay/skill_tree.gd"
 IsoAtlasBuilder="*res://scripts/iso/iso_atlas_builder.gd"
 AudioManager="*res://scripts/audio/audio_manager.gd"
+PlayLog="*res://scripts/autoload/play_log.gd"
 
 [debug]
 

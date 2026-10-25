@@ -39,6 +39,13 @@ var _turn_start_ms: int = 0
 var _decision_start_ms: int = 0
 var _clock_running: bool = false
 var _attempts: int = 0
+## Los contadores que necesita el log de partidas.
+var _battle_turns: int = 0
+var _battle_attempts_total: int = 0
+var _battle_start_ms: int = 0
+## Un id por pelea: sin el, los intentos de dos peleas contra el mismo
+## enemigo se mezclan y la metrica "intentos al primer acierto" miente.
+var _battle_id: int = 0
 var _time_expired_shown: bool = false
 var _challenge: ChallengeResource = null
 var _arena_original_pos: Vector2 = Vector2.ZERO
@@ -132,6 +139,10 @@ func _on_battle_requested(enemy_data: Dictionary) -> void:
 	_decision_start_ms = 0
 	_attempts = 0
 	_time_expired_shown = false
+	_battle_turns = 0
+	_battle_attempts_total = 0
+	_battle_start_ms = Time.get_ticks_msec()
+	_battle_id += 1
 	# ponytail: resolve the challenge BEFORE start_battle(). The old order
 	# reset both HP pools and pushed the FSM into BATTLE, then returned on an
 	# unknown id — leaving the game in a battle state that never began.
@@ -141,6 +152,16 @@ func _on_battle_requested(enemy_data: Dictionary) -> void:
 		push_error("Battle: unknown challenge '%s'" % challenge_id)
 		return
 	GameManager.start_battle(enemy_data)
+	# ponytail: el log de partidas. Con esto se puede ver que enemigo matte
+	# mas y con que concepto: sin datos, la dificultad se ajusta a ojo.
+	PlayLog.note_battle_start(
+		GameManager.current_level_id,
+		String(enemy_data.get("enemy_id", "")),
+		challenge_id,
+		int(_challenge.difficulty) if _challenge != null else 1,
+		int(enemy_data.get("max_hp", 0)),
+		int(enemy_data.get("xp_reward", 0)),
+		_battle_id)
 	battle_terminal.close()
 	visible = true
 	action_menu.visible = true
@@ -225,6 +246,8 @@ func _on_code_executed(result) -> void:
 	_active_chain += 1
 	var chain_id: int = _active_chain
 	_attempts += 1
+	_battle_attempts_total += 1
+	_battle_turns += 1
 	# ponytail: el reloj arranca en el PRIMER submit. Antes de eso esta
 	# congelado: escribir el codigo no consume tiempo.
 	if not _clock_running:
@@ -234,6 +257,19 @@ func _on_code_executed(result) -> void:
 	var combo: int = GameManager.get_combo_count()
 	var roll: DamageRoll = ScoringEngine.calculate_damage(result, _challenge, elapsed, combo)
 	EventBus.damage_calculated.emit(roll)
+	# ponytail: un intento por submit. Es la fila que dice cuanto le costo
+	# al jugador resolver el challenge.
+	PlayLog.note_battle_attempt(
+		_attempts,
+		elapsed,
+		String(result.failure_kind) != "compile",
+		int(result.passed),
+		int(result.total),
+		bool(result.ast_valid),
+		float(result.ast_quality),
+		roll.amount,
+		GameManager.get_hp("player"),
+		combo)
 	# ponytail: split this loop into 3 small methods so each phase
 	# (compile success / fail / enemy turn) is testable in isolation and
 	# the chain-id guards live in one helper.
@@ -358,6 +394,7 @@ func _enemy_turn(_chain_id: int, damage: int) -> void:
 	_play_sfx(AudioManager.hit(false))
 	_screen_shake(false)
 	if GameManager.get_hp("player") <= 0:
+		PlayLog.note_death(GameManager.current_level_id, player_portrait.global_position, "battle")
 		_end_battle("lose")
 		return
 	await get_tree().create_timer(1.0, true).timeout
@@ -394,6 +431,9 @@ func _end_battle(result: String) -> void:
 		var xp_reward: int = int(_enemy_data.get("xp_reward", 0))
 		if xp_reward > 0:
 			SkillTree.add_xp(xp_reward)
+	PlayLog.note_battle_end(result, _battle_turns, _battle_attempts_total,
+		Time.get_ticks_msec() - _battle_start_ms)
+	PlayLog.flush()
 	EventBus.battle_ended.emit(result)
 
 
@@ -403,6 +443,7 @@ func _end_battle(result: String) -> void:
 ## so winning an ISO fight left the enemy standing and re-triggerable.
 ## Ceiling: uses duck-typed call() rather than a shared interface.
 func _defeat_enemy() -> void:
+	PlayLog.note_enemy_defeated()
 	if not _enemy_data.has("node"):
 		return
 	var enemy_node: Variant = _enemy_data["node"]
