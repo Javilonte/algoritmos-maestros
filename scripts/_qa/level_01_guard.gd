@@ -12,6 +12,7 @@ extends Node
 const TILE := 32
 const LEVEL_SCRIPT := "res://data/levels/level_01.gd"
 const PLAYER_SCRIPT := "res://scripts/platformer/platformer_player.gd"
+const WORLD := "res://scenes/platformer/platformer_world.tscn"
 
 var _passed: Array = []
 var _failed: Array = []
@@ -128,6 +129,69 @@ func _run() -> void:
 	# --- el spawn ------------------------------------------------------------
 	_check(_surface_at(ground, floating, player_start.x) == player_start.y,
 		"the player spawns on solid ground at row %d" % player_start.y)
+
+	_behavior()
+
+
+## Fase 2: el nivel se JUEGA, no sólo se dibuja.
+func _behavior() -> void:
+	var world: Node = (load(WORLD) as PackedScene).instantiate()
+	get_tree().root.add_child(world)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var entities: Node = world.get_node("Entities")
+	var player: Node = world.get_node("Entities/Player")
+
+	# --- los enemigos patrullan ---------------------------------------------
+	var enemy: Node = null
+	for child in entities.get_children():
+		if child.has_method("defeat"):
+			enemy = child
+			break
+	_check(enemy != null, "the level spawns an enemy")
+	if enemy != null:
+		var x_start: float = enemy.global_position.x
+		for i in range(60):
+			await get_tree().physics_frame
+		_check(absf(enemy.global_position.x - x_start) > 4.0,
+			"the enemy patrols (%.1f -> %.1f)" % [x_start, enemy.global_position.x])
+
+	# --- los checkpoints existen y activan -----------------------------------
+	var checkpoints: Array = []
+	for child in entities.get_children():
+		if child.has_method("get_checkpoint_position"):
+			checkpoints.append(child)
+	_check(checkpoints.size() >= 3, "the level spawns %d checkpoints" % checkpoints.size())
+
+	var has_respawn_api: bool = world.has_method("get_respawn_point")
+	_check(has_respawn_api, "the world exposes the respawn point")
+	if not has_respawn_api:
+		_finish()
+		return
+
+	if checkpoints.size() > 0:
+		var cp: Node = checkpoints[0]
+		var cp_pos: Vector2 = cp.get_checkpoint_position()
+		player.global_position = cp_pos + Vector2(0, -20)
+		player.velocity = Vector2.ZERO
+		for i in range(10):
+			await get_tree().physics_frame
+		_check(world.get_respawn_point().distance_to(cp_pos) < 40.0,
+			"touching a checkpoint moves the respawn point to it (%.1f)"
+			% world.get_respawn_point().x)
+
+	# --- caer mata y reaparece en el checkpoint -------------------------------
+	var respawn_point: Vector2 = world.get_respawn_point()
+	player.global_position = Vector2(respawn_point.x, respawn_point.y + 900.0)
+	player.velocity = Vector2.ZERO
+	for i in range(120):
+		await get_tree().physics_frame
+		if player.global_position.distance_to(respawn_point) < 60.0:
+			break
+	_check(player.global_position.distance_to(respawn_point) < 60.0,
+		"falling out of the level respawns the player at the checkpoint (%.1f, %.1f)"
+		% [player.global_position.x, player.global_position.y])
 
 	_finish()
 
