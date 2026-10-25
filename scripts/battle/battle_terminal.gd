@@ -12,8 +12,12 @@ signal back_pressed
 @onready var console_caption: Label = $Panel/ConsoleLabel
 @onready var separator_1: ColorRect = $Panel/Separator1
 @onready var separator_2: ColorRect = $Panel/Separator2
+@onready var contract_panel: Panel = $Panel/Contract
+@onready var contract_text: RichTextLabel = $Panel/Contract/ContractText
+@onready var checklist_timer: Timer = $ChecklistTimer
 
 var _challenge_id: String = "bubble_sort"
+var _challenge: ChallengeResource = null
 var _is_locked: bool = false
 
 func _ready() -> void:
@@ -22,6 +26,10 @@ func _ready() -> void:
 	_apply_cyber_style()
 	EventBus.compiling_progress.connect(_on_compiling_progress)
 	EventBus.compiling_finished.connect(_on_compiling_finished)
+	# ponytail: el checklist se recalcula mientras escribís, con un debounce
+	# para no parsear el AST en cada tecla.
+	code_editor.text_changed.connect(_on_code_text_changed)
+	checklist_timer.timeout.connect(_on_checklist_timer_timeout)
 
 
 ## ponytail: el tema global del juego es la paleta de Diablo II y NUNCA
@@ -54,6 +62,14 @@ func _apply_cyber_style() -> void:
 	separator_1.color = Color(CyberStyleBox.GREEN.r, CyberStyleBox.GREEN.g, CyberStyleBox.GREEN.b, 0.35)
 	separator_2.color = Color(CyberStyleBox.GREEN.r, CyberStyleBox.GREEN.g, CyberStyleBox.GREEN.b, 0.35)
 
+	# ponytail: el bloque de contrato es donde el jugador descubre QUE
+	# tiene que construir. Antes no existia: el editor abria con el
+	# starter code y su unico comentario era "// tu codigo aqui".
+	contract_panel.add_theme_stylebox_override("panel",
+		CyberStyleBox.panel(CyberStyleBox.GREEN, Color(0.01, 0.045, 0.03, 0.92)))
+	contract_text.add_theme_color_override("default_color", CyberStyleBox.TEXT)
+	contract_text.add_theme_font_size_override("normal_font_size", 13)
+
 	submit_button.add_theme_stylebox_override("normal", CyberStyleBox.button(CyberStyleBox.GREEN))
 	submit_button.add_theme_stylebox_override("hover", CyberStyleBox.button_hover(CyberStyleBox.GREEN))
 	submit_button.add_theme_stylebox_override("pressed", CyberStyleBox.button_pressed(CyberStyleBox.GREEN))
@@ -74,12 +90,93 @@ func _apply_cyber_style() -> void:
 
 func open_for(challenge_id: String) -> void:
 	_challenge_id = challenge_id
+	_challenge = ChallengeRegistry.get_by_id(challenge_id)
 	_reset_submit_lock()
-	var challenge: ChallengeResource = ChallengeRegistry.get_by_id(challenge_id)
+	var challenge: ChallengeResource = _challenge
 	code_editor.text = challenge.starter_code if challenge != null else ""
 	console_output.text = "[color=%s]// Write code to attack![/color]\n" % CyberStyleBox.hex(CyberStyleBox.TEXT_DIM)
 	visible = true
 	code_editor.grab_focus()
+	_refresh_contract()
+
+
+## El contrato del ejercicio: que hay que hacer, con que firma, que
+## estructuras exige el analizador y como se ve un caso resuelto.
+##
+## ponytail: TODO esto ya estaba en los datos del challenge (prompt,
+## function_signature, ast_required_features, test_cases) pero NADA lo
+## mostraba. El jugador peleaba contra una tarea invisible.
+func _refresh_contract() -> void:
+	if _challenge == null:
+		contract_text.text = ""
+		return
+	var green: String = CyberStyleBox.hex(CyberStyleBox.GREEN)
+	var amber: String = CyberStyleBox.hex(CyberStyleBox.AMBER)
+	var dim: String = CyberStyleBox.hex(CyberStyleBox.TEXT_DIM)
+	var lines: Array[String] = []
+
+	lines.append("[color=%s]OBJETIVO[/color]  %s" % [green, _escape_bbcode(_challenge.prompt)])
+	lines.append("[color=%s]FIRMA[/color]     %s" % [green, _escape_bbcode(_challenge.function_signature)])
+
+	# Los requisitos con el tick en vivo: el jugador ve lo que falta
+	# ANTES de submitir, no despues del error.
+	var status: Dictionary = AstValidator.feature_status(_last_ast())
+	var req: Array[String] = []
+	for feature in _challenge.ast_required_features:
+		var ok: bool = bool(status.get(String(feature), false))
+		var mark: String = "[color=%s]✓[/color]" % green if ok else "[color=%s]○[/color]" % amber
+		req.append("%s %s" % [mark, AstValidator.feature_label(String(feature))])
+	lines.append("[color=%s]REQUIERE[/color]  %s" % [green, "   ".join(req)])
+
+	var examples: Array[String] = []
+	for test in _challenge.test_cases:
+		if examples.size() >= 2:
+			break
+		examples.append(_format_example(test))
+	if examples.size() > 0:
+		lines.append("[color=%s]EJEMPLOS[/color]  %s" % [green, "    ".join(examples)])
+	else:
+		lines.append("[color=%s]EJEMPLOS[/color]  [color=%s]el analizador solo pide que compiles[/color]" % [green, dim])
+
+	contract_text.text = "\n".join(lines)
+
+
+## Un caso resuelto, en sintaxis C++: climbStairs(3) → 3.
+func _format_example(test: TestCase) -> String:
+	var args: Array[String] = []
+	for value in test.inputs:
+		args.append(_format_value(value))
+	return "%s(%s) → %s" % [
+		_challenge.function_name_hint, ", ".join(args), _format_value(test.expected)]
+
+
+func _format_value(value: Variant) -> String:
+	if value is Array:
+		var parts: Array[String] = []
+		for item in value:
+			parts.append(str(item))
+		return "{%s}" % ", ".join(parts)
+	return str(value)
+
+
+func _escape_bbcode(text: String) -> String:
+	return text.replace("[", "[lb]")
+
+
+## El ultimo AST que se calculo del codigo del jugador.
+func _last_ast() -> Dictionary:
+	if _challenge == null:
+		return {}
+	return AstValidator.validate(code_editor.text, _challenge)
+
+
+func _on_code_text_changed() -> void:
+	checklist_timer.start()
+
+
+func _on_checklist_timer_timeout() -> void:
+	_refresh_contract()
+
 
 func close() -> void:
 	visible = false
@@ -94,6 +191,10 @@ func _on_submit_pressed() -> void:
 		return
 	_is_locked = true
 	submit_button.disabled = true
+	# ponytail: el checklist se refresca tambien en el submit. El timer de
+	# debounce puede no haber disparado todavia y el contrato que ve el
+	# jugador tiene que ser el del codigo que va a hacer falta.
+	_refresh_contract()
 	console_output.append_text("[color=%s]>> Compiling and running...[/color]\n" % CyberStyleBox.hex(CyberStyleBox.AMBER))
 	CodeCompiler.compile_and_execute(_challenge_id, code_editor.text)
 
