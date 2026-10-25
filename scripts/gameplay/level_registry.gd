@@ -26,6 +26,13 @@ const LEVELS: Array[Dictionary] = [
 		"unlocked": false,
 		"script": preload("res://data/levels/level_02.gd"),
 	},
+	{
+		"id": "level_03",
+		"name": "Distrito Neón: El Bucle",
+		"chapter": "Distrito Neón",
+		"unlocked": false,
+		"script": preload("res://data/levels/level_03.gd"),
+	},
 ]
 
 

@@ -60,6 +60,20 @@ func _run() -> void:
 			"the level '%s' starts with a catalog enemy ('%s')"
 				% [id, String(enemies[0].get("id", ""))])
 
+		# El invariante que mas duele cuando se rompe: un enemigo del
+		# nivel tiene que pertenecer al skill del capitulo. Si no, el
+		# gate por skill deja el nivel VACIO (nadie puede pelear) o deja
+		# una pelea de otro capitulo.
+		var skill_id: StringName = data.get("requires_skill", &"")
+		if skill_id != &"":
+			var node = SkillTree.skills.get(skill_id, null)
+			_check(node != null, "the level '%s' names a skill that exists (%s)" % [id, skill_id])
+			if node != null:
+				for spot in enemies:
+					var enemy_id: String = String(spot.get("id", ""))
+					_check(enemy_id in node.enemies_unlocked,
+						"the level '%s' only fights the enemies of '%s' ('%s')" % [id, skill_id, enemy_id])
+
 	print("\n========== LEVEL GUARD ==========")
 	for p in _passed:
 		print("  PASS: ", p)
