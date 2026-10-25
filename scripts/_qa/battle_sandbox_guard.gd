@@ -109,6 +109,24 @@ func _run() -> void:
 	_check(String(terminal.get("_challenge_id")) == "simple_dp",
 		"the editor opened with the enemy's challenge (%s)" % String(terminal.get("_challenge_id")))
 
+	# --- 0. el checklist en vivo ---------------------------------------------
+	# El checklist lee el AST, y el AST viene de clang en un proceso aparte:
+	# el refresh es una corrutina. Si ese camino se rompe, el jugador deja
+	# de ver que le falta y solo se entera al submitir.
+	var contract: RichTextLabel = terminal.get_node_or_null("Panel/Contract/ContractText")
+	_check(contract != null, "the battle shows the contract")
+	if contract != null:
+		# el debounce son 0.25 s y clang tarda ~100 ms: hay que esperar.
+		await get_tree().create_timer(1.2).timeout
+		var text: String = contract.text
+		_check(text.contains("REQUIERE"),
+			"the contract lists what the challenge requires")
+		_check(text.contains("bucle"),
+			"the checklist names the missing structure in the player's language")
+		# con el starter code (que no tiene bucle) el tick del bucle va vacio
+		_check(not text.contains("✓ un bucle"),
+			"the starter code does not tick the loop it does not have")
+
 	# --- 1. la solucion correcta le hace dano al enemigo ---------------------
 	var hp_before: int = GameManager.get_hp("enemy")
 	editor.text = CORRECT
