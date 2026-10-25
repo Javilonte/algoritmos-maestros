@@ -21,6 +21,12 @@ enum BattlePhase { IDLE, EDITING, COMPILING, EXECUTING, RESOLVING, ENEMY_TURN, F
 @onready var message_panel: PanelContainer = $BattleArena/MessagePanel
 
 const ENEMY_AUTO_DAMAGE: int = 12
+## Cada punto de dificultad hace el error de algoritmo mas caro. Con 100 de
+## vida: un challenge d1 aguanta 7 errores, uno d7 aguanta 3.
+const ENEMY_DAMAGE_PER_DIFFICULTY: int = 2
+## Acertar el algoritmo cura: sin esto, una pelea larga es una cuenta
+## regresiva a la muerte sin ninguna parte positiva.
+const HEAL_ON_SUCCESS_RATIO: float = 0.15
 const SHAKE_DURATION: float = 0.35
 const SCREEN_SHAKE_INTENSITY := Vector2(8, 6)
 
@@ -28,6 +34,12 @@ var _enemy_data: Dictionary = {}
 var _phase: BattlePhase = BattlePhase.IDLE
 var _is_animating: bool = false
 var _turn_start_ms: int = 0
+## El reloj mide la DECISION, no la escritura: arranca en el primer submit.
+## Antes de eso el jugador escribe sin reloj (ver _process).
+var _decision_start_ms: int = 0
+var _clock_running: bool = false
+var _attempts: int = 0
+var _time_expired_shown: bool = false
 var _challenge: ChallengeResource = null
 var _arena_original_pos: Vector2 = Vector2.ZERO
 var _active_shake_tween: Tween = null
@@ -93,7 +105,13 @@ func _process(_delta: float) -> void:
 	if challenge_id.is_empty():
 		return
 	var time_limit_ms: int = _challenge.time_limit_ms
-	var elapsed: int = Time.get_ticks_msec() - _turn_start_ms
+	# ponytail: hasta el primer submit el reloj esta CONGELADO. El jugador
+	# tiene que pensar y escribir sin que le corra el tiempo: el limite
+	# de 30 s era para escribir una funcion, no para resolver un problema
+	# de programacion dinamica.
+	var elapsed: int = 0
+	if _clock_running:
+		elapsed = Time.get_ticks_msec() - _decision_start_ms
 	var remaining: int = max(0, time_limit_ms - elapsed)
 	battle_timer_label.text = "%d" % int(ceil(remaining / 1000.0))
 	var ratio: float = float(remaining) / float(time_limit_ms)
@@ -110,6 +128,10 @@ func _on_battle_requested(enemy_data: Dictionary) -> void:
 	_turn_start_ms = 0
 	battle_arena.position = _arena_original_pos
 	_enemy_data = enemy_data
+	_clock_running = false
+	_decision_start_ms = 0
+	_attempts = 0
+	_time_expired_shown = false
 	# ponytail: resolve the challenge BEFORE start_battle(). The old order
 	# reset both HP pools and pushed the FSM into BATTLE, then returned on an
 	# unknown id — leaving the game in a battle state that never began.
@@ -149,6 +171,11 @@ func _on_battle_requested(enemy_data: Dictionary) -> void:
 func _start_player_turn() -> void:
 	_phase = BattlePhase.EDITING
 	_turn_start_ms = Time.get_ticks_msec()
+	# ponytail: el reloj NO se reinicia en cada turno. Si se reiniciara,
+	# mediria el tiempo de compilacion — la velocidad de la maquina — que
+	# no significa nada. Medir la decision quiere decir: desde el primer
+	# submit hasta el acierto, y ahi el reloj cruza los intentos.
+	_time_expired_shown = false
 	_is_animating = false
 	# ponytail: do not reveal the action menu while the BattleTerminal is
 	# still up. The terminal is a CanvasLayer at 11 with a full-screen dimmer
@@ -189,7 +216,13 @@ func _on_code_executed(result) -> void:
 	_phase = BattlePhase.EXECUTING
 	_active_chain += 1
 	var chain_id: int = _active_chain
-	var elapsed: int = Time.get_ticks_msec() - _turn_start_ms
+	_attempts += 1
+	# ponytail: el reloj arranca en el PRIMER submit. Antes de eso esta
+	# congelado: escribir el codigo no consume tiempo.
+	if not _clock_running:
+		_clock_running = true
+		_decision_start_ms = Time.get_ticks_msec()
+	var elapsed: int = Time.get_ticks_msec() - _decision_start_ms
 	var combo: int = GameManager.get_combo_count()
 	var roll: DamageRoll = ScoringEngine.calculate_damage(result, _challenge, elapsed, combo)
 	EventBus.damage_calculated.emit(roll)
@@ -199,16 +232,23 @@ func _on_code_executed(result) -> void:
 	await get_tree().create_timer(0.2, true).timeout
 	if not _is_chain_alive(chain_id):
 		return
+	# ponytail: tres desenlaces y NO son el mismo. El codigo que todavia no
+	# esta listo (le falta una estructura o no compila) no le hace dano a
+	# nadie: no es un error del jugador, es codigo a medio hacer. Un
+	# algoritmo que corre y da la respuesta equivocada SI es un error, y
+	# el enemigo contraataca.
+	var kind: String = String(result.failure_kind)
 	if roll.amount > 0:
-		await _on_compile_success(roll, chain_id)
+		await _on_attack_success(roll, chain_id)
 	else:
-		await _on_compile_fail(chain_id)
+		await _on_not_ready(kind, chain_id)
 	if not _is_chain_alive(chain_id):
 		return
-	_phase = BattlePhase.ENEMY_TURN
-	await _enemy_turn(chain_id)
-	if not _is_chain_alive(chain_id):
-		return
+	if kind == "algorithm":
+		_phase = BattlePhase.ENEMY_TURN
+		await _enemy_turn(chain_id, _error_damage())
+		if not _is_chain_alive(chain_id):
+			return
 	_start_player_turn()
 	if chain_id == _active_chain:
 		_is_animating = false
@@ -238,10 +278,13 @@ func _play_sfx(stream: AudioStream) -> void:
 
 ## ponytail: extracted from _on_code_executed — handles the
 ## "code compiled and dealt damage" path.
-func _on_compile_success(roll: DamageRoll, chain_id: int) -> void:
+func _on_attack_success(roll: DamageRoll, chain_id: int) -> void:
 	GameManager.apply_damage("enemy", roll.amount)
 	GameManager.increment_combo()
-	_set_message("Code compiled! [color=#%s]%d dmg [TIER %s][/color]" % [_color_hex(roll.quality_tier), roll.amount, roll.quality_tier])
+	var heal: int = int(GameManager.player_max_hp * HEAL_ON_SUCCESS_RATIO)
+	if heal > 0:
+		GameManager.heal_player(heal)
+	_set_message("Code compiled! [color=#%s]%d dmg [TIER %s][/color]  +%d hp" % [_color_hex(roll.quality_tier), roll.amount, roll.quality_tier, heal])
 	DamageNumber.spawn(damage_layer, enemy_portrait.global_position + Vector2(0, -120), roll)
 	enemy_portrait.flash_hurt()
 	_play_sfx(AudioManager.hit(true))
@@ -257,45 +300,46 @@ func _on_compile_success(roll: DamageRoll, chain_id: int) -> void:
 	# runs it for both branches (:157). Adding it here dealt double damage.
 
 
-## ponytail: extracted from _on_code_executed — handles the
-## "compile failed" path. No damage to enemy, player gets punished.
-func _on_compile_fail(chain_id: int) -> void:
+## ponytail: extracted from _on_code_executed — handles the "your code is
+## not ready yet" path. NO damage: to the enemy (it does not compile) nor
+## to the player (nobody was hit, the code was just not ready). El
+## castigo lo tiene el error de algoritmo, que si es un error de verdad.
+func _on_not_ready(kind: String, chain_id: int) -> void:
 	GameManager.reset_combo()
-	_set_message("[color=#ff6666]Compile failed. Enemy takes advantage![/color]")
-	var zero_roll := DamageRoll.new()
-	zero_roll.amount = 0
-	zero_roll.quality_tier = "X"
-	zero_roll.source_side = "player"
-	DamageNumber.spawn(damage_layer, player_portrait.global_position + Vector2(0, -120), zero_roll)
-	player_portrait.flash_hurt()
-	_play_sfx(AudioManager.hit(false))
+	if kind == "compile":
+		_set_message("[color=#ffaa00]No compila todavia. El enemigo espera.[/color]")
+	else:
+		_set_message("[color=#ffaa00]Tu codigo todavia no esta listo. El enemigo espera.[/color]")
 	await get_tree().create_timer(0.5, true).timeout
 
+## ponytail: el reloj expirado ya NO golpea. El tiempo que se tardo en
+## decidir se paga con el BONUS de velocidad (el time_factor), no con
+## vida: si pensar Slowly te matara, el juego seria una carrera contra el
+## reloj y no una pelea.
 func _on_battle_timer_expired() -> void:
-	if _phase != BattlePhase.EDITING or _is_animating:
+	if _phase != BattlePhase.EDITING or _is_animating or _time_expired_shown:
 		return
-	_is_animating = true
-	battle_timer_label.visible = false
-	battle_timer_bar.visible = false
-	_set_message("[color=#ffaa00]Time's up! Enemy strikes![/color]")
-	GameManager.reset_combo()
-	_play_sfx(AudioManager.hit(false))
-	_phase = BattlePhase.ENEMY_TURN
-	_active_chain += 1
-	var chain_id: int = _active_chain
-	await get_tree().create_timer(0.5, true).timeout
-	if chain_id != _active_chain or _phase == BattlePhase.FINISHED:
-		return
-	await _enemy_turn(chain_id)
-	if chain_id != _active_chain or _phase == BattlePhase.FINISHED:
-		return
-	_start_player_turn()
-	if chain_id == _active_chain:
-		_is_animating = false
+	_time_expired_shown = true
+	_set_message("[color=#ffaa00]Se acabo el tiempo: tu golpe pega mas flojo[/color]")
 
-func _enemy_turn(_chain_id: int) -> void:
-	_set_message("%s counter-attacks!" % String(_enemy_data.get("display_name", "Enemy")))
-	var damage: int = ENEMY_AUTO_DAMAGE
+
+## Cuantos errores mas puede cometer el jugador con la vida que le queda.
+func _attempts_left() -> int:
+	var dmg: int = _error_damage()
+	if dmg <= 0:
+		return 99
+	return int(GameManager.get_hp("player") / dmg)
+
+
+## Lo que cuesta un error de algoritmo. Escala con la dificultad del
+## challenge: el cap 09 no puede fallar 7 veces como el tutorial.
+func _error_damage() -> int:
+	var diff: int = int(_challenge.difficulty) if _challenge != null else 1
+	return ENEMY_AUTO_DAMAGE + ENEMY_DAMAGE_PER_DIFFICULTY * diff
+
+func _enemy_turn(_chain_id: int, damage: int) -> void:
+	_set_message("%s hits you for %d — attempt %d, you can still make %d more" % [
+		String(_enemy_data.get("display_name", "Enemy")), damage, _attempts, _attempts_left()])
 	GameManager.apply_damage("player", damage)
 	var enemy_roll := DamageRoll.new()
 	enemy_roll.amount = damage

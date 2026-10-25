@@ -22,15 +22,18 @@ static func calculate_damage(result: TestResult, challenge: ChallengeResource, e
 		return roll
 
 	var pass_ratio: float = float(result.passed) / float(result.total)
+	# ponytail: el factor de tiempo va de 1.0 a 0.7 y NO a 0.1. Con el
+	# reloj congelado mientras se escribe, el tiempo que se mide es el de
+	# DECIDIR: si pensar slowly te dejara sin daño util, la pelea seria
+	# una carrera contra el reloj. El tiempo decide el CRIT, no la
+	# supervivencia.
 	var time_factor: float
 	if elapsed_ms < 5000:
 		time_factor = 1.0
 	elif elapsed_ms < 15000:
-		time_factor = 0.7
-	elif elapsed_ms < 25000:
-		time_factor = 0.4
+		time_factor = 0.85
 	else:
-		time_factor = 0.1
+		time_factor = 0.7
 
 	var diff_mult: float = 0.5 + (float(challenge.difficulty) / 10.0) * 1.5
 	var base: float = lerp(float(challenge.base_damage), float(challenge.perfect_damage), pass_ratio)

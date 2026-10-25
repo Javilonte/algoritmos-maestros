@@ -52,6 +52,7 @@ SCENE_GUARDS=(
   scenes/qa/cpp_sandbox_guard.tscn
   scenes/qa/battle_sandbox_guard.tscn
   scenes/qa/curriculum_guard.tscn
+  scenes/qa/battle_economy_guard.tscn
 )
 
 TOTAL=0

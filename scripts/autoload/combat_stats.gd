@@ -18,3 +18,6 @@ func reset_to(new_max_hp: int) -> void:
 
 func apply_damage(amount: int) -> void:
 	hp = max(0, hp - amount)
+
+func heal(amount: int) -> void:
+	hp = min(max_hp, hp + max(0, amount))

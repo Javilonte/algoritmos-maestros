@@ -83,6 +83,14 @@ func apply_damage(side: String, amount: int) -> void:
 		_player_stats.apply_damage(amount)
 		EventBus.hp_changed.emit("player", _player_stats.hp, _player_stats.max_hp)
 
+## Cura al jugador. Acertar el algoritmo devuelve vida: sin eso, una
+## pelea larga es solo una cuenta regresiva a la muerte.
+func heal_player(amount: int) -> void:
+	if amount <= 0:
+		return
+	_player_stats.heal(amount)
+	EventBus.hp_changed.emit("player", _player_stats.hp, _player_stats.max_hp)
+
 func reset_battle_state() -> void:
 	_player_stats.hp = _player_stats.max_hp
 	_enemy_stats.reset_to(0)

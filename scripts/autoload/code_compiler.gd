@@ -79,6 +79,7 @@ func _fail_structure(challenge_id: String, challenge: ChallengeResource, ast: Di
 	failed.errors.append("AST: " + msg)
 	failed.success = false
 	failed.ast_valid = false
+	failed.failure_kind = "shape"
 	failed.ast_quality = float(ast.get("quality", 0.0))
 	failed.ast_summary = String(ast.get("feature_summary", ""))
 	EventBus.code_executed.emit(failed)
@@ -99,6 +100,7 @@ func _fail_compile(challenge_id: String, challenge: ChallengeResource, ast: Dict
 	failed.errors.append("compile: " + msg)
 	failed.success = false
 	failed.ast_valid = true
+	failed.failure_kind = "compile"
 	failed.ast_quality = float(ast.get("quality", 0.0))
 	failed.ast_summary = String(ast.get("feature_summary", ""))
 	EventBus.code_executed.emit(failed)
@@ -138,4 +140,6 @@ func _result_from_sandbox(challenge_id: String, challenge: ChallengeResource, as
 			result.failed_test_names.append(test.name)
 		index += 1
 	result.success = result.passed == result.total and result.total > 0
+	if not result.success:
+		result.failure_kind = "algorithm"
 	return result
