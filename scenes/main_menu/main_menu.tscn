@@ -164,6 +164,11 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 10
 
+[node name="LevelsButton" parent="Body/CenterColumn/ActionGrid" instance=ExtResource("5_action")]
+custom_minimum_size = Vector2(300, 46)
+variant = "neutral"
+text = "NIVELES"
+
 [node name="OptionsButton" parent="Body/CenterColumn/ActionGrid/SecondaryRow" instance=ExtResource("5_action")]
 custom_minimum_size = Vector2(145, 46)
 variant = "subtle"

@@ -36,13 +36,20 @@ const ATLAS_H := TILE_H * ATLAS_ROWS  # 64
 # mazmorra negra: sus tonos de piedra (0.18, 0.15, 0.12) no se leen
 # como superficie sino como agujeros cuando el fondo es un cielo. Estos
 # tonos tienen cuerpo y separan del fondo por valor, no solo por borde.
-const GROUND_BODY := Color(0.32, 0.23, 0.17)
-const GROUND_BODY_DARK := Color(0.23, 0.16, 0.12)
-const GROUND_EDGE := Color(0.44, 0.57, 0.29)  # musgo de la superficie
-const STONE_BODY := Color(0.42, 0.44, 0.50)
-const STONE_EDGE := Color(0.60, 0.62, 0.68)
-const BRICK_BODY := Color(0.56, 0.29, 0.21)
-const BRICK_EDGE := Color(0.72, 0.42, 0.30)
+#
+# ponytail: la UI del juego ya es neón (CyberStyleBox) y el terreno era la
+# ultima pieza de la paleta de Diablo II: tierra marrón con musgo verde.
+# Ahora el terreno es una masa casi negra con el borde de superficie
+# iluminado en cyan — el skyline de cyberpunk de noche. El cuerpo es MAS
+# oscuro que el cielo a propósito: separa por valor, y el neon hace el
+# borde en vez del musgo.
+const GROUND_BODY := Color(0.07, 0.09, 0.14)
+const GROUND_BODY_DARK := Color(0.04, 0.05, 0.09)
+const GROUND_EDGE := Color(0.00, 0.85, 0.75)   # superficie iluminada
+const STONE_BODY := Color(0.11, 0.14, 0.20)
+const STONE_EDGE := Color(0.00, 0.52, 0.48)
+const BRICK_BODY := Color(0.15, 0.05, 0.13)
+const BRICK_EDGE := Color(0.85, 0.20, 0.85)   # magenta de advertencia
 const VOID := Color(0, 0, 0, 0)
 
 # IDs semanticos (coinciden con la posicion en el atlas).
@@ -67,16 +74,23 @@ static func build() -> Array:
 	var img := Image.create(ATLAS_W, ATLAS_H, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0, 0, 0, 0))
 
+	# ponytail: el ORDEN de pintado tiene que coincidir con los IDs
+	# semánticos (T_VOID=0, T_GROUND_TOP=1, ...), porque `_atlas(id)` mapea
+	# el id a la posición del atlas por id % 4, id / 4. Antes el orden
+	# estaba corrido una posición: la superficie pintaba el relleno plano y
+	# el tile con el borde iluminado (y el cristal) no se usaban nunca.
+	# Posición 0 = void de verdad, transparente y sin colisión.
+	img.fill_rect(Rect2i(0, 0, ATLAS_W, ATLAS_H), VOID)
+
 	# Fila superior: terreno.
-	_paint_ground_top(img, 0, 0)
-	_paint_ground_fill(img, 1, 0, GROUND_BODY)
-	_paint_ground_fill(img, 2, 0, GROUND_BODY_DARK)
-	_paint_block(img, 3, 0, STONE_BODY, STONE_EDGE)
+	_paint_ground_top(img, 1, 0)
+	_paint_ground_fill(img, 2, 0, GROUND_BODY)
+	_paint_ground_fill(img, 3, 0, GROUND_BODY_DARK)
+	_paint_block(img, 0, 1, STONE_BODY, STONE_EDGE)
 	# Fila inferior: bloques y acentos.
-	_paint_block(img, 0, 1, STONE_BODY.darkened(0.15), STONE_EDGE.darkened(0.2))
-	_paint_brick(img, 1, 1)
-	_paint_crystal(img, 2, 1)
-	_paint_block(img, 3, 1, GROUND_BODY_DARK, GROUND_EDGE.darkened(0.35))
+	_paint_block(img, 1, 1, STONE_BODY.darkened(0.15), STONE_EDGE.darkened(0.2))
+	_paint_brick(img, 2, 1)
+	_paint_crystal(img, 3, 1)
 
 	var texture := ImageTexture.create_from_image(img)
 	var tile_set := TileSet.new()
@@ -125,14 +139,14 @@ static func _add_box_collision(atlas: TileSetAtlasSource, pos: Vector2i) -> void
 	]))
 
 
-## Superficie de terreno: borde de musgo iluminado sobre tierra.
+## Superficie de terreno: borde neón iluminado sobre tierra oscura.
 static func _paint_ground_top(img: Image, col: int, row: int) -> void:
 	var ox := col * TILE_W
 	var oy := row * TILE_H
 	img.fill_rect(Rect2i(ox, oy, TILE_W, TILE_H), GROUND_BODY)
-	# Franja de superficie.
+	# Franja de superficie: la línea neón que dibuja el borde del suelo.
 	img.fill_rect(Rect2i(ox, oy, TILE_W, 5), GROUND_EDGE)
-	img.fill_rect(Rect2i(ox, oy + 5, TILE_W, 3), GROUND_EDGE.darkened(0.35))
+	img.fill_rect(Rect2i(ox, oy + 5, TILE_W, 3), GROUND_EDGE.darkened(0.45))
 	# Granos.
 	_dither(img, ox, oy + 10, GROUND_BODY_DARK, 5)
 

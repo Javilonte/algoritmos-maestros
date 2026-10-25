@@ -12,6 +12,9 @@ const MAX_COMBO: int = 5
 
 var current_challenge_id: String = ""
 var current_enemy_data: Dictionary = {}
+## Id del nivel que se va a cargar. Vacío = el mundo usa su nivel por
+## defecto. Lo elige la pantalla de selección de niveles.
+var current_level_id: String = ""
 
 var player_hp: int:
 	get:
