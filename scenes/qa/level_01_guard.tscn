@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/_qa/level_01_guard.gd" id="1_guard"]
+
+[node name="Level01Guard" type="Node"]
+script = ExtResource("1_guard")
