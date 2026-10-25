@@ -45,6 +45,7 @@ SCENE_GUARDS=(
   scenes/qa/platformer_guard.tscn
   scenes/qa/code_transition_guard.tscn
   scenes/qa/level_01_guard.tscn
+  scenes/qa/challenge_gate_guard.tscn
 )
 
 TOTAL=0

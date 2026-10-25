@@ -61,6 +61,6 @@ perfect_damage = 100
 tags = PackedStringArray("search", "array", "loop", "intermediate")
 runner_path = "res://data/challenges/binary_search_runner.gd"
 ast_min_statements = 4
-ast_required_features = PackedStringArray("loop", "return", "if")
+ast_required_features = PackedStringArray("loop", "return", "conditional")
 ast_return_substring = "int"
 validation_mode = "ast_oracle"

@@ -61,6 +61,6 @@ perfect_damage = 130
 tags = PackedStringArray("dp", "intermediate", "fibonacci")
 runner_path = "res://data/challenges/simple_dp_runner.gd"
 ast_min_statements = 5
-ast_required_features = PackedStringArray("loop", "return", "if")
+ast_required_features = PackedStringArray("loop", "return", "conditional")
 ast_return_substring = "int"
 validation_mode = "ast_oracle"
