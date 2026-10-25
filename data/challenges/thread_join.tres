@@ -45,6 +45,7 @@ time_limit_ms = 30000
 base_damage = 40
 perfect_damage = 145
 tags = PackedStringArray("concurrency", "thread", "advanced")
+skill_id = &"concurrency"
 runner_path = "res://data/challenges/thread_join_runner.gd"
 ast_min_statements = 4
 ast_required_features = PackedStringArray("loop", "call", "return")

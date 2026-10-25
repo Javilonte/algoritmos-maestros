@@ -52,6 +52,7 @@ time_limit_ms = 30000
 base_damage = 35
 perfect_damage = 130
 tags = PackedStringArray("template", "generics", "advanced")
+skill_id = &"templates"
 runner_path = "res://data/challenges/template_generic_runner.gd"
 ast_min_statements = 4
 ast_required_features = PackedStringArray("template", "loop", "conditional", "return")

@@ -59,6 +59,7 @@ time_limit_ms = 30000
 base_damage = 35
 perfect_damage = 130
 tags = PackedStringArray("dp", "intermediate", "fibonacci")
+skill_id = &"recursion"
 runner_path = "res://data/challenges/simple_dp_runner.gd"
 ast_min_statements = 5
 ast_required_features = PackedStringArray("loop", "return", "conditional")

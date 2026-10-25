@@ -160,6 +160,21 @@ func _register_defaults() -> void:
 	# al primer enemigo y el jugador vería un nivel vacío.
 	skills[_root_id].unlocked = true
 
+## El nombre, la descripcion y el nivel de un skill, para la UI.
+##
+## ponytail: el arbol ya sabia TODO esto (el nombre del skill, su descripcion
+## y su nivel) y la pelea no lo decia: el jugador enfrentaba una tarea sin
+## saber QUE estaba aprendiendo.
+func skill_info(skill_id: StringName) -> Dictionary:
+	var node = skills.get(skill_id, null)
+	if node == null:
+		return {}
+	return {
+		"name": node.display_name,
+		"desc": node.description,
+		"level": node.required_level,
+	}
+
 func _color_for_category(id: StringName) -> Color:
 	if id in [&"branch_pointers", &"ptr_if_else", &"ptr_arrays", &"ptr_dynamic"]:
 		return Color(0.9, 0.4, 0.4)

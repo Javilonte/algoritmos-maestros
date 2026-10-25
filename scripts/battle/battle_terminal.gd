@@ -122,6 +122,14 @@ func _refresh_contract() -> void:
 	lines.append("[color=%s]OBJETIVO[/color]  %s" % [green, _escape_bbcode(_challenge.prompt)])
 	lines.append("[color=%s]FIRMA[/color]     %s" % [green, _escape_bbcode(_challenge.function_signature)])
 
+	# QUE se esta practicando. El enunciado dice que hacer; esto dice para
+	# que sirve: el mismo concepto que el enemigo y el arbol de skills.
+	var info: Dictionary = SkillTree.skill_info(_challenge.skill_id)
+	if not info.is_empty():
+		lines.append("[color=%s]PRÁCTICA[/color]  %s — %s" % [
+			green, _escape_bbcode(String(info.get("name", ""))),
+			_escape_bbcode(String(info.get("desc", "")))])
+
 	# Los requisitos con el tick en vivo: el jugador ve lo que falta
 	# ANTES de submitir, no despues del error.
 	var status: Dictionary = AstValidator.feature_status(await _last_ast())

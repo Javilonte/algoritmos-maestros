@@ -59,4 +59,5 @@ time_limit_ms = 30000
 base_damage = 20
 perfect_damage = 80
 tags = PackedStringArray("sorting", "array", "beginner")
+skill_id = &"stl_functions"
 runner_path = "res://data/challenges/bubble_sort_runner.gd"

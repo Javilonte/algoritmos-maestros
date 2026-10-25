@@ -59,6 +59,7 @@ time_limit_ms = 30000
 base_damage = 30
 perfect_damage = 110
 tags = PackedStringArray("hash", "loop", "intermediate")
+skill_id = &"ptr_dynamic"
 runner_path = "res://data/challenges/hash_map_runner.gd"
 ast_min_statements = 3
 ast_required_features = PackedStringArray("loop", "return")

@@ -12,6 +12,10 @@ class_name ChallengeResource extends Resource
 @export var base_damage: int = 20
 @export var perfect_damage: int = 80
 @export var tags: PackedStringArray = PackedStringArray()
+## El skill que esta pelea practica. La pelea lo nombra (en el retrato del
+## enemigo y en el contrato del editor) para que el jugador sepa QUE esta
+## aprendiendo, no solo que tiene que escribir.
+@export var skill_id: StringName = &""
 @export var runner_path: String = ""
 
 # AST validation knobs (Phase 2 pipeline). Defaults are tolerant so existing

@@ -126,6 +126,18 @@ func _run() -> void:
 		# con el starter code (que no tiene bucle) el tick del bucle va vacio
 		_check(not text.contains("✓ un bucle"),
 			"the starter code does not tick the loop it does not have")
+		_check(text.contains("PRÁCTICA"),
+			"the contract says what the fight practices")
+		_check(text.contains("Recursión"),
+			"the contract names the concept (Recursión)")
+
+	# el enemigo tambien lo dice: "Lv 6 · Recursión"
+	var portrait: Node = battle.get_node_or_null("BattleArena/PortraitsRow/EnemyPortrait")
+	_check(portrait != null, "the battle has the enemy portrait")
+	if portrait != null:
+		_check(String(portrait.get("practice_concept")) == "Recursión",
+			"the enemy names the concept it practices (%s)"
+				% String(portrait.get("practice_concept")))
 
 	# --- 1. la solucion correcta le hace dano al enemigo ---------------------
 	var hp_before: int = GameManager.get_hp("enemy")

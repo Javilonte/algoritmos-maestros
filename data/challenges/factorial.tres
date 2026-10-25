@@ -45,6 +45,7 @@ time_limit_ms = 30000
 base_damage = 25
 perfect_damage = 90
 tags = PackedStringArray("recursion", "math", "intermediate")
+skill_id = &"stl_loops"
 runner_path = "res://data/challenges/factorial_runner.gd"
 ast_min_statements = 2
 ast_required_features = PackedStringArray("return")

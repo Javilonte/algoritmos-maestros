@@ -38,6 +38,8 @@ const ART_PADDING := SpriteInFrame.PADDING
 var _sprite: AnimatedSprite2D
 var _name_label: Label
 var _level_label: Label
+## El concepto que practica el enemigo ("Bucles", "Recursión"...).
+var practice_concept: String = ""
 var _hp_bar: HPBar
 var _hp_value_label: Label
 var _art: Panel
@@ -145,13 +147,16 @@ func _layout_sprite() -> void:
 
 
 ## Update the displayed name and level.
-func set_identity(name: String, p_level: int) -> void:
+## ponytail: el concepto va en el subtitulo: "Lv 3 · Bucles". El enemigo
+## tiene que decir QUE concepto practica, no solo como se llama.
+func set_identity(name: String, p_level: int, concept: String = "") -> void:
 	display_name = name
 	level = p_level
+	practice_concept = concept
 	if _name_label:
 		_name_label.text = name
 	if _level_label:
-		_level_label.text = "Lv %d" % p_level
+		_level_label.text = "Lv %d" % p_level if concept.is_empty() else "Lv %d · %s" % [p_level, concept]
 
 
 ## Update the HP bar.

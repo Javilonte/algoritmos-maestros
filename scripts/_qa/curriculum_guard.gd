@@ -41,6 +41,23 @@ const SECOND_PHASE: Dictionary = {
 	"wyrm_paralelo": "thread_join",
 }
 
+## El skill que cada challenge practica. Viene de la tabla del plan de
+## aprendizaje: cada challenge es el ejercicio de UN concepto.
+const SKILLS: Dictionary = {
+	"main_exit_check": "root_arithmetic",
+	"linear_search": "ptr_if_else",
+	"factorial": "stl_loops",
+	"binary_search": "ptr_arrays",
+	"bubble_sort": "stl_functions",
+	"use_std_sort": "stl_containers",
+	"hash_map": "ptr_dynamic",
+	"fibonacci": "recursion",
+	"simple_dp": "recursion",
+	"template_generic": "templates",
+	"thread_join": "concurrency",
+	"final_gate": "final_boss",
+}
+
 ## La solucion natural de cada challenge nuevo, en C++.
 const CANONICAL: Dictionary = {
 	"use_std_sort": """#include <algorithm>
@@ -114,6 +131,7 @@ func _ready() -> void:
 
 func _run() -> void:
 	_check_mapping()
+	_check_skills()
 	var sandbox := CppSandbox.new()
 	if sandbox.find_compiler().is_empty():
 		print("SKIP: no C++ compiler on this machine")
@@ -141,6 +159,25 @@ func _check_mapping() -> void:
 		var actual: String = String(data.get("challenge_id_next", ""))
 		_check("'%s' escalates to '%s'" % [enemy_id, expected], actual == expected)
 		_check("'%s' exists" % expected, ChallengeRegistry.has(expected))
+
+
+## Cada challenge dice que skill practica, y el skill existe.
+func _check_skills() -> void:
+	for id in SKILLS:
+		var challenge: ChallengeResource = ChallengeRegistry.get_by_id(id)
+		if challenge == null:
+			_failed.append("'%s' does not load" % id)
+			continue
+		var expected: String = String(SKILLS[id])
+		_check("'%s' practices '%s'" % [id, expected], String(challenge.skill_id) == expected)
+		_check("'%s' has a name in the skill tree" % expected, not SkillTree.skill_info(challenge.skill_id).is_empty())
+
+	# Ningun challenge sin concepto: la pelea tiene que decir QUE se
+	# practica, no solo que hay que escribir una funcion.
+	for id in ChallengeRegistry.list_all().map(func(c): return String(c.id)):
+		var challenge: ChallengeResource = ChallengeRegistry.get_by_id(id)
+		_check("'%s' declares a skill" % id, not String(challenge.skill_id).is_empty())
+		_check("'%s' skill exists" % id, not SkillTree.skill_info(challenge.skill_id).is_empty())
 
 
 ## La solucion natural de cada challenge nuevo: el gate la tiene que

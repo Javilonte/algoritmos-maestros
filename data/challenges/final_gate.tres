@@ -73,6 +73,7 @@ time_limit_ms = 30000
 base_damage = 45
 perfect_damage = 160
 tags = PackedStringArray("stl", "map", "sorting", "boss")
+skill_id = &"final_boss"
 runner_path = "res://data/challenges/final_gate_runner.gd"
 ast_min_statements = 6
 ast_required_features = PackedStringArray("loop", "conditional", "call", "return")

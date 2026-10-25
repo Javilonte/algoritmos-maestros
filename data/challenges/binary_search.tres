@@ -59,6 +59,7 @@ time_limit_ms = 30000
 base_damage = 25
 perfect_damage = 100
 tags = PackedStringArray("search", "array", "loop", "intermediate")
+skill_id = &"ptr_arrays"
 runner_path = "res://data/challenges/binary_search_runner.gd"
 ast_min_statements = 4
 ast_required_features = PackedStringArray("loop", "return", "conditional")

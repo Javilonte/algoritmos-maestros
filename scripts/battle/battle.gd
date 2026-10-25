@@ -146,7 +146,15 @@ func _on_battle_requested(enemy_data: Dictionary) -> void:
 	action_menu.visible = true
 	get_tree().paused = true
 	var display_name: String = String(enemy_data.get("display_name", "Unknown"))
-	enemy_portrait.set_identity(display_name, int(enemy_data.get("level", 1)))
+	# ponytail: el enemigo nombra el concepto que practica. El nivel sale
+	# del skill de la pelea (el enemigo_data nunca traia "level", asi que el
+	# retrato decia siempre "Lv 1").
+	var concept_info: Dictionary = SkillTree.skill_info(_challenge.skill_id) if _challenge != null else {}
+	var concept: String = String(concept_info.get("name", ""))
+	var enemy_level: int = int(enemy_data.get("level", 0))
+	if enemy_level <= 0:
+		enemy_level = int(concept_info.get("level", 1))
+	enemy_portrait.set_identity(display_name, enemy_level, concept)
 	player_portrait.set_identity("Player", 1)
 	_update_hp_bars()
 	_set_message("A wild %s appeared!" % display_name)

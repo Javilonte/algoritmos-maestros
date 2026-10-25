@@ -24,4 +24,5 @@ time_limit_ms = 30000
 base_damage = 20
 perfect_damage = 60
 tags = PackedStringArray("tutorial", "compile-only")
+skill_id = &"root_arithmetic"
 runner_path = "res://data/challenges/main_exit_check_runner.gd"
