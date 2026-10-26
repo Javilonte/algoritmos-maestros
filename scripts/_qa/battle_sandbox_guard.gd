@@ -83,6 +83,9 @@ func _start_battle(enemy_id: String, display_name: String, hp: int,
 	enemy.set("display_name", display_name)
 	enemy.set("max_hp", hp)
 	enemy.set("challenge_id", challenge_id)
+	# la segunda fase del enemigo (la hidra: fibonacci -> simple_dp)
+	enemy.set("challenge_id_next", "simple_dp" if enemy_id == "slime_aritm" else "")
+	enemy.set("enemy_id", enemy_id)
 	enemy.set("respawn_time", 30.0)
 	var battle := battle_scene.instantiate()
 	add_child(battle)
@@ -168,6 +171,18 @@ func _run() -> void:
 	await get_tree().create_timer(0.8).timeout
 	_check(GameManager.get_hp("enemy") < hp_before,
 		"the enemy loses HP: %d -> %d" % [hp_before, GameManager.get_hp("enemy")])
+
+	# --- 1b. el enemigo de dos fases ------------------------------------------
+	# Al vencerlo no desaparece: cambia de challenge y sigue en la arena.
+	# Es la mecanica del capitulo 07 (la hidra: fibonacci -> simple_dp).
+	var fought_enemy: Node = null
+	for child in get_tree().get_nodes_in_group("enemies"):
+		if String(child.get("enemy_id")) == "slime_aritm":
+			fought_enemy = child
+	if fought_enemy != null:
+		_check(String(fought_enemy.get("challenge_id")) == "simple_dp",
+			"the defeated enemy comes back with its next challenge (%s)"
+				% String(fought_enemy.get("challenge_id")))
 
 	# --- 2. una solucion incorrecta no le hace dano --------------------------
 	# La pelea sigue viva: se vuelve a pedir el mismo enemigo (el dato de
