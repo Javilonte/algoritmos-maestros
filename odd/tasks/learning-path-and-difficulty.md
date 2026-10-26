@@ -187,6 +187,23 @@ La espina del plan, en numeros de spec. Los valores salen de las tablas de arrib
 - T8 — Niveles 02 a 09. S-A. Route: inline. Un commit por nivel, con la geometría validada por el guard antes de commitear. **Nivel 02 HECHO (W9)**: "Distrito Neón: La Bifurcación" (11 tramos de suelo, 4 checkpoints, 7 plataformas, 4 encuentros de Buggo Ciego). El roster es del CAPÍTULO: solo el enemigo cuyo skill es el del capítulo. **Nivel 03 HECHO (W10)**: "Distrito Neón: El Bucle" (13 tramos, 5 checkpoints, 8 plataformas, 5 encuentros de Ogro del Bucle Infinito; el nivel baja tres filas y suma un estirón de 4). **Nivel 04 HECHO (W11)**: "Distrito Neón: El Índice" (15 tramos, 6 checkpoints, 12 plataformas de una y dos tiles, 5 encuentros de Fantasma Off-by-One; DOS estirones de 4). **Nivel 05 HECHO (W12)**: "Distrito Neón: La Ordenación" (16 tramos, 6 checkpoints, 14 plataformas, 5 encuentros de DOS enemigos: 3 Golem + 2 Dragón). Es el primer capitulo con dos skills: el nivel se abre con uno y el otro enemigo aparece dormido. **Nivel 06 HECHO (W13)**: "Distrito Neón: La Memoria" (12 tramos, 4 checkpoints, 8 plataformas, LA ARENA DEL JEFE: 40 tiles) — el primer jefe de capitulo (Memory Leak, 250 de vida, `hash_map`). **Nivel 07 HECHO (W14)**: "Distrito Neón: La Recursión" (12 tramos, 4 checkpoints, 8 plataformas, la arena de la Hidra) — el enemigo de DOS FASES: `fibonacci` y despues `simple_dp`, el mismo problema resuelto de otra forma. **Nivel 08 HECHO (W15)**: "Distrito Neón: Los Hilos" (13 tramos, 5 checkpoints, 8 plataformas, la arena del Wyrm) — segundo capitulo con dos skills y segundo enemigo de dos fases (`template_generic` -> `thread_join`). **Nivel 09 HECHO (W15)**: "Distrito Neón: El Compilador" (17 tramos, 6 checkpoints, 15 plataformas, TRES estirones de 4, la arena final de 40 tiles) — el Compilador Divino, 500 de vida, `final_gate`. **CERRADO: los 9 niveles del plan existen.**
 - T13 — **HECHO (W9)**: el gate de los NIVELES. El flag `unlocked` del registro era estático: con el nivel 02 agregado, quedaba bloqueado para siempre. Ahora un nivel se abre con el skill de su capítulo — el MISMO gate que los enemigos — y la pantalla de niveles dice qué skill falta ("BLOQUEADO · Control de Flujo").
 
+## La distribucion (para cuando el juego se exporte)
+
+El sandbox exige un compilador de C++ en la maquina del jugador. Hoy eso esta resuelto con "el jugador instala clang", lo cual para un amigo que juega es una barrera bárbara (LLVM en Windows son ~400 MB de instalador).
+
+Los caminos, con lo que pesan de verdad:
+
+| | Que necesita el jugador | Peso extra | Fidelidad |
+|---|---|---|---|
+| A. Instalar clang (hoy) | un toolchain | 0 | real |
+| B. Empaquetar el toolchain (`tools/` en el juego) | nada | 50-100 MB por plataforma | real |
+| C. Interpretador propio (tree-sitter + interprete) | nada | 2-6 MB | **simulada** |
+| D. Judge remoto | red + clave | 0 | real | (descartado: el juego es offline) |
+
+El peso de C++ no esta en el parser: esta en el backend + el linker + el runtime. Por eso no hay un tercer camino.
+
+**El bloqueo previo**: el juego NUNCA se exporto (`export_presets.cfg` no existe, las plantillas de export no estan instaladas). Sin un ejecutable no hay nada que empaquetar ni que decidir.
+
 ## Open
 
 - T9 — ¿Las ramas del SkillTree son variantes de capítulo (roster por rama) o se aplanan en una espina única? Es la decisión de diseño más grande del plan y cambia el costo de T8 de 8 niveles a ~13.
