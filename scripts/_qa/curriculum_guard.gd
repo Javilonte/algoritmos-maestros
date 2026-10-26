@@ -103,6 +103,15 @@ int sumInThreads(int n) {
     }
     return total;
 }""",
+	"hash_map": """#include <unordered_map>
+
+int countUnique(vector<int> arr) {
+    std::unordered_map<int, int> seen;
+    for (int v : arr) {
+        seen[v] = 1;
+    }
+    return (int)seen.size();
+}""",
 	"final_gate": """#include <algorithm>
 #include <unordered_map>
 

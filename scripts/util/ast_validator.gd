@@ -35,11 +35,17 @@ const AST_VALID_LOOKUP_ERRORS := {
 # Los kinds de clang que cuentan como statement. Mismo criterio que el
 # contador de tree-sitter: una declaracion, una expresion, las estructuras
 # de control y los bloques.
+# ponytail: el range-for de clang se llama CXXForRangeStmt, NO
+# RangeForStmt. tree-sitter lo llamaba "range_for_statement" y la
+# traduccion se coló: `for (int v : arr)` — la forma idiomatica de
+# iterar un vector — no contaba como bucle y el gate pedia uno. Un
+# jugador que escribiera el bucle mas natural de C++ recibia "Te falta:
+# un bucle".
 const STATEMENT_KINDS: Array[String] = [
 	"DeclStmt", "ExprStmt", "IfStmt", "ForStmt", "WhileStmt", "DoStmt",
-	"RangeForStmt", "ReturnStmt", "CompoundStmt",
+	"CXXForRangeStmt", "ReturnStmt", "CompoundStmt",
 ]
-const LOOP_KINDS: Array[String] = ["ForStmt", "WhileStmt", "DoStmt", "RangeForStmt"]
+const LOOP_KINDS: Array[String] = ["ForStmt", "WhileStmt", "DoStmt", "CXXForRangeStmt"]
 # ponytail: tree-sitter llamaba "call_expression" a TODO lo que se invoca.
 # clang lo parte en cuatro kinds: una llamada a funcion, una a un metodo, una
 # a un operador sobrecargado y la construccion de un objeto

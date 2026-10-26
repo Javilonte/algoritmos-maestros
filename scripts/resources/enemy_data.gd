@@ -10,6 +10,12 @@ extends Resource
 @export var respawn_time: float = 30.0
 @export var xp_reward: int = 50
 @export var enemy_id: String = ""
+## Es un jefe de capitulo. La pelea lo anuncia con un banner.
+##
+## ponytail: el flag NO existia en EnemyData (la pelea leia
+## `enemy_data.get("is_boss")` de un dict que nunca lo traia) y el
+## "BOSS ENCOUNTER" no se habia mostrado jamas. Sale del catalogo.
+@export var is_boss: bool = false
 
 ## Referencia al nodo Enemy en el mundo (no se serializa).
 ## ponytail: Node, not Enemy. Three unrelated enemy classes exist (Enemy,
@@ -36,6 +42,12 @@ static func create(
 	data.challenge_id = p_challenge_id
 	data.node = p_node
 	data.enemy_id = p_enemy_id
+	if not p_enemy_id.is_empty():
+		var catalog: Dictionary = EnemyCatalog.fetch(p_enemy_id)
+		if not catalog.is_empty():
+			data.is_boss = bool(catalog.get("is_boss", false))
+			if p_xp_reward < 0:
+				data.xp_reward = int(catalog.get("xp_reward", data.xp_reward))
 	if p_xp_reward >= 0:
 		data.xp_reward = p_xp_reward
 	data.challenge = ChallengeRegistry.get_by_id(p_challenge_id)
@@ -49,6 +61,7 @@ func to_dict() -> Dictionary:
 		"challenge_id": challenge_id,
 		"xp_reward": xp_reward,
 		"enemy_id": enemy_id,
+		"is_boss": is_boss,
 		"node": node,
 		"stdin": "",
 		"expected_output": "",

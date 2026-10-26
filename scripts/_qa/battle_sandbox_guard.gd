@@ -38,6 +38,17 @@ const WRONG := """int climbStairs(int n) {
     return total;
 }"""
 
+# La solucion canonica del hash_map (el challenge del Memory Leak).
+const HASH_MAP_SOLUTION := """#include <unordered_map>
+
+int countUnique(vector<int> arr) {
+    std::unordered_map<int, int> seen;
+    for (int v : arr) {
+        seen[v] = 1;
+    }
+    return (int)seen.size();
+}"""
+
 var _passed: Array = []
 var _failed: Array = []
 var _last_result: Variant = null
@@ -59,39 +70,43 @@ func _on_code_executed(result) -> void:
 	_last_result = result
 
 
-func _run() -> void:
-	if CppSandbox.new().find_compiler().is_empty():
-		print("SKIP: no C++ compiler on this machine")
-		_finish()
-		return
-
-	var battle_scene: PackedScene = load(BATTLE_SCENE)
+## Arranca una pelea y devuelve el nodo de la batalla.
+func _start_battle(enemy_id: String, display_name: String, hp: int,
+		challenge_id: String) -> Node:
 	var enemy_scene: PackedScene = load(ENEMY_SCENE)
-	if battle_scene == null or enemy_scene == null:
+	var battle_scene: PackedScene = load(BATTLE_SCENE)
+	if enemy_scene == null or battle_scene == null:
 		_failed.append("could not load battle or enemy scene")
-		_finish()
-		return
-
+		return null
 	var enemy := enemy_scene.instantiate()
 	add_child(enemy)
-	enemy.set("display_name", "Guard Slime")
-	enemy.set("max_hp", 80)
-	enemy.set("challenge_id", "simple_dp")
+	enemy.set("display_name", display_name)
+	enemy.set("max_hp", hp)
+	enemy.set("challenge_id", challenge_id)
 	enemy.set("respawn_time", 30.0)
-
 	var battle := battle_scene.instantiate()
 	add_child(battle)
-	var data := EnemyData.create("Guard Slime", 80, "simple_dp", enemy, "slime_aritm", 25)
+	var data := EnemyData.create(display_name, hp, challenge_id, enemy, enemy_id, -1)
 	battle.set("_enemy_data", data.to_dict())
 	# ponytail: la batalla arranca con el EVENTO, no con
 	# GameManager.start_battle: el challenge lo resuelve el battle a partir
 	# del enemy_data. Sin esto el editor se abria con su challenge por
 	# defecto (bubble_sort) y el AST buscaba la funcion equivocada.
 	EventBus.battle_requested.emit(data.to_dict())
-	# ponytail: la pelea entra en EDITING despues de una animacion de
-	# 0.8 s. Si se manda antes, "Attack" se ignora y el editor se queda
-	# con su challenge por defecto.
 	await _wait_for_phase(battle, Battle.BattlePhase.EDITING)
+	return battle
+
+
+func _run() -> void:
+	if CppSandbox.new().find_compiler().is_empty():
+		print("SKIP: no C++ compiler on this machine")
+		_finish()
+		return
+
+	var battle: Node = await _start_battle("slime_aritm", "Guard Slime", 80, "simple_dp")
+	if battle == null:
+		_finish()
+		return
 
 	var terminal := battle.get_node_or_null("BattleTerminal")
 	_check(terminal != null, "the battle has its code editor")
@@ -155,9 +170,9 @@ func _run() -> void:
 		"the enemy loses HP: %d -> %d" % [hp_before, GameManager.get_hp("enemy")])
 
 	# --- 2. una solucion incorrecta no le hace dano --------------------------
+	# La pelea sigue viva: se vuelve a pedir el mismo enemigo (el dato de
+	# la pelea sigue en el nodo) y se manda otra solucion.
 	GameManager.reset_battle_state()
-	EventBus.battle_requested.emit(data.to_dict())
-	await _wait_for_phase(battle, Battle.BattlePhase.EDITING)
 	battle.call("_on_attack_pressed")
 	await get_tree().process_frame
 	hp_before = GameManager.get_hp("enemy")
@@ -174,6 +189,40 @@ func _run() -> void:
 	await get_tree().create_timer(0.8).timeout
 	_check(GameManager.get_hp("enemy") == hp_before,
 		"a wrong solution does not damage the enemy")
+
+	# La primera pelea sigue viva (el turno del jugador sigue abierto) y
+	# escucharia el mismo evento: se la libera antes de la del jefe.
+	battle.queue_free()
+	await get_tree().process_frame
+
+	# --- 3. la pelea de jefe --------------------------------------------------
+	# El Memory Leak es el primer jefe de capitulo y su pelea nunca se habia
+	# fighteado: 250 de vida, el banner del jefe y otro challenge.
+	var boss: Node = await _start_battle("memory_leak", "Jefe: Memory Leak", 250, "hash_map")
+	if boss != null:
+		var banner_found: bool = false
+		var arena := boss.get_node_or_null("BattleArena")
+		if arena != null:
+			for child in arena.get_children():
+				if child.has_method("show_banner"):
+					banner_found = true
+		_check(banner_found, "the boss fight shows the BOSS ENCOUNTER banner")
+
+		var boss_terminal := boss.get_node_or_null("BattleTerminal")
+		var boss_editor: CodeEdit = boss_terminal.get_node("Panel/CodeEdit") if boss_terminal != null else null
+		_check(boss_editor != null, "the boss fight has a code editor")
+		if boss_editor != null:
+			boss.call("_on_attack_pressed")
+			await get_tree().process_frame
+			var boss_hp_before: int = GameManager.get_hp("enemy")
+			boss_editor.text = HASH_MAP_SOLUTION
+			boss_terminal.call("_on_submit_pressed")
+			var boss_result: Variant = await _wait_for_result()
+			_check(boss_result != null and bool(boss_result.success),
+				"the correct solution defeats the boss")
+			await get_tree().create_timer(0.8).timeout
+			_check(GameManager.get_hp("enemy") < boss_hp_before,
+				"the boss loses HP: %d -> %d" % [boss_hp_before, GameManager.get_hp("enemy")])
 
 	_finish()
 
