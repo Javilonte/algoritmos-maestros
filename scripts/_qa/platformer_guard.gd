@@ -24,6 +24,24 @@ func _ready() -> void:
 	call_deferred("_run")
 
 
+## El skyline del distrito tiene que verse a lo largo de todo el nivel.
+## ponytail: el culling comparaba coordenadas de MUNDO contra el ancho de
+## la viewport, asi que en cuanto la camara salia del origen se descartaba
+## todo el skyline. Se comprueba moviendo la camara.
+func _check_skyline(world: Node) -> void:
+	var city := world.get_node_or_null("City")
+	_check(city != null, "the world has the city backdrop")
+	if city == null:
+		return
+	_check(int(city.call("visible_count")) > 0, "the skyline has buildings at the start")
+	city.set("_cam_x", 3000.0)
+	_check(int(city.call("visible_count")) > 0,
+		"the skyline still has buildings 3000 px from the origin")
+	city.set("_cam_x", 8000.0)
+	_check(int(city.call("visible_count")) > 0,
+		"the skyline still has buildings at the end of the level")
+
+
 func _check(condition: bool, label: String) -> void:
 	if condition:
 		_passed.append(label)
@@ -43,6 +61,7 @@ func _run() -> void:
 	var battle: Node = world.get_node("Battle")
 
 	_check(ground.tile_set != null, "the world builds a TileSet")
+	_check_skyline(world)
 	_check(ground.get_used_cells().size() > 50,
 		"the level paints tiles (%d)" % ground.get_used_cells().size())
 	_check(world.get_node("Entities").get_child_count() >= 2,

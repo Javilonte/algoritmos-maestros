@@ -185,6 +185,22 @@ func _behavior() -> void:
 			unlocked = true
 			break
 	_check(unlocked, "the player can unlock a skill with the XP they earned")
+	# ponytail: el juego tiene que AVISAR que hay un skill pagable. Sin el
+	# aviso, ganarle al primer enemigo no hace nada visible: los demas
+	# siguen dormidos y el jugador no entiende por que.
+	var toast_found: bool = false
+	var toast_text: String = ""
+	for child in world.get_children():
+		if not child.has_method("show_message") or not child.visible:
+			continue
+		var text := String(child.get_node("Panel/Label").text)
+		if text.contains("SKILL"):
+			toast_found = true
+			toast_text = text
+			break
+	_check(toast_found, "the game tells the player that a skill is available")
+	_check(toast_text.contains("SKILL"),
+		"the notice says there is a skill to unlock (%s)" % toast_text)
 	await get_tree().process_frame
 	var ogre_after: Node = _find_enemy(spawned, "ogro_bucle")
 	_check(ogre_after != null and not bool(ogre_after.get("locked")),

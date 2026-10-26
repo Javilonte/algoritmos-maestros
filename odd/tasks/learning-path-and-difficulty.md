@@ -204,6 +204,12 @@ El peso de C++ no esta en el parser: esta en el backend + el linker + el runtime
 
 **El bloqueo previo**: el juego NUNCA se exporto (`export_presets.cfg` no existe, las plantillas de export no estan instaladas). Sin un ejecutable no hay nada que empaquetar ni que decidir.
 
+## Los bugs que jugando
+
+- L63 (2026-10-25) — User: "a pesar de que derroto al primer enemigo los demas siguen bloqueados". **Causa**: el gate de los enemigos es el ARBOL de skills, y la XP hay que gastarla ahi. Ganarle al slime no cambia nada solo: los enemigos siguen dormidos y el juego no decia por que. **Fix**: cuando hay un skill pagable aparece un aviso ("SKILL DISPONIBLE — Control de Flujo, abri el arbol con `"). El arbol sigue siendo decision del jugador: el juego avisa, no desbloquea.
+- L64 (2026-10-25) — User: "conforme avanzo en el mapa los edificios dejan de aparecer". **Causa**: el culling del skyline comparaba coordenadas de MUNDO contra el ancho de la viewport. El backdrop es hijo del mundo y hereda la camara, asi que en cuanto la camara salia del origen se descartaba TODOS los edificios: el distrito se vaciaba a media partida. **Fix**: el culling va en espacio de pantalla (world x menos la camara).
+- L65 — Verification: los dos bugs tienen guard, y los guards se probaron CON EL BUG PUESTO: el del skyline falla 2 asserts con el culling viejo y 0 con el nuevo (16/18 -> 18/18). El del aviso verifica que aparezca un toast visible con "SKILL" en el texto.
+
 ## Open
 
 - T9 — ¿Las ramas del SkillTree son variantes de capítulo (roster por rama) o se aplanan en una espina única? Es la decisión de diseño más grande del plan y cambia el costo de T8 de 8 niveles a ~13.

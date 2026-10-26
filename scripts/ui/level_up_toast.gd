@@ -41,6 +41,25 @@ func _on_level_changed(new_level: int) -> void:
 	show_level(new_level)
 
 
+## Public entry point: un mensaje cualquiera (no un leveling).
+func show_message(title: String, subtitle: String) -> void:
+	if _fade_tween != null and _fade_tween.is_valid():
+		_fade_tween.kill()
+	_label.text = title
+	_level_label.text = subtitle
+	visible = true
+	_panel.modulate = Color(1, 1, 1, 0)
+	_panel.scale = Vector2(0.8, 0.8)
+	_fade_tween = create_tween()
+	_fade_tween.set_parallel(true)
+	_fade_tween.tween_property(self, "modulate:a", 1.0, SLIDE_IN_DURATION)
+	_fade_tween.tween_property(_panel, "scale", Vector2.ONE, SLIDE_IN_DURATION)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_fade_tween.chain().tween_interval(SHOW_DURATION)
+	_fade_tween.chain().tween_property(self, "modulate:a", 0.0, FADE_OUT_DURATION)
+	_fade_tween.chain().tween_callback(queue_free)
+
+
 ## Public entry point. Slides the banner in, holds, then fades out.
 func show_level(new_level: int) -> void:
 	if _fade_tween != null and _fade_tween.is_valid():

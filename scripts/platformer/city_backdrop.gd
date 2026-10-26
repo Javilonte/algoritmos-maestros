@@ -75,17 +75,41 @@ func _build() -> void:
 
 
 func _draw() -> void:
-	var view: Vector2 = get_viewport_rect().size
 	for layer in _layers:
-		var factor: float = float(layer["factor"])
-		# El fondo se mueve MÁS LENTO que la cámara: se compensa con el
-		# factor (1 - f) sobre la posición de dibujo.
-		var offset: float = _cam_x * (1.0 - factor)
-		for building in layer["buildings"]:
-			var bx: float = float(building["x"]) + offset
-			if bx + float(building["w"]) < -80.0 or bx > view.x + 80.0:
-				continue
-			_draw_building(building, bx, layer)
+		for item in _visible(layer):
+			_draw_building(item["building"], item["x"], layer)
+
+
+## Los edificios de una capa que entran en pantalla, con su x en mundo.
+##
+## ponytail: el culling va en ESPACIO DE PANTALLA. El backdrop es hijo del
+## mundo y hereda la camara, asi que su x esta en coordenadas de mundo;
+## compararlo contra el ancho de la viewport descartaba TODOS los
+## edificios en cuanto la camara salia del origen y el skyline
+## desaparecia a media partida.
+func _visible(layer: Dictionary) -> Array:
+	var view: Vector2 = get_viewport_rect().size
+	var factor: float = float(layer["factor"])
+	# El fondo se mueve MÁS LENTO que la cámara: se compensa con el
+	# factor (1 - f) sobre la posición de dibujo.
+	var offset: float = _cam_x * (1.0 - factor)
+	var out: Array = []
+	for building in layer["buildings"]:
+		var bx: float = float(building["x"]) + offset
+		var screen_x: float = bx - _cam_x
+		if screen_x + float(building["w"]) < -80.0 or screen_x > view.x + 80.0:
+			continue
+		out.append({"building": building, "x": bx})
+	return out
+
+
+## Cuantos edificios se ven ahora. Lo usa el guard: con la camara en el
+## origen habia Buildings, pero al avanzar desaparecian todos.
+func visible_count() -> int:
+	var count: int = 0
+	for layer in _layers:
+		count += _visible(layer).size()
+	return count
 
 
 func _draw_building(building: Dictionary, bx: float, layer: Dictionary) -> void:

@@ -220,6 +220,25 @@ func can_unlock(skill_id: StringName) -> bool:
 			return false
 	return true
 
+## El skill bloqueado mas barato que el jugador ya puede pagar, o "" si
+## no hay ninguno.
+##
+## ponytail: sin esto, ganarle al primer enemigo no hacia NADA visible:
+## los siguientes seguian bloqueados y el juego no decia por que. La
+## respuesta es "abri el arbol y gastalo", y el juego tiene que decirlo.
+func first_affordable_skill() -> StringName:
+	var best: StringName = &""
+	var best_cost: int = 1 << 30
+	for skill_id in skills.keys():
+		if not can_unlock(skill_id):
+			continue
+		var node: SkillNode = skills[skill_id]
+		if node.cost_xp < best_cost:
+			best_cost = node.cost_xp
+			best = skill_id
+	return best
+
+
 func try_unlock(skill_id: StringName) -> bool:
 	if not can_unlock(skill_id):
 		var reason := "requirements not met"

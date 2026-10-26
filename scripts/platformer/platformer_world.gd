@@ -69,6 +69,30 @@ func _ready() -> void:
 	# forma de saber que un enemigo es dificil porque es dificil o porque
 	# el concepto no se enseno.
 	PlayLog.begin_level(_resolve_level_id())
+	# ponytail: ganarle al primer enemigo no hacia nada visible si los
+	# siguientes siguen bloqueados. El gate es el ARBOL de skills: la XP
+	# hay que gastarla ahi. El juego lo dice cuando hay algo pagable.
+	if not SkillTree.xp_changed.is_connected(_on_xp_changed_hint):
+		SkillTree.xp_changed.connect(_on_xp_changed_hint)
+
+
+## Avisa que hay un skill esperando. Sin esto el jugador derrota al
+## primer enemigo, ve que los demas siguen dormidos y no entiende por que.
+func _on_xp_changed_hint(_current_xp: int, _to_next: int) -> void:
+	var skill_id: StringName = SkillTree.first_affordable_skill()
+	if skill_id == &"":
+		return
+	var info: Dictionary = SkillTree.skill_info(skill_id)
+	var skill_name: String = String(info.get("name", ""))
+	if skill_name.is_empty():
+		return
+	var toast_scene: PackedScene = load("res://scenes/ui/level_up_toast.tscn") as PackedScene
+	if toast_scene == null:
+		return
+	var toast := toast_scene.instantiate()
+	add_child(toast)
+	if toast.has_method("show_message"):
+		toast.call("show_message", "SKILL DISPONIBLE", "%s — abrí el arbol con `" % skill_name)
 
 
 func _exit_tree() -> void:
