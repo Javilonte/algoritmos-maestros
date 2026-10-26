@@ -58,6 +58,22 @@ const SKILLS: Dictionary = {
 	"final_gate": "final_boss",
 }
 
+## Los turnos que cada enemigo deberia tardar en morir, segun la tabla del
+## plan ("turnos objetivo"). El knob es el HP del enemigo, no el dano del
+## challenge: subir el HP sube los turnos sin tocar la economia de dano.
+const TARGET_TURNS: Dictionary = {
+	"slime_aritm": 1,
+	"buggo_ciego": 2,
+	"ogro_bucle": 2,
+	"fantasma_offbyone": 2,
+	"memory_leak": 3,
+	"hidra_recursiva": 2,
+	"golem_generico": 2,
+	"dragon_caos": 3,
+	"wyrm_paralelo": 2,
+	"compilador_divino": 6,
+}
+
 ## La solucion natural de cada challenge nuevo, en C++.
 const CANONICAL: Dictionary = {
 	"use_std_sort": """#include <algorithm>
@@ -141,6 +157,7 @@ func _ready() -> void:
 func _run() -> void:
 	_check_mapping()
 	_check_skills()
+	_check_turns()
 	var sandbox := CppSandbox.new()
 	if sandbox.find_compiler().is_empty():
 		print("SKIP: no C++ compiler on this machine")
@@ -168,6 +185,34 @@ func _check_mapping() -> void:
 		var actual: String = String(data.get("challenge_id_next", ""))
 		_check("'%s' escalates to '%s'" % [enemy_id, expected], actual == expected)
 		_check("'%s' exists" % expected, ChallengeRegistry.has(expected))
+
+
+## Cada enemigo tarda los turnos que dice el plan. Se calcula con el motor
+## REAL (ScoringEngine) y el mejor caso: todos los tests pasan, rapido y
+## sin combo.
+func _check_turns() -> void:
+	for enemy_id in TARGET_TURNS:
+		var catalog: Dictionary = EnemyCatalog.fetch(enemy_id)
+		if catalog.is_empty():
+			_failed.append("'%s' is not in the catalog" % enemy_id)
+			continue
+		var challenge: ChallengeResource = ChallengeRegistry.get_by_id(
+			String(catalog.get("challenge_id", "")))
+		if challenge == null:
+			_failed.append("'%s' has no challenge" % enemy_id)
+			continue
+		var result := TestResult.new()
+		result.passed = challenge.test_cases.size()
+		result.total = challenge.test_cases.size()
+		result.ast_valid = true
+		result.ast_quality = 1.0
+		var roll: DamageRoll = ScoringEngine.calculate_damage(result, challenge, 0, 0)
+		var damage: int = maxi(int(roll.amount), 1)
+		var hp: int = int(catalog.get("max_hp", 0))
+		var turns: int = int(ceil(float(hp) / float(damage)))
+		_check("'%s' takes %d turns to kill (target %d: %d hp, %d dmg)"
+				% [enemy_id, turns, int(TARGET_TURNS[enemy_id]), hp, damage],
+			turns == int(TARGET_TURNS[enemy_id]))
 
 
 ## Cada challenge dice que skill practica, y el skill existe.

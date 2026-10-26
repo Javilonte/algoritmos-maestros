@@ -9,6 +9,11 @@ class_name EnemyCatalog
 ## shipped data/challenges/*.tres, so every dungeon battle resolved
 ## _challenge == null and could not start.
 ##
+## ponytail: los `max_hp` estan calibrados para que cada enemigo tarde los
+## TURNOS que dice el plan (la tabla "turnos objetivo"): el knob es el HP,
+## no el danio, porque subir el HP sube los turnos sin tocar la economia de
+## dano. `curriculum_guard` lo verifica con el motor real.
+##
 ## ponytail: el mapeo ahora es el CURRICULO (odd/tasks/
 ## learning-path-and-difficulty.md): cada enemigo pelea con el concepto de
 ## su capitulo. El tutorial es "escribi una funcion que compile", no el
@@ -19,7 +24,7 @@ class_name EnemyCatalog
 const CATALOG: Dictionary = {
 	"slime_aritm": {
 		"display_name": "Slime Aritmético",
-		"max_hp": 60,
+		"max_hp": 35,
 		"respawn_time": 25.0,
 		"challenge_id": "main_exit_check",
 		"element_weaknesses": {"arithmetic": 2.0, "control_flow": 1.0},
@@ -30,7 +35,7 @@ const CATALOG: Dictionary = {
 	},
 	"buggo_ciego": {
 		"display_name": "Buggo Ciego",
-		"max_hp": 80,
+		"max_hp": 150,
 		"respawn_time": 30.0,
 		"challenge_id": "linear_search",
 		"element_weaknesses": {"control_flow": 2.5, "arithmetic": 1.0},
@@ -41,7 +46,7 @@ const CATALOG: Dictionary = {
 	},
 	"ogro_bucle": {
 		"display_name": "Ogro del Bucle Infinito",
-		"max_hp": 100,
+		"max_hp": 200,
 		"respawn_time": 35.0,
 		"challenge_id": "factorial",
 		"element_weaknesses": {"control_flow": 2.0, "stl": 1.5},
@@ -52,7 +57,7 @@ const CATALOG: Dictionary = {
 	},
 	"fantasma_offbyone": {
 		"display_name": "Fantasma Off-by-One",
-		"max_hp": 90,
+		"max_hp": 150,
 		"respawn_time": 30.0,
 		"challenge_id": "binary_search",
 		"element_weaknesses": {"pointer": 2.0, "control_flow": 1.2},
@@ -63,7 +68,7 @@ const CATALOG: Dictionary = {
 	},
 	"memory_leak": {
 		"display_name": "Jefe: Memory Leak",
-		"max_hp": 250,
+		"max_hp": 400,
 		"respawn_time": 60.0,
 		"challenge_id": "hash_map",
 		"element_weaknesses": {"pointer": 3.0},
@@ -86,7 +91,7 @@ const CATALOG: Dictionary = {
 	},
 	"golem_generico": {
 		"display_name": "Golem Genérico",
-		"max_hp": 150,
+		"max_hp": 100,
 		"respawn_time": 45.0,
 		"challenge_id": "bubble_sort",
 		"element_weaknesses": {"template": 2.5},
@@ -97,7 +102,7 @@ const CATALOG: Dictionary = {
 	},
 	"dragon_caos": {
 		"display_name": "Dragón del Caos",
-		"max_hp": 220,
+		"max_hp": 350,
 		"respawn_time": 55.0,
 		"challenge_id": "use_std_sort",
 		"element_weaknesses": {"stl": 2.5, "control_flow": 1.5},
@@ -120,7 +125,7 @@ const CATALOG: Dictionary = {
 	},
 	"compilador_divino": {
 		"display_name": "Jefe Final: Compilador Divino",
-		"max_hp": 500,
+		"max_hp": 2000,
 		"respawn_time": 120.0,
 		"challenge_id": "final_gate",
 		"element_weaknesses": {"pointer": 2.0, "stl": 2.0, "template": 2.0, "concurrency": 2.0},
