@@ -74,7 +74,7 @@ grow_vertical = 2
 layout_mode = 2
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 14
-columns = 2
+columns = 3
 
 [node name="Footer" type="Panel" parent="."]
 layout_mode = 1

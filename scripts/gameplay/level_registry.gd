@@ -61,6 +61,20 @@ const LEVELS: Array[Dictionary] = [
 		"unlocked": false,
 		"script": preload("res://data/levels/level_07.gd"),
 	},
+	{
+		"id": "level_08",
+		"name": "Distrito Neón: Los Hilos",
+		"chapter": "Distrito Neón",
+		"unlocked": false,
+		"script": preload("res://data/levels/level_08.gd"),
+	},
+	{
+		"id": "level_09",
+		"name": "Distrito Neón: El Compilador",
+		"chapter": "Distrito Neón",
+		"unlocked": false,
+		"script": preload("res://data/levels/level_09.gd"),
+	},
 ]
 
 

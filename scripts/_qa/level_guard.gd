@@ -81,6 +81,28 @@ func _run() -> void:
 			_check(not owner_skill.is_empty(),
 				"the level '%s' only fights the enemies of its chapter skills ('%s')" % [id, enemy_id])
 
+	# --- la pantalla de niveles tiene que mostrar todos ----------------------
+	var select_scene: PackedScene = load("res://scenes/ui/level_select.tscn") as PackedScene
+	_check(select_scene != null, "the level select scene loads")
+	if select_scene != null:
+		var select := select_scene.instantiate()
+		add_child(select)
+		await get_tree().process_frame
+		await get_tree().process_frame
+		var grid := select.get_node_or_null("Body/Grid")
+		_check(grid != null, "the level select has a grid")
+		if grid != null:
+			_check(grid.get_child_count() == levels.size(),
+				"the level select shows every level (%d of %d)"
+					% [grid.get_child_count(), levels.size()])
+			# con nueve niveles y dos columnas eran cinco filas: la ultima se
+			# salia de la pantalla. Tres columnas, tres filas.
+			var columns: int = int(grid.get("columns")) if grid.get("columns") != null else 2
+			var rows: int = int(ceil(float(grid.get_child_count()) / float(maxi(columns, 1))))
+			_check(rows <= 4, "the level grid fits in %d rows (%d levels, %d columns)"
+				% [rows, grid.get_child_count(), columns])
+		select.queue_free()
+
 	print("\n========== LEVEL GUARD ==========")
 	for p in _passed:
 		print("  PASS: ", p)
