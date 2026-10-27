@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/battle/battle_terminal.gd" id="1_battle_term"]
 [ext_resource type="Script" path="res://scripts/ui/macro_bar_ui.gd" id="2_macro_bar"]
+[ext_resource type="Script" path="res://scripts/battle/snippet_code_edit.gd" id="3_snippet"]
 
 [node name="BattleTerminal" type="CanvasLayer"]
 process_mode = 3
@@ -76,13 +77,14 @@ bbcode_enabled = true
 scroll_active = false
 
 [node name="CodeEdit" type="CodeEdit" parent="Panel"]
+script = ExtResource("3_snippet")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 16.0
 offset_top = 160.0
-offset_right = -16.0
+offset_right = -250.0
 offset_bottom = -200.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -141,19 +143,24 @@ bbcode_enabled = true
 fit_content = true
 scroll_following = true
 
-[node name="MacroBar" type="HBoxContainer" parent="Panel"]
+[node name="ToolsScroll" type="ScrollContainer" parent="Panel"]
 layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
+anchors_preset = 11
+anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = -76.0
+offset_left = -234.0
+offset_top = 42.0
 offset_right = -16.0
-offset_bottom = -48.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_constants/separation = 8
+offset_bottom = -76.0
+grow_horizontal = 0
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="MacroBar" type="VBoxContainer" parent="Panel/ToolsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("2_macro_bar")
 
 [node name="SubmitButton" type="Button" parent="Panel"]

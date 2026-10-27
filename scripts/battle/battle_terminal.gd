@@ -15,12 +15,18 @@ signal back_pressed
 @onready var contract_panel: Panel = $Panel/Contract
 @onready var contract_text: RichTextLabel = $Panel/Contract/ContractText
 @onready var checklist_timer: Timer = $ChecklistTimer
+## El arsenal de la derecha: las herramientas que el jugador gano.
+@onready var tool_panel: MacroBarUI = $Panel/ToolsScroll/MacroBar
 
 var _challenge_id: String = "bubble_sort"
 var _challenge: ChallengeResource = null
 var _is_locked: bool = false
 
 func _ready() -> void:
+	# ponytail: el arsenal inserta en ESTE editor, no en el que este
+	# enfocado. El panel vive dentro del terminal, asi que lo sabe.
+	if tool_panel != null:
+		tool_panel.editor = code_editor
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_apply_cyber_style()

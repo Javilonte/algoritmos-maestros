@@ -210,6 +210,17 @@ El peso de C++ no esta en el parser: esta en el backend + el linker + el runtime
 - L64 (2026-10-25) — User: "conforme avanzo en el mapa los edificios dejan de aparecer". **Causa**: el culling del skyline comparaba coordenadas de MUNDO contra el ancho de la viewport. El backdrop es hijo del mundo y hereda la camara, asi que en cuanto la camara salia del origen se descartaba TODOS los edificios: el distrito se vaciaba a media partida. **Fix**: el culling va en espacio de pantalla (world x menos la camara).
 - L65 — Verification: los dos bugs tienen guard, y los guards se probaron CON EL BUG PUESTO: el del skyline falla 2 asserts con el culling viejo y 0 con el nuevo (16/18 -> 18/18). El del aviso verifica que aparezca un toast visible con "SKILL" en el texto.
 
+## El arsenal: herramientas que se ganan y se arrastran
+
+La pelea tiene una seccion a la derecha del editor: el ARSENAL. Cada herramienta es un fragmento de C++ (un `for`, un `if`, un `sort`, un mapa, un hilo) que el jugador **arrastra al editor** y se inserta en el cursor. Un clic tambien inserta: el arrastre es lo lindo, el clic es lo que funciona siempre.
+
+Las herramientas se ganan con la XP: cada skill trae la de su concepto (el de los bucles trae el `for` y el `while`, el de los contenedores el `sort` y el `vector`, el de las funciones el esqueleto del bubble sort, el de la memoria el mapa, el de la recursion el caso recursivo, el de templates la funcion generica, el de concurrencia el hilo). El enemigo que da la XP que abre el skill es el del capitulo, asi que en la practica **vencer al jefe te da la herramienta de su concepto**.
+
+- L67 (2026-10-25) — User: "quiero que rediseneis la pantalla de combate, que a la derecha de la terminal haya una seccion donde sea drag and drop para poder utilizar herramientas que se vayan ganando en el juego como modificadores corporales que permitan hacer loops, fors, ifs, de manera automatica sin tener que escribirlo". Habia una `MacroBarUI` (una fila de botones abajo, con seis macros que se ganaban con los skills) pero sin arrastre y con snippets pobreces. Ahora es un panel lateral con trece herramientas arrastrables, cada una con su nombre, su explicacion y de donde salio.
+- L68 — Evidence (W17, BUG): el panel insertaba con `insert_text_at_cursor`, que es de Godot 3 y NO existe en Godot 4 (el metodo es `insert_text_at_caret`). El insert nunca habia funcionado en esa ruta y no hacia falta que nadie lo notara: nadie lo habia probado. El guard nuevo lo atrapa.
+- L69 — Decision (W17): el editor es una subclase (`SnippetCodeEdit`) que acepta el drop de una herramienta. El `CodeEdit` de Godot solo acepta texto arrastrado, asi que sin la subclase el "drag and drop" no era posible.
+- L70 — Verification: W17 — suite 23/23 en verde. `tool_panel_guard` 24/24: cada macro de cada skill existe en la libreria, el arsenal arranca vacio y muestra lo desbloqueado, cada tarjeta dice de donde salio, el editor acepta la herramienta arrastrada y la inserta en el cursor sin borrar lo que ya estaba, y el clic tambien inserta.
+
 ## Open
 
 - T9 — ¿Las ramas del SkillTree son variantes de capítulo (roster por rama) o se aplanan en una espina única? Es la decisión de diseño más grande del plan y cambia el costo de T8 de 8 niveles a ~13.

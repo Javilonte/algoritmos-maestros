@@ -1,78 +1,155 @@
-extends HBoxContainer
+extends VBoxContainer
 class_name MacroBarUI
 
-## UI que muestra las macros desbloqueadas.
-## Se actualiza cuando el SkillTree (autoload /root/SkillTree) emite skill_unlocked.
+## El arsenal: las herramientas que el jugador gano, a la derecha del
+## editor. Cada una es un fragmento de C++ que se ARRASTRA al editor (o se
+## clica) y se inserta en el cursor.
 ##
-## ponytail: clicking a button now inserts the macro into the active
-## CodeEdit (the BattleTerminal's editor) — this was the missing piece
-## that made the bar visible-but-non-functional before.
+## ponytail: esto solia ser una barra horizontal de botones abajo, con
+## seis macros. El pedido era mejor: un panel lateral con herramientas
+## que se ganan, y arrastrables. Las herramientas siguen viniendo de los
+## SKILLS (cada skill trae la de su concepto: el de los bucles trae el
+## `for`), y cada enemigo del capitulo es el que da la XP que abre el
+## skill. El panel dice de donde salio cada una.
 
-var _buttons: Dictionary = {}
-var _tree: SkillTreeData
-
-## Map of macro name → text to insert at the cursor.
-## ponytail: keep the templates here so they're easy to extend without
-## touching SkillTree. The key is the macro identifier stored in
-## SkillNode.macros_unlocked.
-const MACRO_TEMPLATES: Dictionary = {
-	"sort":   "std::sort(arr.begin(), arr.end());",
-	"free":   "// free:",
-	"binary": "auto it = std::lower_bound(arr.begin(), arr.end(), target);\nif (it != arr.end() && *it == target) { /* found */ }",
-	"loop":   "for (int i = 0; i < n; i++) {\n    // ...\n}",
-	"hash":   "std::unordered_map<int, int> seen;\nfor (int v : arr) { seen[v]++; }",
-	"recursion": "return f(n - 1) + f(n - 2);",
+## Las herramientas: id -> {name, desc, code}.
+const TOOLS: Dictionary = {
+	"if": {
+		"name": "Si",
+		"desc": "Un if con su bloque.",
+		"code": "if (condicion) {\n    // ...\n}",
+	},
+	"if_else": {
+		"name": "Si / Sino",
+		"desc": "Las dos ramas del condicional.",
+		"code": "if (condicion) {\n    // ...\n} else {\n    // ...\n}",
+	},
+	"loop": {
+		"name": "For",
+		"desc": "El bucle con contador.",
+		"code": "for (int i = 0; i < n; i++) {\n    // ...\n}",
+	},
+	"while": {
+		"name": "While",
+		"desc": "Repite mientras la condicion siga siendo cierta.",
+		"code": "while (condicion) {\n    // ...\n}",
+	},
+	"range_for": {
+		"name": "For de coleccion",
+		"desc": "Recorre un vector, elemento por elemento.",
+		"code": "for (auto valor : coleccion) {\n    // ...\n}",
+	},
+	"vector": {
+		"name": "Vector",
+		"desc": "Un vector<int> vacio.",
+		"code": "std::vector<int> v;",
+	},
+	"bubble_sort": {
+		"name": "Bubble sort",
+		"desc": "El esqueleto del sort propio: dos bucles anidados.",
+		"code": "for (int i = 0; i < n - 1; i++) {\n    for (int j = 0; j < n - 1 - i; j++) {\n        if (arr[j] > arr[j + 1]) { std::swap(arr[j], arr[j + 1]); }\n    }\n}",
+	},
+	"sort": {
+		"name": "Ordenar",
+		"desc": "std::sort sobre un vector.",
+		"code": "std::sort(arr.begin(), arr.end());",
+	},
+	"binary": {
+		"name": "Buscar",
+		"desc": "lower_bound: buscar en un vector ordenado.",
+		"code": "auto it = std::lower_bound(arr.begin(), arr.end(), target);\nif (it != arr.end() && *it == target) { /* encontrado */ }",
+	},
+	"hash": {
+		"name": "Mapa",
+		"desc": "un unordered_map y el bucle que lo llena.",
+		"code": "std::unordered_map<int, int> seen;\nfor (int v : arr) { seen[v]++; }",
+	},
+	"free": {
+		"name": "Liberar",
+		"desc": "new y delete: la memoria que pediste, la devolvés.",
+		"code": "int* p = new int(0);\n// ...\ndelete p;",
+	},
+	"recursion": {
+		"name": "Recursion",
+		"desc": "El caso recursivo de f(n).",
+		"code": "return f(n - 1) + f(n - 2);",
+	},
+	"template": {
+		"name": "Template",
+		"desc": "Una funcion generica que sirve para cualquier tipo.",
+		"code": "template <typename T>\nT maximo(vector<T> v) {\n    T best = v[0];\n    for (auto x : v) { if (x > best) best = x; }\n    return best;\n}",
+	},
+	"thread": {
+		"name": "Hilo",
+		"desc": "Un std::thread y su join.",
+		"code": "std::thread t([&total]() { /* trabajo */ });\nt.join();",
+	},
 }
 
+## El editor al que se insertan las herramientas. El panel vive DENTRO del
+## terminal, asi que no tiene por que adivinar cual esta enfocado.
+var editor: CodeEdit = null
+
+var _cards: Array = []
+
+
 func _ready() -> void:
-	_tree = get_node_or_null("/root/SkillTree") as SkillTreeData
-	if _tree:
-		_tree.skill_unlocked.connect(_on_skill_unlocked)
-		_refresh()
+	_style()
+	var tree := get_node_or_null("/root/SkillTree") as SkillTreeData
+	if tree:
+		if not tree.skill_unlocked.is_connected(_on_skill_unlocked):
+			tree.skill_unlocked.connect(_on_skill_unlocked)
+	_refresh()
+
+
+func _style() -> void:
+	add_theme_constant_override("separation", 8)
+
 
 func _on_skill_unlocked(_skill_id: StringName) -> void:
 	_refresh()
 
+
 func _refresh() -> void:
-	if _tree == null:
-		return
 	for child in get_children():
 		child.queue_free()
-	_buttons.clear()
-	var macros := _tree.get_unlocked_macros()
-	for i in range(macros.size()):
-		var macro_name: String = macros[i]
-		var btn := Button.new()
-		btn.text = "Alt+%d %s" % [i + 1, macro_name]
-		btn.custom_minimum_size = Vector2(120, 28)
-		btn.tooltip_text = "Inserta macro '%s' en el cursor" % macro_name
-		# ponytail: el boton default de Godot es gris de sistema y rompia
-		# la paleta. El chip toma el verde de la terminal, que es donde
-		# vive la barra.
-		btn.add_theme_stylebox_override("normal", CyberStyleBox.chip(CyberStyleBox.GREEN))
-		btn.add_theme_stylebox_override("hover", CyberStyleBox.chip(CyberStyleBox.GREEN))
-		btn.add_theme_stylebox_override("pressed", CyberStyleBox.chip(CyberStyleBox.GREEN))
-		btn.add_theme_color_override("font_color", CyberStyleBox.TEXT_DIM)
-		btn.add_theme_color_override("font_hover_color", CyberStyleBox.GREEN)
-		btn.pressed.connect(_on_macro_button_pressed.bind(macro_name))
-		add_child(btn)
-		_buttons[macro_name] = btn
+	_cards.clear()
+	var tree := get_node_or_null("/root/SkillTree") as SkillTreeData
+	if tree == null:
+		return
+	var seen: Array = []
+	for macro_name in tree.get_unlocked_macros():
+		if macro_name in seen:
+			continue
+		seen.append(macro_name)
+		var data: Dictionary = TOOLS.get(macro_name, {})
+		if data.is_empty():
+			data = {"name": macro_name, "desc": "", "code": "// " + macro_name}
+		var card := ToolCard.new()
+		card.setup(macro_name, data, _origin_of(tree, macro_name))
+		card.insert_requested.connect(_on_insert_requested)
+		add_child(card)
+		_cards.append(card)
 
 
-## ponytail: button click handler — inserts the macro text into the
-## currently-focused CodeEdit. If no editor is focused, the macro is
-## pushed to the system clipboard as a fallback.
-func _on_macro_button_pressed(macro_name: String) -> void:
-	var template: String = String(MACRO_TEMPLATES.get(macro_name, "// " + macro_name))
-	var code_edit: CodeEdit = _find_active_code_edit()
+## De que skill vino la herramienta: el panel lo dice, para que el jugador
+## entienda por que la tiene.
+func _origin_of(tree: SkillTreeData, macro_name: String) -> String:
+	for skill_id in tree.skills.keys():
+		var node: SkillNode = tree.skills[skill_id]
+		if macro_name in node.macros_unlocked:
+			return "ganado con: %s" % node.display_name
+	return ""
+
+
+func _on_insert_requested(code: String) -> void:
+	print("      DEBUG panel: insert pedido, len=", code.length(), " code=[", code.substr(0, 30), "] editor=", editor)
+	var code_edit: CodeEdit = editor if editor != null else _find_active_code_edit()
 	if code_edit != null:
-		code_edit.insert_text_at_cursor(template)
-		# Give the editor focus so the user can keep typing.
+		code_edit.insert_text_at_caret(code)
 		code_edit.grab_focus()
 	else:
-		DisplayServer.clipboard_set(template)
-		# ponytail: gentle nudge via console so the player knows what happened.
-		print("[MacroBar] No editor focused — copied '%s' to clipboard." % macro_name)
+		DisplayServer.clipboard_set(code)
 
 
 ## ponytail: find the first CodeEdit with focus. We look at the
@@ -82,9 +159,7 @@ func _find_active_code_edit() -> CodeEdit:
 	var focused: Control = get_viewport().gui_get_focus_owner() as Control
 	if focused is CodeEdit:
 		return focused
-	# Fallback: scan the tree for any focused CodeEdit.
-	var found: CodeEdit = _scan_for_focused_code_edit(get_tree().root)
-	return found
+	return _scan_for_focused_code_edit(get_tree().root)
 
 
 func _scan_for_focused_code_edit(node: Node) -> CodeEdit:
